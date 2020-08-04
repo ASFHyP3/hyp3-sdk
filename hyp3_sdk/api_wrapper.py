@@ -10,7 +10,7 @@ HYP3_PROD = 'https://hyp3-api.asf.alaska.edu'
 HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 
 
-class Hyp3():
+class Hyp3:
     """A python wrapper around the hyp3-api"""
 
     def __init__(self, api_url=HYP3_PROD, token=None):
@@ -34,14 +34,15 @@ class Hyp3():
             params['status_code'] = status
         return requests.get(urljoin(self.url, '/jobs'), params=params, cookies=cookie).json()
 
-    def submit_jobs(self, granules, description=' ', job_type='RTC_GAMMA'):
+    def submit_jobs(self, granules, description=' ', job_type='RTC_GAMMA', job_parameters: dict = {}):
         payload = {
             'jobs': [
                 {
                     'job_type': job_type,
                     'description': description,
                     'job_parameters': {
-                        'granule': granule
+                        'granule': granule,
+                        **job_parameters
                     }
                 } for granule in granules
             ]
