@@ -134,7 +134,7 @@ jobs:
           s3pypi --bucket hyp3-pypi --force --verbose
 
       - name: Upload to PyPI.org
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
