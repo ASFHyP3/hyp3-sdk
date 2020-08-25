@@ -8,9 +8,8 @@ dependencies:
   - setuptools
   - setuptools_scm
   - wheel
-  #- pytest
-  #- pytest-console-scripts
-  #- pytest-cov
+  - pytest
+  - pytest-cov
   # For running
   - importlib_metadata
   - requests

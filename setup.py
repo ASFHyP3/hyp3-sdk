@@ -36,13 +36,12 @@ setup(
         'requests',
     ],
 
-    # extras_require={
-    #     'develop': [
-    #         'pytest',
-    #         'pytest-cov',
-    #         'pytest-console-scripts',
-    #     ]
-    # },
+    extras_require={
+        'develop': [
+            'pytest',
+            'pytest-cov',
+        ]
+    },
 
     packages=find_packages(),
 
