@@ -3,7 +3,7 @@
 # FIXME: Python 3.8+ this should be `from importlib.metadata...`
 from importlib_metadata import PackageNotFoundError, version
 
-from .hyp3 import HyP3, HYP3_PROD, HYP3_TEST
+from .hyp3 import HYP3_PROD, HYP3_TEST, HyP3
 
 try:
     __version__ = version(__name__)
