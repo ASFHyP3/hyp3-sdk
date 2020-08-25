@@ -1,7 +1,7 @@
-from .hyp3 import Hyp3, HYP3_PROD, HYP3_TEST
+from .hyp3 import HyP3, HYP3_PROD, HYP3_TEST
 
 __all__ = [
-    'Hyp3',
+    'HyP3',
     'HYP3_PROD',
     'HYP3_TEST',
 ]
