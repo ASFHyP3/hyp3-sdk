@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from urllib.parse import urljoin
 
 import requests
