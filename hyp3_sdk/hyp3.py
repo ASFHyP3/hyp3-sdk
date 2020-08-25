@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from urllib.parse import urljoin
 
 import requests
@@ -32,8 +33,12 @@ class HyP3:
             params['status_code'] = status
         return self.session.get(urljoin(self.url, '/jobs'), params=params).json()
 
-    def submit_jobs(self, granules: list[str], description: str = ' ', job_type: str = 'RTC_GAMMA',
-                    job_parameters: dict = {}):
+    def submit_jobs(self, granules: List[str], description: str = ' ', job_type: str = 'RTC_GAMMA',
+                    job_parameters=None):
+
+        if job_parameters is None:
+            job_parameters = {}
+
         payload = {
             'jobs': [
                 {
