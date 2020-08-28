@@ -151,7 +151,7 @@ jobs:
         with:
           auto-update-conda: true
           python-version: 3.7
-          activate-environment: hyp3-sdk
+          activate-environment: hyp3_sdk
           environment-file: conda-env.yml
 
       - name: Pip install ${{ needs.package.outputs.SDIST_VERSION }}
