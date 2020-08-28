@@ -151,13 +151,13 @@ jobs:
         with:
           auto-update-conda: true
           python-version: 3.7
-          activate-environment: hyp3_sdk
+          activate-environment: hyp3-sdk
           environment-file: conda-env.yml
 
       - name: Pip install ${{ needs.package.outputs.SDIST_VERSION }}
         shell: bash -l {0}
         run: |
           export SDIST_VERSION=${{ needs.package.outputs.SDIST_VERSION }}
-          python -m pip install hyp3lib==${SDIST_VERSION} \
+          python -m pip install hyp3_sdk==${SDIST_VERSION} \
               --trusted-host "${S3_PYPI_HOST}" \
               --extra-index-url "http://${S3_PYPI_HOST}"
