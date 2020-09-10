@@ -12,7 +12,7 @@ class Job:
         if job_type not in JOB_TYPES:
             raise ValidationError(f'Invalid job type: {job_type}, must be one of {JOB_TYPES}')
         if len(job_name) > 20:
-            raise ValidationError(f'Job name too long, must be less then 20 chars')
+            raise ValidationError('Job name too long, must be less then 20 chars')
         self.job_name = job_name
         self.job_type = job_type
         self.job_parameters = job_parameters
