@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 
 import requests
 
+from hyp3_sdk.jobs import Job
 from hyp3_sdk.util import get_authenticated_session
 
 HYP3_PROD = 'https://hyp3-api.asf.alaska.edu'
@@ -19,7 +20,7 @@ class HyP3:
         if self.session is None:
             self.session = get_authenticated_session()
 
-    def get_jobs(self, start: datetime = None, end: datetime = None, status: str = None):
+    def get_jobs(self, start: datetime = None, end: datetime = None, status: str = None) -> dict:
         params = {}
         if start is not None:
             params['start'] = start.isoformat(timespec='seconds')
@@ -33,25 +34,13 @@ class HyP3:
             params['status_code'] = status
         return self.session.get(urljoin(self.url, '/jobs'), params=params).json()
 
-    def submit_jobs(self, granules: List[str], description: str = ' ', job_type: str = 'RTC_GAMMA',
-                    job_parameters=None):
-
-        if job_parameters is None:
-            job_parameters = {}
-
+    def submit_jobs(self, jobs: List[Job], validate_only: bool = False) -> dict:
         payload = {
-            'jobs': [
-                {
-                    'job_type': job_type,
-                    'description': description,
-                    'job_parameters': {
-                        'granule': granule,
-                        **job_parameters
-                    }
-                } for granule in granules
-            ]
+            'jobs': [job.to_dict() for job in jobs],
+            'validate_only': validate_only,
         }
-        return self.session.post(urljoin(self.url, '/jobs'), json=payload).json()
+        response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
+        return response.json()
 
     def get_quota(self):
         return self.session.get(urljoin(self.url, '/user')).json()['quota']
