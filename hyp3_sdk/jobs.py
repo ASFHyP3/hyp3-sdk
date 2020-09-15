@@ -4,6 +4,7 @@ from hyp3_sdk.exceptions import ValidationError
 JOB_TYPES = [
     'RTC_GAMMA',
     'INSAR_GAMMA',
+    'AUTORIFT'
 ]
 
 
@@ -29,6 +30,10 @@ class Job:
 
 def make_job(job_type: str, job_name: str, job_parameters: dict) -> Job:
     return Job(job_type, job_name, job_parameters)
+
+
+def make_autorift_job(job_type: str, job_name: str) -> Job:
+    return Job('AUTORIFT', job_name)
 
 
 def make_rtc_gamma_job(job_name: str, granule: str, extra_parameters: dict = {}) -> Job:
