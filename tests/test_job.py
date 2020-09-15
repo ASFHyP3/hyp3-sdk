@@ -1,7 +1,7 @@
 import pytest
 
 
-from hyp3_sdk import Job, make_insar_gamma_job, make_rtc_gamma_job
+from hyp3_sdk import Job, make_autorift_job, obmake_insar_gamma_job, make_rtc_gamma_job
 from hyp3_sdk.exceptions import ValidationError
 
 
@@ -71,5 +71,16 @@ def test_make_insar_gamma_job():
         'job_parameters': {
             'granules': ['granule1_name', 'granule2_name'],
             'param1': 'val1',
+        }
+    }
+
+
+def test_make_autorift_job():
+    test_job = make_autorift_job('job_name', 'granule1_name', 'granule2_name')
+    assert test_job.to_dict() == {
+        'name': 'job_name',
+        'job_type': 'AUTORIFT',
+        'job_parameters': {
+            'granules': ['granule1_name', 'granule2_name'],
         }
     }
