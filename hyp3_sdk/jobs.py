@@ -32,7 +32,7 @@ def make_job(job_type: str, job_name: str, job_parameters: dict) -> Job:
     return Job(job_type, job_name, job_parameters)
 
 
-def make_autorift_job(job_type: str, granule1: str, granule2: str, job_name: str) -> Job:
+def make_autorift_job(job_name: str, granule1: str, granule2: str) -> Job:
     return Job('AUTORIFT', job_name, {'granules': [granule1, granule2]})
 
 
