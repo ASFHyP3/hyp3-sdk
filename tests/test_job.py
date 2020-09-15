@@ -1,7 +1,7 @@
 import pytest
 
 
-from hyp3_sdk import Job, make_autorift_job, obmake_insar_gamma_job, make_rtc_gamma_job
+from hyp3_sdk import Job, make_autorift_job, make_insar_gamma_job, make_rtc_gamma_job
 from hyp3_sdk.exceptions import ValidationError
 
 
