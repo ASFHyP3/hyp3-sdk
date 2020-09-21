@@ -10,7 +10,7 @@ Interactions with the Hyp3 api are done using an instance of the HyP3 class.
 ```python
 from hyp3_sdk import HyP3
 
-api = HyP3()
+api = HyP3()  # Must have credentials for urs.earthdata.nasa.gov in a .netrc file for this to work
 ```
 If you want to use an api other then the one at https://hyp3-api.asf.alaska.edu, then provide the URL (including scheme) as a parameter.
 ```python
