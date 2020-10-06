@@ -37,9 +37,10 @@ api = HyP3()
 jobs = api.get_jobs()
 ```
 ##### Parmaeters:
-- start: datetime -> filters request to only get jobs submitted after given datetime
-- end: datetime -> filters request to only get jobs submitted befor given datetime
-- status: str -> Filters requests based on status (SUCCEEDED, FAILED, RUNNING, PENDING)
+- start: datetime -> requests only jobs submitted after given datetime
+- end: datetime -> requests only jobs submitted before given datetime
+- status: str -> request based on status (SUCCEEDED, FAILED, RUNNING, PENDING)
+- name: str -> requests only jobs that have this name
 
 #### Submitting jobs
 The submit_jobs method will submit jobs to the api for processing
