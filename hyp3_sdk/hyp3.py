@@ -20,8 +20,10 @@ class HyP3:
         if self.session is None:
             self.session = get_authenticated_session()
 
-    def get_jobs(self, start: datetime = None, end: datetime = None, status: str = None) -> dict:
+    def get_jobs(self, start: datetime = None, end: datetime = None, status: str = None, name: str = None) -> dict:
         params = {}
+        if name is not None:
+            params['name'] = name
         if start is not None:
             params['start'] = start.isoformat(timespec='seconds')
             if start.tzinfo is None:
