@@ -17,7 +17,7 @@ from hyp3_sdk import HyP3
 
 api = HyP3('https://hyp3.example.com')
 ```
-If you want to pass in a [Requests](https://requests.readthedocs.io/en/latest/user/advanced/) `Session` object for the API to use, it must first be authenticated, and can then be passed into the API
+If you want to pass in a [Requests](https://requests.readthedocs.io/en/latest/user/advanced/) `Session` object for the API to use, it must first be authenticated and then it can be passed into the API
 ```python
 import requests
 from hyp3_sdk import HyP3
