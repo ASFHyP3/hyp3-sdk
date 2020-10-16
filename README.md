@@ -2,6 +2,14 @@
 
 A python wrapper around the HyP3 API
 
+## Install
+
+The HyP3 SDK can be installed via `pip`:
+
+```
+python -m pip install hyp3_sdk
+```
+
 ## Usage
 
 ### The HyP3 object
