@@ -57,26 +57,27 @@ api.submit_jobs(jobs)
 
 ### The Job object
 Job objects represent a job to be submitted to the API, they are made by calling factory functions
+
 #### Job factories
 - `make_rtc_gamma_job`
   
-  **Parameters**
-  - job_name: str -> name of job
-  - granule: str -> name of granule to process
-  - extra_parameters: dict -> extra parameters and processing options
+    ##### Parameters   
+    - job_name: str -> name of job
+    - granule: str -> name of granule to process
+    - extra_parameters: dict -> extra parameters and processing options
 
 - `make_insar_gamma_job`
   
-  **Parameters**
-  - job_name: str -> name of job
-  - granule1: str -> name of primary granule to process
-  - granule2: str -> name of secondary granule to process
-  - extra_parameters: dict -> extra parameters and processing options
+    ##### Parameters   
+    - job_name: str -> name of job
+    - granule1: str -> name of primary granule to process
+    - granule2: str -> name of secondary granule to process
+    - extra_parameters: dict -> extra parameters and processing options
 
 - `make_autorift_job`
 
-  **Parameters**
+    ##### Parameters   
     - job_name: str -> name of job
-  - granule1: str -> name of primary granule to process
-  - granule2: str -> name of secondary granule to process
-  - extra_parameters: dict -> extra parameters and processing options
+    - granule1: str -> name of primary granule to process
+    - granule2: str -> name of secondary granule to process
+    - extra_parameters: dict -> extra parameters and processing options
