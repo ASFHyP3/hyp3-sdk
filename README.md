@@ -55,7 +55,7 @@ api.submit_jobs(jobs)
 ##### Parameters
 - `jobs`: `list[Job]` -> list of job objects to submit to API
 
-### The Job object`
+### The Job object
 Job objects represent a job to be submitted to the API, they are made by calling factory functions
 
 #### Job factories
