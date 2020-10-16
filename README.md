@@ -5,35 +5,37 @@ A python wrapper around the HyP3 API
 ## Usage
 
 ### The HyP3 object
-Interactions with the HyP3 API are done using an instance of the HyP3 class.
+The HyP3 object interactions with the HyP3 API are done using an instance of the `HyP3` class
 ```python
 from hyp3_sdk import HyP3
 
 api = HyP3()  # Must have credentials for urs.earthdata.nasa.gov in a .netrc file for this to work
 ```
-If you want to use an API other then the one at <https://hyp3-api.asf.alaska.edu>, then provide the URL (including scheme) as a parameter.
+If you want to use an API other then the one at <https://hyp3-api.asf.alaska.edu>, you may provide the URL (including scheme) as a parameter
 ```python
 from hyp3_sdk import HyP3
 
 api = HyP3('https://hyp3.example.com')
 ```
-If you want to pass in a requests Session object for the API to use, first it must be authenticated, and can be passed into the API.
+If you want to pass in a [Requests](https://requests.readthedocs.io/en/latest/user/advanced/) `Session` object for the API to use, it must first be authenticated, and can then be passed into the API
 ```python
+import requests
 from hyp3_sdk import HyP3
 
-session = ...
+session = requests.Session()
+session.get(...)  # Authenticate
 
 api = HyP3(authenticated_session=session)
 ```
 
 #### Getting jobs
-The `get_jobs` method with request all jobs from the API and return them in a list of dictionaries.
+The `get_jobs` method with request all jobs from the API and return them in a list of dictionaries
 ```python
 from hyp3_sdk import HyP3
 
 api = HyP3()
 
-jobs = api.get_jobs()
+response = api.get_jobs()
 ```
 ##### Parameters:
 - `start`: `datetime` -> requests only jobs submitted after given time
@@ -50,7 +52,7 @@ api = HyP3()
 
 jobs = [make_rtc_gamma_job('job_name', 'granule_name')]
 
-api.submit_jobs(jobs)
+response = api.submit_jobs(jobs)
 ```
 ##### Parameters
 - `jobs`: `list[Job]` -> list of job objects to submit to API
