@@ -13,7 +13,13 @@ dependencies:
   # For running
   - importlib_metadata
   - requests
+  # For documentation
+  - mkdocs
+  - mkdocs-material
+  - mkdocs-material-extensions
   - pip:
-    # for packaging and testing
+    # For packaging and testing
     - s3pypi
     - safety
+    # For documentation
+    - mkdocstrings

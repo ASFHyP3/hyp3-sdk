@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from urllib.parse import urljoin
 
 import requests
@@ -12,15 +12,31 @@ HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 
 
 class HyP3:
-    """A python wrapper around the hyp3-api"""
+    """A python wrapper around the HyP3 API"""
+    def __init__(self, api_url: str = HYP3_PROD, authenticated_session: Optional[requests.Session] = None):
+        """
 
-    def __init__(self, api_url: str = HYP3_PROD, authenticated_session: requests.session = None):
+        Args:
+            api_url: Address of the HyP3 API
+            authenticated_session: An authenticated Earthdata Login session to use
+        """
         self.url = api_url
         self.session = authenticated_session
         if self.session is None:
             self.session = get_authenticated_session()
 
     def get_jobs(self, start: datetime = None, end: datetime = None, status: str = None, name: str = None) -> dict:
+        """Get your jobs
+
+        Args:
+            start: only jobs submitted after given time
+            end: only jobs submitted before given time
+            status: only jobs matching this status (SUCCEEDED, FAILED, RUNNING, PENDING)
+            name: only jobs with this name
+
+        Returns:
+            The full dictionary representation of the HyP3 API response
+        """
         params = {}
         if name is not None:
             params['name'] = name
@@ -37,6 +53,15 @@ class HyP3:
         return self.session.get(urljoin(self.url, '/jobs'), params=params).json()
 
     def submit_jobs(self, jobs: List[Job], validate_only: bool = False) -> dict:
+        """Submit jobs to the API
+
+        Args:
+            jobs: A list of Jobs to submit to the API
+            validate_only: Instead of submitting, just validate the list of jobs
+
+        Returns:
+            The full dictionary representation of the HyP3 API response
+        """
         payload = {
             'jobs': [job.to_dict() for job in jobs],
             'validate_only': validate_only,
@@ -44,5 +69,9 @@ class HyP3:
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
         return response.json()
 
-    def get_quota(self):
+    def get_quota(self) -> dict:
+        """
+        Returns:
+            Your current quota
+        """
         return self.session.get(urljoin(self.url, '/user')).json()['quota']
