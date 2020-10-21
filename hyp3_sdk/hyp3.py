@@ -25,7 +25,8 @@ class HyP3:
         if self.session is None:
             self.session = get_authenticated_session()
 
-    def get_jobs(self, start: datetime = None, end: datetime = None, status: str = None, name: str = None) -> dict:
+    def get_jobs(self, start: Optional[datetime] = None, end: Optional[datetime] = None,
+                 status: Optional[str] = None, name: Optional[str] = None) -> dict:
         """Get your jobs
 
         Args:
