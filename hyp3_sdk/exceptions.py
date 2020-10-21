@@ -3,4 +3,3 @@
 
 class ValidationError(Exception):
     """Raise when jobs do not pass validation"""
-    pass
