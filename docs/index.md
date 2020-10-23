@@ -34,17 +34,18 @@ session.get(...)  # Authenticate
 api = HyP3(authenticated_session=session)
 ```
 
-The `get_jobs` method with request all jobs from the API and return them in a list of dictionaries
-```python
-response = api.get_jobs()
-```
-
 The `submit_jobs` method will submit Job objects to the API for processing
 ```python
 jobs = [make_rtc_gamma_job('job_name', 'granule_name')]
 
 response = api.submit_jobs(jobs)
 ```
+
+The `get_jobs` method with request all jobs from the API and return them in a list of dictionaries
+```python
+response = api.get_jobs()
+```
+
 
 ## SDK API Reference
 
