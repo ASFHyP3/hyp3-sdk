@@ -3,7 +3,6 @@ site_url: https://ASFHyP3.github.io/hyp3-sdk/
 site_author: ASF APD/Tools Team
 site_description: A python wrapper around ASF's HyP3 API
 copyright: © 2020 Alaska Satellite Facility
-google_analytics: ['UA-991100-5', 'search.asf.alaska.edu']
 
 theme:
   name: "material"
@@ -15,13 +14,6 @@ theme:
 repo_url: https://github.com/ASFHyP3/hyp3-sdk
 repo_name: HyP3 SDK
 edit_uri: ''
-
-extra:
-  social:
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/Ak_Satellite
-    - icon: fontawesome/brands/gitter
-      link: https://gitter.im/ASFHyP3/community
 
 markdown_extensions:
   - toc:
