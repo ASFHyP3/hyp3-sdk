@@ -57,8 +57,8 @@ class HyP3:
         """Submit jobs to the API
 
         Args:
-            jobs: A list of Jobs to submit to the API
-            validate_only: Instead of submitting, just validate the list of jobs
+            jobs: A list of Job instances to submit to the API
+            validate_only: Instead of submitting, just validate `jobs`
 
         Returns:
             The full dictionary representation of the HyP3 API response

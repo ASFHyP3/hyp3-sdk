@@ -7,7 +7,7 @@ AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&cl
 
 
 def get_authenticated_session() -> requests.Session:
-    """logs into hyp3 using users credentials for urs.earthdata.nasa.gov in a .netrc file.
+    """logs into hyp3 using credentials for urs.earthdata.nasa.gov from a .netrc file.
 
     Returns:
         An authenticated session

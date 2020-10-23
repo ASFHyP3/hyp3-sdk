@@ -18,10 +18,6 @@ from hyp3_sdk import HyP3
 
 api = HyP3()  # Must have credentials for urs.earthdata.nasa.gov in a .netrc file for this to work
 ```
-The `get_jobs` method with request all jobs from the API and return them in a list of dictionaries
-```python
-response = api.get_jobs()
-```
 
 The `submit_jobs` method will submit jobs to the API for processing
 ```python
@@ -32,9 +28,14 @@ jobs = [make_rtc_gamma_job('job_name', 'granule_name')]
 response = api.submit_jobs(jobs)
 ```
 
+The `get_jobs` method will request all jobs from the API and return them in a list of dictionaries
+```python
+response = api.get_jobs()
+```
+
 ## Documentation
 
-For advanced usage and the SDK API Reference, see [the HyP3 documentation](https://asfhyp3.github.io/)
+For advanced usage and the SDK API Reference, see [the HyP3 documentation](https://asfhyp3.github.io/using/sdk/)
 
 ## Contact Us
 
