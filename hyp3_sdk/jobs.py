@@ -14,7 +14,7 @@ class Job:
 
         Args:
             job_type: The job type
-            job_name: A name for the job (must be < 20 characters)
+            job_name: A name for the job (must be <= 20 characters)
             job_parameters: Extra job parameters specifying custom processing options
         """
         if job_type not in JOB_TYPES:
@@ -44,7 +44,7 @@ def make_job(job_type: str, job_name: str, job_parameters: dict = {}) -> Job:
 
     Args:
         job_type: The job type
-        job_name: A name for the job (must be < 20 characters)
+        job_name: A name for the job (must be <= 20 characters)
         job_parameters: Extra job parameters specifying custom processing options
 
     Returns:
@@ -57,7 +57,7 @@ def make_autorift_job(job_name: str, granule1: str, granule2: str) -> Job:
     """Make an autoRIFT Job object
 
     Args:
-        job_name: A name for the job (must be < 20 characters)
+        job_name: A name for the job (must be <= 20 characters)
         granule1: The first granule (scene) to use
         granule2: The second granule (scene) to use
 
@@ -71,7 +71,7 @@ def make_rtc_gamma_job(job_name: str, granule: str, extra_parameters: dict = {})
     """Make an RTC Job object
 
     Args:
-        job_name: A name for the job (must be < 20 characters)
+        job_name: A name for the job (must be <= 20 characters)
         granule: The granule (scene) to process
         extra_parameters: Extra job parameters specifying custom processing options
 
@@ -85,7 +85,7 @@ def make_insar_gamma_job(job_name: str, granule1: str, granule2: str, extra_para
     """Make a InSAR Job object
 
     Args:
-        job_name: A name for the job (must be < 20 characters)
+        job_name: A name for the job (must be <= 20 characters)
         granule1: The first granule (scene) to use
         granule2: The second granule (scene) to use
         extra_parameters: Extra job parameters specifying custom processing options
