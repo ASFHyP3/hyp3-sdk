@@ -1,13 +1,13 @@
 # HyP3 SDK documentation
 
-HyP3 SDK documentation is build using [MkDocs](https://www.mkdocs.org/) and the
+HyP3 SDK documentation is built using [MkDocs](https://www.mkdocs.org/) and the
 [Material theme](https://squidfunk.github.io/mkdocs-material/). 
 
 ## How to
 
-### setting up a development environment
+### Setting up a development environment
 
-From the repository root, you can setup a conda environment with all the 
+From the repository root, you can set up a conda environment with all the 
 necessary dependencies for development of the SDK
 
 ```
@@ -16,7 +16,7 @@ conda activate hyp3-sdk
 python -m pip install -e ".[develop]"
 ```
 
-### build and view the documentation site
+### Build and view the documentation site
 ```
 mkdocs serve
 ```
