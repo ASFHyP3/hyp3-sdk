@@ -35,7 +35,7 @@ response = api.get_jobs()
 
 ## Documentation
 
-For advanced usage and the SDK API Reference, see [the HyP3 documentation](https://asfhyp3.github.io/)
+For advanced usage and the SDK API Reference, see [the HyP3 documentation](https://asfhyp3.github.io/using/sdk/)
 
 ## Contact Us
 
