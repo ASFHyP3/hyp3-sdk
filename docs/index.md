@@ -41,7 +41,7 @@ jobs = [make_rtc_gamma_job('job_name', 'granule_name')]
 response = api.submit_jobs(jobs)
 ```
 
-The `get_jobs` method with request all jobs from the API and return them in a list of dictionaries
+The `get_jobs` method will request all jobs from the API and return them in a list of dictionaries
 ```python
 response = api.get_jobs()
 ```
