@@ -1,5 +1,5 @@
-"""errors and exceptions thrown by the hyp3 module"""
+"""Errors and exceptions to raise when the SDK runs into problems"""
 
 
 class ValidationError(Exception):
-    pass
+    """Raise when jobs do not pass validation"""
