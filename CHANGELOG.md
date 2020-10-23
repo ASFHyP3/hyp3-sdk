@@ -12,7 +12,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - typehints and docstrings throughout the SDK for auto-documentation of the API
 
 ### Changed
-- Documentation now is mainly contained [The HyP3 Docs](https://asfhyp3.github.io/)
+- Documentation now is mainly contained in [The HyP3 Docs](https://asfhyp3.github.io/)
   and the README just contains quick installation and usage information
 
 ## [0.2.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.2.0...v0.2.1)
