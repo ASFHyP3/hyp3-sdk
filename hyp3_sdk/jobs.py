@@ -82,7 +82,7 @@ def make_rtc_gamma_job(job_name: str, granule: str, extra_parameters: dict = {})
 
 
 def make_insar_gamma_job(job_name: str, granule1: str, granule2: str, extra_parameters: dict = {}) -> Job:
-    """Make a InSAR Job object
+    """Make an InSAR Job object
 
     Args:
         job_name: A name for the job (must be <= 20 characters)
