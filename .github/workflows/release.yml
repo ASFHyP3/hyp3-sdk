@@ -22,7 +22,7 @@ jobs:
           ALLOW_TAG_PREFIX: "true"
           RELEASE_NAME_PREFIX: "HyP3 SDK "
 
-      -name: Get SDK version number
+      - name: Get SDK version number
         id: get_version
         run: |
           echo ::set-output name=version_tag::${GITHUB_REF#refs/tags/}
