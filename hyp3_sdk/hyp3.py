@@ -13,6 +13,7 @@ HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 
 class HyP3:
     """A python wrapper around the HyP3 API"""
+
     def __init__(self, api_url: str = HYP3_PROD, authenticated_session: Optional[requests.Session] = None):
         """
 
@@ -25,8 +26,20 @@ class HyP3:
         if self.session is None:
             self.session = get_authenticated_session()
 
+    @staticmethod
+    def supported_job_types() -> tuple:
+        """
+        Returns:
+            The supported job types
+        """
+        return (
+            'RTC_GAMMA',
+            'INSAR_GAMMA',
+            'AUTORIFT',
+        )
+
     def get_jobs(self, start: Optional[datetime] = None, end: Optional[datetime] = None,
-                 status: Optional[str] = None, name: Optional[str] = None) -> dict:
+                 status: Optional[str] = None, name: Optional[str] = None) -> List[RequestedJob]:
         """Get your jobs
 
         Args:
@@ -51,28 +64,51 @@ class HyP3:
                 params['end'] += 'Z'
         if status is not None:
             params['status_code'] = status
-        return self.session.get(urljoin(self.url, '/jobs'), params=params).json()
 
-    def submit_jobs(self, jobs: List[Job], validate_only: bool = False) -> dict:
+        response = self.session.get(urljoin(self.url, '/jobs'), params=params).json()
+        jobs = [RequestedJobs.from_dict(job) for job in response['jobs']]
+        return jobs
+
+    def submit_jobs(self, jobs: List[Union[BaseJob, RequestedJob]], validate_only: bool = False,
+                    force_resubmit: bool = False) -> List[RequestedJob]:
         """Submit jobs to the API
 
         Args:
             jobs: A list of Job instances to submit to the API
             validate_only: Instead of submitting, just validate `jobs`
+            force_resubmit:
 
         Returns:
             The full dictionary representation of the HyP3 API response
         """
+        for job in jobs:
+            if isinstance(RequestedJob): # single disbatch submission?
+                if not job.is_expired() and not force_resubmit:
+                    raise ...
+
         payload = {
             'jobs': [job.to_dict() for job in jobs],
             'validate_only': validate_only,
         }
-        response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
-        return response.json()
+        response = self.session.post(urljoin(self.url, '/jobs'), json=payload).json()
+        jobs = [RequestedJobs.from_dict(job) for job in response['jobs']]
+        return jobs
 
-    def get_quota(self) -> dict:
+    def jobs_are_complete(self, jobs: List[RequestedJob],
+                          wait: bool = False, timeout: int = 10800, check_every: int = 60) -> bool:
+
+
+
+    def my_info(self) -> dict:
         """
         Returns:
-            Your current quota
+            Your user information
         """
-        return self.session.get(urljoin(self.url, '/user')).json()['quota']
+        return self.session.get(urljoin(self.url, '/user')).json()
+
+    def check_quota(self) -> int:
+        """
+        Returns:
+            The number of jobs left in your quota
+        """
+        return self.session.get(urljoin(self.url, '/user')).json()['quota']["remaining"]
