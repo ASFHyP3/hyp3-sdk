@@ -3,3 +3,7 @@
 
 class ValidationError(Exception):
     """Raise when jobs do not pass validation"""
+
+
+class AuthenticationError(Exception):
+    """Raise when authentication does not succeed"""

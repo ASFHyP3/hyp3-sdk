@@ -1,10 +1,8 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 from urllib.parse import urljoin
 
-import requests
-
-from hyp3_sdk.jobs import Job
+from hyp3_sdk.jobs import BaseJob, RequestedJob
 from hyp3_sdk.util import get_authenticated_session
 
 HYP3_PROD = 'https://hyp3-api.asf.alaska.edu'
@@ -14,7 +12,7 @@ HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 class HyP3:
     """A python wrapper around the HyP3 API"""
 
-    def __init__(self, api_url: str = HYP3_PROD, authenticated_session: Optional[requests.Session] = None):
+    def __init__(self, api_url: str = HYP3_PROD, username : Optional = None, password: Optional = None):
         """
 
         Args:
@@ -22,15 +20,13 @@ class HyP3:
             authenticated_session: An authenticated Earthdata Login session to use
         """
         self.url = api_url
-        self.session = authenticated_session
-        if self.session is None:
-            self.session = get_authenticated_session()
+        get_authenticated_session(username, password)
 
     @staticmethod
     def supported_job_types() -> tuple:
         """
         Returns:
-            The supported job types
+            The job types that are able to be processed by HyP3
         """
         return (
             'RTC_GAMMA',
@@ -38,9 +34,12 @@ class HyP3:
             'AUTORIFT',
         )
 
-    def get_jobs(self, start: Optional[datetime] = None, end: Optional[datetime] = None,
+    def get_jobs(self, jobs: List[Union[BaseJob, RequestedJob]]):
+        pass
+
+    def search_jobs(self, start: Optional[datetime] = None, end: Optional[datetime] = None,
                  status: Optional[str] = None, name: Optional[str] = None) -> List[RequestedJob]:
-        """Get your jobs
+        """Gets jobs from hyp3 matching the procided search criteria
 
         Args:
             start: only jobs submitted after given time
