@@ -90,7 +90,7 @@ class HyP3:
             'validate_only': validate_only,
         }
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload).json()
-        jobs = [RequestedJobs.from_dict(job) for job in response['jobs']]
+        jobs = [RequestedJob.from_dict(job) for job in response['jobs']]
         return jobs
 
     def jobs_are_complete(self, jobs: List[RequestedJob],

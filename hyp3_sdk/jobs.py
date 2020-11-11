@@ -54,9 +54,11 @@ class RequestedJob(BaseJob):
                 expiration_time: Optional[datetime] = None
                 ):
             self.id = job_id
+            self.job_type = job_type
             self.request_time = request_time
             self.status_code = status_code
             self.user_id = user_id
+            self.job_name = job_name
             self.job_parameters = job_parameters
             self.files = files
             self.browse_images = browse_images
@@ -118,7 +120,7 @@ def rtc(job_name: str, granule: str, kwargs) -> BaseJob:
     # TODO: warn about unsupported kwargs
 
 @staticmethod
-def insar(job_name: str, granule1: str, granule2: str, ..., kwargs) -> BaseJob:
+def insar(job_name: str, granule1: str, granule2: str, kwargs) -> BaseJob:
     """Make an InSAR Job object
 
     Args:
