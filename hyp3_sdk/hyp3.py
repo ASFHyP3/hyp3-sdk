@@ -1,9 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 from typing import List, Optional, Union
 from urllib.parse import urljoin
 
+from requests import  HTTPError
+
 from hyp3_sdk.jobs import BaseJob, RequestedJob
 from hyp3_sdk.util import get_authenticated_session
+from hyp3_sdk.exceptions import ValidationError, Hyp3SdkError
 
 HYP3_PROD = 'https://hyp3-api.asf.alaska.edu'
 HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
@@ -14,13 +18,13 @@ class HyP3:
 
     def __init__(self, api_url: str = HYP3_PROD, username : Optional = None, password: Optional = None):
         """
-
         Args:
             api_url: Address of the HyP3 API
-            authenticated_session: An authenticated Earthdata Login session to use
+            username: Username to use for authentication to urs.earthdata.nasa.gov, if provided password must be provided
+            password: Password to use for authentication to urs.earthdata.nasa.gov, if provided username must be provided
         """
         self.url = api_url
-        get_authenticated_session(username, password)
+        self.session = get_authenticated_session(username, password)
 
     @staticmethod
     def supported_job_types() -> tuple:
@@ -34,8 +38,24 @@ class HyP3:
             'AUTORIFT',
         )
 
-    def get_jobs(self, jobs: List[Union[BaseJob, RequestedJob]]):
-        pass
+    def _get_job_by_id(self, job_id):
+        try:
+            response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
+            response.raise_for_status()
+        except:
+            raise Hyp3SdkError('Unable to get job by ID')
+        return RequestedJob.from_dict(response.json())
+
+    def get_jobs(self, jobs: List[RequestedJob]):
+        """
+        Args:
+            jobs: list of RequestedJobs to get from api
+
+        Returns: A new list of corresponding jobs from the api
+        """
+        job_ids = [job.id for job in jobs]
+        new_jobs = [self._get_job_by_id(job_id) for job_id in job_ids]
+        return new_jobs
 
     def search_jobs(self, start: Optional[datetime] = None, end: Optional[datetime] = None,
                  status: Optional[str] = None, name: Optional[str] = None) -> List[RequestedJob]:
@@ -65,13 +85,12 @@ class HyP3:
             params['status_code'] = status
 
         response = self.session.get(urljoin(self.url, '/jobs'), params=params).json()
-        jobs = [RequestedJobs.from_dict(job) for job in response['jobs']]
+        jobs = [RequestedJob.from_dict(job) for job in response['jobs']]
         return jobs
 
-    def submit_jobs(self, jobs: List[Union[BaseJob, RequestedJob]], validate_only: bool = False,
+    def submit_jobs(self, jobs: List[BaseJob], validate_only: bool = False,
                     force_resubmit: bool = False) -> List[RequestedJob]:
         """Submit jobs to the API
-
         Args:
             jobs: A list of Job instances to submit to the API
             validate_only: Instead of submitting, just validate `jobs`
@@ -80,11 +99,6 @@ class HyP3:
         Returns:
             The full dictionary representation of the HyP3 API response
         """
-        for job in jobs:
-            if isinstance(RequestedJob): # single disbatch submission?
-                if not job.is_expired() and not force_resubmit:
-                    raise ...
-
         payload = {
             'jobs': [job.to_dict() for job in jobs],
             'validate_only': validate_only,
@@ -93,21 +107,56 @@ class HyP3:
         jobs = [RequestedJob.from_dict(job) for job in response['jobs']]
         return jobs
 
-    def jobs_are_complete(self, jobs: List[RequestedJob],
-                          wait: bool = False, timeout: int = 10800, check_every: int = 60) -> bool:
+    @staticmethod
+    def jobs_are_complete(jobs: List[RequestedJob]) -> bool:
+        """
+        Args:
+            jobs: List of jobs to check
 
+        Returns: True if all jobs are complete, otherwise returns False
+        """
+        for job in jobs:
+            if not job.is_complete():
+                return False
+        return True
 
+    def wait_for_jobs(self, jobs: List['RequestedJob'], timeout: int = 10800, interval: int = 60):
+        """
+        Args:
+            jobs: List of jobs to wait for
+            timeout: How long to wait until exiting in seconds
+            interval: How often to check for updates in seconds
+
+        Returns: list of completed jobs once complete, or raises in case of timeout
+        """
+        end_time = datetime.now() + timedelta(seconds=timeout)
+        while datetime.now() < end_time:
+            updated_jobs = self.get_jobs(jobs)
+            if self.jobs_are_complete(updated_jobs):
+                return updated_jobs
+            time.sleep(interval)
+        raise Hyp3SdkError('Timeout occurred while waiting for jobs')
 
     def my_info(self) -> dict:
         """
         Returns:
             Your user information
         """
-        return self.session.get(urljoin(self.url, '/user')).json()
+        try:
+            response = self.session.get(urljoin(self.url, '/user'))
+            response.raise_for_status()
+        except HTTPError:
+            raise Hyp3SdkError('Unable to get user information from API')
+        return response.json()
 
     def check_quota(self) -> int:
         """
         Returns:
             The number of jobs left in your quota
         """
-        return self.session.get(urljoin(self.url, '/user')).json()['quota']["remaining"]
+        try:
+            response = self.session.get(urljoin(self.url, '/user'))
+            response.raise_for_status()
+        except HTTPError:
+            raise Hyp3SdkError('Unable to get user information from API')
+        return response.json()['quota']['remaining']
