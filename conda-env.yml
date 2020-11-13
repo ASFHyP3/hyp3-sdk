@@ -12,6 +12,7 @@ dependencies:
   - pytest-cov
   # For running
   - importlib_metadata
+  - python-dateutil
   - requests
   # For documentation
   - mkdocs
