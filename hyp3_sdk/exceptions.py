@@ -1,12 +1,13 @@
 """Errors and exceptions to raise when the SDK runs into problems"""
 
-class Hyp3SdkError(Exception):
+
+class HyP3Error(Exception):
     """Base Exception for Hyp3_sdk"""
 
 
-class ValidationError(Hyp3SdkError):
+class ValidationError(HyP3Error):
     """Raise when jobs do not pass validation"""
 
 
-class AuthenticationError(Hyp3SdkError):
+class AuthenticationError(HyP3Error):
     """Raise when authentication does not succeed"""

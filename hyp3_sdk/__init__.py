@@ -4,7 +4,6 @@
 from importlib_metadata import PackageNotFoundError, version
 
 from .hyp3 import HYP3_PROD, HYP3_TEST, HyP3
-from .jobs import Job, make_autorift_job, make_insar_gamma_job, make_rtc_gamma_job
 
 try:
     __version__ = version(__name__)
@@ -19,9 +18,5 @@ __all__ = [
     'HyP3',
     'HYP3_PROD',
     'HYP3_TEST',
-    'Job',
-    'make_autorift_job',
-    'make_insar_gamma_job',
-    'make_rtc_gamma_job',
     '__version__',
 ]

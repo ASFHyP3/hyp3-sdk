@@ -35,6 +35,7 @@ setup(
         'python-dateutil',
         'importlib_metadata',
         'requests',
+        'urllib3',
     ],
 
     extras_require={
