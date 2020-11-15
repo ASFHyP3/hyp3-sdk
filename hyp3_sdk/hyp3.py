@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from urllib.parse import urljoin
 
-from requests.exceptions import RequestException, HTTPError
+from requests.exceptions import HTTPError, RequestException
 
 from hyp3_sdk.exceptions import HyP3Error, ValidationError
 from hyp3_sdk.jobs import Batch, Job
@@ -95,7 +95,7 @@ class HyP3:
         """
         jobs = []
         for job in batch.jobs:
-            jobs.append(self._get_job_by_id(job.id))
+            jobs.append(self._get_job_by_id(job.job_id))
         return Batch(jobs)
 
     def _submit_raw_job(self, job_type: str, job_name: Optional[str], job_parameters: dict,
@@ -111,7 +111,7 @@ class HyP3:
 
         payload = {'jobs': [job_dict], 'validate_only': validate_only}
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
-        return Batch([Job.from_dict(response.json())])
+        return Job.from_dict(response.json()['jobs'][0])
 
     def submit_autorift_job(self, granule1: str, granule2: str, job_name: Optional[str]) -> Job:
         """Submit an autoRIFT job

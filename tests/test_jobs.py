@@ -207,4 +207,3 @@ def test_batch_filter_jobs():
         assert job.status_code == batch.jobs[ii].status_code
         if job.succeeded():
             assert job.expired() == batch.jobs[ii].expired()
-
