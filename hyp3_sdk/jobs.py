@@ -19,19 +19,19 @@ class Job:
             request_time: datetime,
             status_code: str,
             user_id: str,
-            job_name: Optional[str] = None,
+            name: Optional[str] = None,
             job_parameters: Optional[dict] = None,
             files: Optional[List] = None,
             browse_images: Optional[List] = None,
             thumbnail_images: Optional[List] = None,
             expiration_time: Optional[datetime] = None
     ):
-        self.id = job_id
+        self.job_id = job_id
         self.job_type = job_type
         self.request_time = request_time
         self.status_code = status_code
         self.user_id = user_id
-        self.job_name = job_name
+        self.name = name
         self.job_parameters = job_parameters
         self.files = files
         self.browse_images = browse_images
@@ -47,7 +47,7 @@ class Job:
             request_time=input_dict['request_time'],
             status_code=input_dict['status_code'],
             user_id=input_dict['user_id'],
-            job_name=input_dict.get('job_name'),
+            name=input_dict.get('name'),
             job_parameters=input_dict.get('job_parameters'),
             files=input_dict.get('files'),
             browse_images=input_dict.get('browse_images'),
@@ -56,25 +56,41 @@ class Job:
         )
 
     def to_dict(self):
-        return {
+        job_dict = {
             'job_type': self.job_type,
-            'job_id': self.id,
+            'job_id': self.job_id,
             'request_time': self.request_time,
             'status_code': self.status_code,
             'user_id': self.user_id,
-            'job_name': self.job_name,
-            'job_parameters': self.job_parameters,
-            'files': self.files,
-            'browse_images': self.browse_images,
-            'thumbnail_images': self.thumbnail_images,
-            'expiration_time': self.expiration_time,
         }
+
+        for key in ['name', 'job_parameters', 'files', 'browse_images', 'thumbnail_images']:
+            value = self.__getattribute__(key)
+            if value is not None:
+                job_dict[key] = value
+
+        if self.expiration_time is not None:
+            job_dict['expiration_time'] = self.expiration_time.isoformat(timespec='seconds')
+
+        return job_dict
 
     def complete(self) -> bool:
         return self.status_code in ('FAILED', 'SUCCEEDED')
 
+    def succeeded(self) -> bool:
+        return self.status_code == 'SUCCEEDED'
+
+    def failed(self) -> bool:
+        return self.status_code == 'FAILED'
+
+    def running(self) -> bool:
+        return self.status_code in ('PENDING', 'RUNNING')
+
     def expired(self) -> bool:
-        return datetime.utcnow() >= self.expiration_time
+        try:
+            return datetime.utcnow() >= self.expiration_time
+        except TypeError:
+            raise HyP3Error('Only SUCCEEDED jobs have an expiration time')
 
     def download_files(self, location: Path) -> List[Path]:
         """
@@ -98,13 +114,19 @@ class Job:
 
 class Batch:
     def __init__(self, jobs: List[Job]):
+        if len(jobs) == 0:
+            warnings.warn('Jobs list is empty; creating an empty Batch', UserWarning)
+
         self.jobs = jobs
+
+    def __len__(self):
+        return len(self.jobs)
 
     def __add__(self, other: Union[Job, 'Batch']):
         if isinstance(other, Batch):
-            self.jobs.extend(other.jobs)
+            return Batch(self.jobs + other.jobs)
         elif isinstance(other, Job):
-            self.jobs.append(other)
+            return Batch(self.jobs + [other])
         else:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
 
@@ -114,6 +136,15 @@ class Batch:
         """
         for job in self.jobs:
             if not job.complete():
+                return False
+        return True
+
+    def succeeded(self) -> bool:
+        """
+        Returns: True if all jobs have succeeded, otherwise returns False
+        """
+        for job in self.jobs:
+            if not job.succeeded():
                 return False
         return True
 
@@ -131,22 +162,42 @@ class Batch:
             downloaded_files.extend(job.download_files(location))
         return downloaded_files
 
-    def any_expired(self):
-        """
-        Returns: True if all jobs are complete, otherwise returns False
-        """
+    def any_expired(self) -> bool:
+        """Check succeeded jobs for expiration"""
         for job in self.jobs:
-            if not job.expired():
-                return False
-        return True
+            try:
+                if job.expired():
+                    return True
+            except HyP3Error:
+                continue
+        return False
 
-    def drop_expired(self):
+    def filter_jobs(
+            self, succeeded: bool = True, running: bool = True, failed: bool = False,  include_expired: bool = True,
+    ) -> 'Batch':
+        """Filter jobs by status. By default, only succeeded and still running jobs will be in the returned batch.
+
+        Args:
+            succeeded: Select all succeeded jobs
+            running: Select all running jobs
+            failed: Select all failed jobs
+            include_expired: include expired jobs in the result
+
+
+        Returns:
+             batch: A batch object containing jobs matching all the selected statuses
         """
-        Returns: True if all jobs are complete, otherwise returns False
-        """
-        unexpired = [job for job in self.jobs if not job.expired()]
-        # FIXME: warn? note/return how many dropped? silently do this? Not bother with this entirely?
-        if len(self.jobs) == len(unexpired):
-            warnings.warn('No jobs were expired; taking no action.')
-        else:
-            self.jobs = unexpired
+        filtered_jobs = []
+
+        for job in self.jobs:
+            if job.succeeded() and succeeded:
+                if include_expired or not job.expired():
+                    filtered_jobs.append(job)
+
+            elif job.running() and running:
+                filtered_jobs.append(job)
+
+            elif job.failed() and failed:
+                filtered_jobs.append(job)
+
+        return Batch(filtered_jobs)
