@@ -2,6 +2,7 @@ from copy import copy
 from datetime import datetime, timedelta
 
 import pytest
+from dateutil import tz
 
 from hyp3_sdk.exceptions import HyP3Error
 from hyp3_sdk.jobs import Batch, Job
@@ -75,10 +76,10 @@ def test_job_complete_succeeded_failed_running():
 
 def test_job_expired():
     job = Job.from_dict(SUCCEEDED_JOB)
-    job.expiration_time = datetime.now() + timedelta(days=7)
+    job.expiration_time = datetime.now(tz.UTC) + timedelta(days=7)
     assert not job.expired()
 
-    job.expiration_time = datetime.now() - timedelta(days=7)
+    job.expiration_time = datetime.now(tz.UTC) - timedelta(days=7)
     assert job.expired()
 
     with pytest.raises(HyP3Error) as execinfo:
@@ -140,10 +141,10 @@ def test_batch_download():
 
 def test_batch_any_expired():
     job1 = Job.from_dict(SUCCEEDED_JOB)
-    job1.expiration_time = datetime.now() + timedelta(days=7)
+    job1.expiration_time = datetime.now(tz.UTC) + timedelta(days=7)
 
     job2 = copy(job1)
-    job2.expiration_time = datetime.now() + timedelta(days=2)
+    job2.expiration_time = datetime.now(tz.UTC) + timedelta(days=2)
 
     batch = Batch([job1, job2])
     assert not batch.any_expired()
@@ -154,17 +155,17 @@ def test_batch_any_expired():
     assert not batch.any_expired()
 
     job4 = copy(job1)
-    job4.expiration_time = datetime.now() - timedelta(days=2)
+    job4.expiration_time = datetime.now(tz.UTC) - timedelta(days=2)
     batch += job4
     assert batch.any_expired()
 
 
 def test_batch_filter_jobs():
     succeeded_job = Job.from_dict(SUCCEEDED_JOB)
-    succeeded_job.expiration_time = datetime.now() + timedelta(days=7)
+    succeeded_job.expiration_time = datetime.now(tz.UTC) + timedelta(days=7)
 
     expired_job = Job.from_dict(SUCCEEDED_JOB)
-    expired_job.expiration_time = datetime.now() - timedelta(days=7)
+    expired_job.expiration_time = datetime.now(tz.UTC) - timedelta(days=7)
 
     running_job = Job.from_dict(FAILED_JOB)
     running_job.status_code = 'RUNNING'
