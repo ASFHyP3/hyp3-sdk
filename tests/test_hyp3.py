@@ -28,9 +28,14 @@ def test_find_jobs():
     response = api.find_jobs()
     assert len(response) == 3
 
-def test_get_job_by_id():
 
-    assert False
+@responses.activate
+def test_get_job_by_id():
+    job = get_mock_job()
+    api = HyP3()
+    responses.add(responses.GET, urljoin(api.url, f'/jobs/{job.job_id}'), body=json.dumps(job.to_dict()))
+    response = api._get_job_by_id(job.job_id)
+    assert response == job
 
 
 def test_watch():

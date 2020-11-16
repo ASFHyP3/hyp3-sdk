@@ -39,6 +39,12 @@ class Job:
         self.thumbnail_images = thumbnail_images
         self.expiration_time = expiration_time
 
+    def __repr__(self):
+        return str(self.to_dict())
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     @staticmethod
     def from_dict(input_dict: dict):
         expiration_time = parse_date(input_dict['expiration_time']) if input_dict.get('expiration_time') else None
@@ -137,6 +143,11 @@ class Batch:
             return Batch(self.jobs + [other])
         else:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
+
+    def __repr__(self):
+        return str([job.to_dict() for job in self.jobs])
+
+
 
     def complete(self) -> bool:
         """
