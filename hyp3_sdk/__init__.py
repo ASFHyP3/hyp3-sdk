@@ -4,6 +4,8 @@
 from importlib_metadata import PackageNotFoundError, version
 
 from .hyp3 import HYP3_PROD, HYP3_TEST, HyP3
+from .jobs import Job, Batch
+from .config import TESTING
 
 try:
     __version__ = version(__name__)
@@ -15,8 +17,10 @@ except PackageNotFoundError:
           '   python setup.py --version')
 
 __all__ = [
+    'Batch',
     'HyP3',
     'HYP3_PROD',
     'HYP3_TEST',
+    'Job',
     '__version__',
 ]

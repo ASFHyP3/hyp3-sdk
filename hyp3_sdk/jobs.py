@@ -99,6 +99,7 @@ class Job:
         except TypeError:
             raise HyP3Error('Only SUCCEEDED jobs have an expiration time')
 
+    # TODO: handle expired products
     def download_files(self, location: Path) -> List[Path]:
         """
         Args:
@@ -155,6 +156,7 @@ class Batch:
                 return False
         return True
 
+    # TODO: skip expired products
     def download_files(self, location: Path) -> List[Path]:
         """
         Args:

@@ -5,6 +5,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+import hyp3_sdk
 from hyp3_sdk.exceptions import AuthenticationError
 
 AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
@@ -18,6 +19,8 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
         An authenticated Session object from the requests library
     """
     s = requests.Session()
+    if hyp3_sdk.TESTING:
+        return s
     if username and password is not None:
         if username or password is None:
             raise AuthenticationError('If either username or password are provided, both must be provided.')
@@ -25,13 +28,15 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
             response = s.get(AUTH_URL, auth=(username, password))
             response.raise_for_status()
         except requests.HTTPError:
-            raise AuthenticationError('Was not able to authenticate with .netrc file and no credentials provided')
+            raise AuthenticationError('Was not able to authenticate credentials provided\n'
+                                      'This could be due to invalid credentials or a connection error.')
     else:
         try:
             response = s.get(AUTH_URL)
             response.raise_for_status()
         except requests.HTTPError:
-            raise AuthenticationError('Was not able to authenticate with .netrc file and no credentials provided')
+            raise AuthenticationError('Was not able to authenticate with .netrc file and no credentials provided\n'
+                                      'This could be due to invalid credentials in .netrc or a connection error.')
     return s
 
 

@@ -54,9 +54,9 @@ class HyP3:
         if status is not None:
             params['status_code'] = status
 
-        response = self.session.get(urljoin(self.url, '/jobs'), params=params).json()
+        response = self.session.get(urljoin(self.url, '/jobs'), params=params)
         response.raise_for_status()
-        jobs = [Job.from_dict(job) for job in response['jobs']]
+        jobs = [Job.from_dict(job) for job in response.json()['jobs']]
         return Batch(jobs)
 
     def _get_job_by_id(self, job_id):
