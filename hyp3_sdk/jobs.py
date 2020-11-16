@@ -147,8 +147,6 @@ class Batch:
     def __repr__(self):
         return str([job.to_dict() for job in self.jobs])
 
-
-
     def complete(self) -> bool:
         """
         Returns: True if all jobs are complete, otherwise returns False

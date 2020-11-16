@@ -42,8 +42,16 @@ def test_watch():
     assert False
 
 
+@responses.activate
 def test_refresh():
-    assert False
+    job = get_mock_job()
+    new_job = Job.from_dict(job.to_dict())
+    new_job.status_code = 'SUCCEEDED'
+
+    api = HyP3()
+    responses.add(responses.GET, urljoin(api.url, f'/jobs/{job.job_id}'), body=json.dumps(new_job.to_dict()))
+    response = api.refresh(job)
+    assert response == new_job
 
 
 def test_submit_raw_job():
@@ -61,10 +69,39 @@ def test_submit_rtc_job():
 def test_submit_insar_job():
     assert False
 
-
+@responses.activate
 def test_my_info():
-    assert False
+    api_response = {
+        'job_names': [
+            'name1',
+            'name2'
+        ],
+        'quota': {
+            'max_job_per_month': 50,
+            'remaining': 25
+        },
+        'user_id': 'someUser'
+    }
+    api = HyP3()
+    responses.add(responses.GET, urljoin(api.url, '/user'), body=json.dumps(api_response))
+    response = api.my_info()
+    assert response == api_response
 
 
+@responses.activate
 def test_check_quota():
-    assert False
+    api_response = {
+        'job_names': [
+            'name1',
+            'name2'
+        ],
+        'quota': {
+            'max_job_per_month': 50,
+            'remaining': 25
+        },
+        'user_id': 'someUser'
+    }
+    api = HyP3()
+    responses.add(responses.GET, urljoin(api.url, '/user'), body=json.dumps(api_response))
+    response = api.check_quota()
+    assert response == api_response['quota']['remaining']
