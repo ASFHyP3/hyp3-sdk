@@ -1,6 +1,7 @@
 import time
 from datetime import datetime, timedelta
-from typing import Optional
+from functools import singledispatchmethod
+from typing import Optional, Union
 from urllib.parse import urljoin
 
 from requests.exceptions import HTTPError, RequestException
@@ -54,6 +55,7 @@ class HyP3:
             params['status_code'] = status
 
         response = self.session.get(urljoin(self.url, '/jobs'), params=params).json()
+        response.raise_for_status()
         jobs = [Job.from_dict(job) for job in response['jobs']]
         return Batch(jobs)
 
@@ -65,102 +67,111 @@ class HyP3:
             raise HyP3Error('Unable to get job by ID')
         return Job.from_dict(response.json())
 
-    def watch(self, batch: Batch, timeout: int = 10800, interval: int = 60):
+    # TODO: Some sort of visual indication this is still going
+    def watch(self, obj: Union[Batch, Job], timeout: int = 10800, interval: int = 60):
         """Watch jobs until they complete
 
         Args:
-            batch: A Batch object containing the list of jobs to watch
+            obj: A Batch or Job object of jobs to watch
             timeout: How long to wait until exiting in seconds
             interval: How often to check for updates in seconds
 
         Returns:
-            A Batch object containing refreshed watched jobs
+            A Batch or Job object with refreshed watched jobs
         """
         end_time = datetime.now() + timedelta(seconds=timeout)
         while datetime.now() < end_time:
-            batch = self.refresh(batch)
-            if batch.complete():
-                return batch
+            obj = self.refresh(obj)
+            if obj.complete():
+                return obj
             time.sleep(interval)
         raise HyP3Error('Timeout occurred while waiting for jobs')
 
-    def refresh(self, batch: Batch) -> Batch:
+    @singledispatchmethod
+    def refresh(self, obj: Union[Batch, Job]) -> Union[Batch, Job]:
         """Refresh each jobs' information
 
         Args:
-            batch: A Batch object containing the list of jobs to refresh
+            obj: A Batch of Job object to refresh
 
         Returns:
-            A Batch object containing refreshed jobs
+            obj: A Batch or Job object with refreshed information
         """
+        raise NotImplementedError(f'Cannot refresh {type(obj)} type object')
+
+    @refresh.register
+    def _refresh_batch(self, obj: Batch):
         jobs = []
-        for job in batch.jobs:
-            jobs.append(self._get_job_by_id(job.job_id))
+        for job in obj.jobs:
+            jobs.append(self.refresh(job))
         return Batch(jobs)
 
-    def _submit_raw_job(self, job_type: str, job_name: Optional[str], job_parameters: dict,
-                        validate_only: bool = False) -> Job:
-        job_dict = {
-            'job_parameters': job_parameters,
-            'job_type': job_type,
-        }
-        if job_name is not None:
-            if len(job_name) > 20:
+    @refresh.register
+    def _refresh_job(self, obj: Job):
+        return self._get_job_by_id(obj.job_id)
+
+    def submit_job_dict(self, job_dict: dict, name: Optional[str] = None, validate_only: bool = False) -> Job:
+        if name is not None:
+            if len(name) > 20:
                 raise ValidationError('Job name too long; must be less than 20 characters')
-            job_dict['job_name'] = job_name
+            job_dict['name'] = name
 
         payload = {'jobs': [job_dict], 'validate_only': validate_only}
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
+        response.raise_for_status()
         return Job.from_dict(response.json()['jobs'][0])
 
-    def submit_autorift_job(self, granule1: str, granule2: str, job_name: Optional[str]) -> Job:
+    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str]) -> Job:
         """Submit an autoRIFT job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
-            job_name: A name for the job (must be <= 20 characters)
+            name: A name for the job (must be <= 20 characters)
 
         Returns:
             A Batch object containing the autoRIFT job
         """
-        job_parameters = {'granules': [granule1, granule2]}
-        return self._submit_raw_job(
-            job_type='AUTORIFT', job_name=job_name, job_parameters=job_parameters,
-        )
+        job_dict = {
+            'job_parameters': {'granules': [granule1, granule2]},
+            'job_type': 'AUTORIFT',
+        }
+        return self.submit_job_dict(job_dict=job_dict, name=name)
 
-    def submit_rtc_job(self, granule: str, job_name: Optional[str], **kwargs) -> Job:
+    def submit_rtc_job(self, granule: str, name: Optional[str], **kwargs) -> Job:
         """Submit an RTC job
 
         Args:
             granule: The granule (scene) to use
-            job_name: A name for the job (must be <= 20 characters)
+            name: A name for the job (must be <= 20 characters)
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the RTC job
         """
-        job_parameters = {'granules': [granule], **kwargs}
-        return self._submit_raw_job(
-            job_type='RTC_GAMMA', job_name=job_name, job_parameters=job_parameters,
-        )
+        job_dict = {
+            'job_parameters': {'granules': [granule], **kwargs},
+            'job_type': 'RTC_GAMMA',
+        }
+        return self.submit_job_dict(job_dict=job_dict, name=name)
 
-    def submit_insar_job(self, granule1: str, granule2: str, job_name: Optional[str], **kwargs) -> Job:
+    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str], **kwargs) -> Job:
         """Submit an InSAR job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
-            job_name: A name for the job (must be <= 20 characters)
+            name: A name for the job (must be <= 20 characters)
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the InSAR job
         """
-        job_parameters = {'granules': [granule1, granule2], **kwargs}
-        return self._submit_raw_job(
-            job_type='INSAR_GAMMA', job_name=job_name, job_parameters=job_parameters,
-        )
+        job_dict = {
+            'job_parameters': {'granules': [granule1, granule2], **kwargs},
+            'job_type': 'INSAR_GAMMA',
+        }
+        return self.submit_job_dict(job_dict=job_dict, name=name)
 
     def my_info(self) -> dict:
         """
