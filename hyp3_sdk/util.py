@@ -21,9 +21,7 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
     s = requests.Session()
     if hyp3_sdk.TESTING:
         return s
-    if username and password is not None:
-        if username or password is None:
-            raise AuthenticationError('If either username or password are provided, both must be provided.')
+    if (username and password) is not None:
         try:
             response = s.get(AUTH_URL, auth=(username, password))
             response.raise_for_status()

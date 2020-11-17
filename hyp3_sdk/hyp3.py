@@ -68,7 +68,7 @@ class HyP3:
         return Job.from_dict(response.json())
 
     # TODO: Some sort of visual indication this is still going
-    def watch(self, obj: Union[Batch, Job], timeout: int = 10800, interval: int = 60):
+    def watch(self, obj: Union[Batch, Job], timeout: int = 10800, interval: Union[int, float] = 60):
         """Watch jobs until they complete
 
         Args:
@@ -121,7 +121,7 @@ class HyP3:
         response.raise_for_status()
         return Job.from_dict(response.json()['jobs'][0])
 
-    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str]) -> Job:
+    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Job:
         """Submit an autoRIFT job
 
         Args:
@@ -138,7 +138,7 @@ class HyP3:
         }
         return self.submit_job_dict(job_dict=job_dict, name=name)
 
-    def submit_rtc_job(self, granule: str, name: Optional[str], **kwargs) -> Job:
+    def submit_rtc_job(self, granule: str, name: Optional[str] = None, **kwargs) -> Job:
         """Submit an RTC job
 
         Args:
@@ -155,7 +155,7 @@ class HyP3:
         }
         return self.submit_job_dict(job_dict=job_dict, name=name)
 
-    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str], **kwargs) -> Job:
+    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> Job:
         """Submit an InSAR job
 
         Args:

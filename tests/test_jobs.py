@@ -2,10 +2,12 @@ from copy import copy
 from datetime import datetime, timedelta
 
 import pytest
+import responses
 from dateutil import tz
 
 from hyp3_sdk.exceptions import HyP3Error
 from hyp3_sdk.jobs import Batch, Job
+from tests.helpers import get_mock_job
 
 SUCCEEDED_JOB = {
     "browse_images": ["https://PAIR_PROCESS.png"],
@@ -88,8 +90,15 @@ def test_job_expired():
         assert 'Only SUCCEEDED jobs have an expiration time' in str(execinfo.value)
 
 
-def test_job_download_files():
-    assert False
+@responses.activate
+def test_job_download_files(tmp_path):
+    job = get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    responses.add(responses.GET, 'https://foo.com/file', body='foobar')
+
+    path = job.download_files(tmp_path)[0]
+    contents = path.read_text()
+    assert path == tmp_path / 'file'
+    assert contents == 'foobar'
 
 
 def test_batch_len():
@@ -134,9 +143,23 @@ def test_batch_complete_succeeded():
     assert not batch.complete()
     assert not batch.succeeded()
 
+@responses.activate
+def test_batch_download(tmp_path):
+    batch = Batch([
+        get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}]),
+        get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file2', 'size': 0, 'filename': 'file2'}]),
+        get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file3', 'size': 0, 'filename': 'file3'}])
+    ])
+    responses.add(responses.GET, 'https://foo.com/file1', body='foobar1')
+    responses.add(responses.GET, 'https://foo.com/file2', body='foobar2')
+    responses.add(responses.GET, 'https://foo.com/file3', body='foobar3')
 
-def test_batch_download():
-    assert False
+    paths = batch.download_files(tmp_path)
+    contents = [path.read_text() for path in paths]
+    assert len(paths) == 3
+    assert set(paths) == {tmp_path / 'file1', tmp_path / 'file2', tmp_path / 'file3'}
+    assert set(contents) == {'foobar1', 'foobar2', 'foobar3'}
+
 
 
 def test_batch_any_expired():
