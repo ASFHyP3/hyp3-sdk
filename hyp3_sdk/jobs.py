@@ -76,11 +76,9 @@ class Job:
             for key in ['files', 'browse_images', 'thumbnail_images', 'job_id', 'status_code', 'user_id']:
                 value = self.__getattribute__(key)
                 if value is not None:
+                    if isinstance(value, datetime):
+                        job_dict[key] = value.isoformat(timespec='seconds')
                     job_dict[key] = value
-            if self.expiration_time is not None:
-                job_dict['expiration_time'] = self.expiration_time.isoformat(timespec='seconds')
-            if self.request_time is not None:
-                job_dict['request_time'] = self.request_time.isoformat(timespec='seconds')
         return job_dict
 
     def succeeded(self) -> bool:
