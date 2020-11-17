@@ -186,7 +186,7 @@ class Batch:
                 continue
         return False
 
-    def filter(
+    def filter_jobs(
             self, succeeded: bool = True, running: bool = True, failed: bool = False, include_expired: bool = True,
     ) -> 'Batch':
         """Filter jobs by status. By default, only succeeded and still running jobs will be in the returned batch.
