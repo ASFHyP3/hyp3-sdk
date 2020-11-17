@@ -73,7 +73,8 @@ class Job:
                 job_dict[key] = value
 
         if not for_resubmit:
-            for key in ['files', 'browse_images', 'thumbnail_images', 'job_id', 'status_code', 'user_id']:
+            for key in ['files', 'browse_images', 'thumbnail_images', 'job_id', 'status_code', 'user_id',
+                        'expiration_time', 'request_time']:
                 value = self.__getattribute__(key)
                 if value is not None:
                     if isinstance(value, datetime):
@@ -186,7 +187,7 @@ class Batch:
         return False
 
     def filter(
-            self, succeeded: bool = True, running: bool = True, failed: bool = False,  include_expired: bool = True,
+            self, succeeded: bool = True, running: bool = True, failed: bool = False, include_expired: bool = True,
     ) -> 'Batch':
         """Filter jobs by status. By default, only succeeded and still running jobs will be in the returned batch.
 
