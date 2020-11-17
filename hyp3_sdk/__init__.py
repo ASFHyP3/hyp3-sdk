@@ -3,8 +3,9 @@
 # FIXME: Python 3.8+ this should be `from importlib.metadata...`
 from importlib_metadata import PackageNotFoundError, version
 
+from .config import TESTING  # noqa
 from .hyp3 import HYP3_PROD, HYP3_TEST, HyP3
-from .jobs import Job, make_autorift_job, make_insar_gamma_job, make_rtc_gamma_job
+from .jobs import Batch, Job
 
 try:
     __version__ = version(__name__)
@@ -16,12 +17,10 @@ except PackageNotFoundError:
           '   python setup.py --version')
 
 __all__ = [
+    'Batch',
     'HyP3',
     'HYP3_PROD',
     'HYP3_TEST',
     'Job',
-    'make_autorift_job',
-    'make_insar_gamma_job',
-    'make_rtc_gamma_job',
     '__version__',
 ]

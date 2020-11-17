@@ -32,14 +32,17 @@ setup(
     python_requires='~=3.6',
 
     install_requires=[
+        'python-dateutil',
         'importlib_metadata',
         'requests',
+        'urllib3',
     ],
 
     extras_require={
         'develop': [
             'pytest',
             'pytest-cov',
+            'responses',
         ]
     },
 

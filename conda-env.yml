@@ -12,7 +12,9 @@ dependencies:
   - pytest-cov
   # For running
   - importlib_metadata
+  - python-dateutil
   - requests
+  - urllib3
   # For documentation
   - mkdocs
   - mkdocs-material
@@ -23,3 +25,4 @@ dependencies:
     - safety
     # For documentation
     - mkdocstrings
+
