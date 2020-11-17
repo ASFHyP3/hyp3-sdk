@@ -65,25 +65,22 @@ class Job:
     def to_dict(self, for_resubmit: bool = False):
         job_dict = {
             'job_type': self.job_type,
-            'request_time': self.request_time.isoformat(timespec='seconds')
         }
-
-        for key in ['job_id', 'status_code', 'user_id']:
-            value = self.__getattribute__(key)
-            if not for_resubmit:
-                job_dict[key] = value
 
         for key in ['name', 'job_parameters']:
             value = self.__getattribute__(key)
             if value is not None:
                 job_dict[key] = value
+
         if not for_resubmit:
-            for key in ['files', 'browse_images', 'thumbnail_images']:
+            for key in ['files', 'browse_images', 'thumbnail_images', 'job_id', 'status_code', 'user_id']:
                 value = self.__getattribute__(key)
                 if value is not None:
                     job_dict[key] = value
             if self.expiration_time is not None:
                 job_dict['expiration_time'] = self.expiration_time.isoformat(timespec='seconds')
+            if self.request_time is not None:
+                job_dict['request_time'] = self.request_time.isoformat(timespec='seconds')
         return job_dict
 
     def succeeded(self) -> bool:
