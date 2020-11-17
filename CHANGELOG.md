@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.3.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.2.1...v0.2.2)
+
+### Changed
+- This is a complete refactor of the API, please view updated documentation.
+- API responses now return Batch objects if multiple jobs present.
+- Job and Batch objects now have the following member functions to help with common tasks
+- API can now watch Jobs or Batches for completion
+- Jobs are no longer created then submitted, instead submission through the API is how to get Jobs 
+- hyp3-sdk has dropped support for python <= 3.7
+
 ## [0.2.2](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.2.1...v0.2.2)
 
 ### Added
