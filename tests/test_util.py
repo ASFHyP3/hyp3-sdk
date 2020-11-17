@@ -1,6 +1,6 @@
-from hyp3_sdk.util import download_file
-
 import responses
+
+from hyp3_sdk.util import download_file
 
 
 @responses.activate

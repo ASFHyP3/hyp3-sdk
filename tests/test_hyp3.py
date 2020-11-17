@@ -1,12 +1,12 @@
+import json
 from datetime import datetime, timedelta
 from urllib.parse import urljoin
-import json
 
 import responses
+from tests.helpers import get_mock_job
 
 import hyp3_sdk
 from hyp3_sdk import HyP3, Job
-from tests.helpers import get_mock_job
 
 hyp3_sdk.TESTING = True
 

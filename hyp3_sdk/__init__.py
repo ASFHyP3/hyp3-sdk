@@ -3,9 +3,9 @@
 # FIXME: Python 3.8+ this should be `from importlib.metadata...`
 from importlib_metadata import PackageNotFoundError, version
 
+from .config import TESTING  # noqa
 from .hyp3 import HYP3_PROD, HYP3_TEST, HyP3
-from .jobs import Job, Batch
-from .config import TESTING
+from .jobs import Batch, Job
 
 try:
     __version__ = version(__name__)

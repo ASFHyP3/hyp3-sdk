@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 import pytest
 import responses
 from dateutil import tz
+from tests.helpers import get_mock_job
 
 from hyp3_sdk.exceptions import HyP3Error
 from hyp3_sdk.jobs import Batch, Job
-from tests.helpers import get_mock_job
 
 SUCCEEDED_JOB = {
     "browse_images": ["https://PAIR_PROCESS.png"],
@@ -143,6 +143,7 @@ def test_batch_complete_succeeded():
     assert not batch.complete()
     assert not batch.succeeded()
 
+
 @responses.activate
 def test_batch_download(tmp_path):
     batch = Batch([
@@ -159,7 +160,6 @@ def test_batch_download(tmp_path):
     assert len(paths) == 3
     assert set(paths) == {tmp_path / 'file1', tmp_path / 'file2', tmp_path / 'file3'}
     assert set(contents) == {'foobar1', 'foobar2', 'foobar3'}
-
 
 
 def test_batch_any_expired():
