@@ -78,7 +78,8 @@ class Job:
                 if value is not None:
                     if isinstance(value, datetime):
                         job_dict[key] = value.isoformat(timespec='seconds')
-                    job_dict[key] = value
+                    else:
+                        job_dict[key] = value
         return job_dict
 
     def succeeded(self) -> bool:
