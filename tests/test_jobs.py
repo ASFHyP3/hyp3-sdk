@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 import pytest
 import responses
 from dateutil import tz
-from tests.helpers import get_mock_job
 
 from hyp3_sdk.exceptions import HyP3Error
 from hyp3_sdk.jobs import Batch, Job
@@ -91,7 +90,7 @@ def test_job_expired():
 
 
 @responses.activate
-def test_job_download_files(tmp_path):
+def test_job_download_files(tmp_path, get_mock_job):
     job = get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
     responses.add(responses.GET, 'https://foo.com/file', body='foobar')
 
@@ -145,7 +144,7 @@ def test_batch_complete_succeeded():
 
 
 @responses.activate
-def test_batch_download(tmp_path):
+def test_batch_download(tmp_path, get_mock_job):
     batch = Batch([
         get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}]),
         get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file2', 'size': 0, 'filename': 'file2'}]),

@@ -25,3 +25,4 @@ dependencies:
     - safety
     # For documentation
     - mkdocstrings
+

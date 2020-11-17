@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 import responses
-from tests.helpers import get_mock_job
 
 import hyp3_sdk
 from hyp3_sdk import HyP3, Job
@@ -12,7 +11,7 @@ hyp3_sdk.TESTING = True
 
 
 @responses.activate
-def test_find_jobs():
+def test_find_jobs(get_mock_job):
     api_response_mock = {
         'jobs': [
             get_mock_job(name='job1').to_dict(),
@@ -30,7 +29,7 @@ def test_find_jobs():
 
 
 @responses.activate
-def test_get_job_by_id():
+def test_get_job_by_id(get_mock_job):
     job = get_mock_job()
     api = HyP3()
     responses.add(responses.GET, urljoin(api.url, f'/jobs/{job.job_id}'), body=json.dumps(job.to_dict()))
@@ -39,7 +38,7 @@ def test_get_job_by_id():
 
 
 @responses.activate
-def test_watch():
+def test_watch(get_mock_job):
     incomplete_job = get_mock_job()
     complete_job = Job.from_dict(incomplete_job.to_dict())
     complete_job.status_code = 'SUCCEEDED'
@@ -55,7 +54,7 @@ def test_watch():
 
 
 @responses.activate
-def test_refresh():
+def test_refresh(get_mock_job):
     job = get_mock_job()
     new_job = Job.from_dict(job.to_dict())
     new_job.status_code = 'SUCCEEDED'
@@ -67,7 +66,7 @@ def test_refresh():
 
 
 @responses.activate
-def test_submit_job_dict():
+def test_submit_job_dict(get_mock_job):
     job = get_mock_job()
     api_response = {
         'jobs': [
@@ -81,7 +80,7 @@ def test_submit_job_dict():
 
 
 @responses.activate
-def test_submit_autorift_job():
+def test_submit_autorift_job(get_mock_job):
     job = get_mock_job('AUTORIFT', job_parameters={'granules': ['g1', 'g2']})
     api_response = {
         'jobs': [
@@ -95,7 +94,7 @@ def test_submit_autorift_job():
 
 
 @responses.activate
-def test_submit_rtc_job():
+def test_submit_rtc_job(get_mock_job):
     job = get_mock_job('RTC_GAMMA', job_parameters={'granules': ['g1']})
     api_response = {
         'jobs': [
@@ -109,7 +108,7 @@ def test_submit_rtc_job():
 
 
 @responses.activate
-def test_submit_insar_job():
+def test_submit_insar_job(get_mock_job):
     job = get_mock_job('INSAR_GAMMA', job_parameters={'granules': ['g1', 'g2']})
     api_response = {
         'jobs': [
