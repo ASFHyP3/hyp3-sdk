@@ -26,7 +26,7 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
             response = s.get(AUTH_URL, auth=(username, password))
             response.raise_for_status()
         except requests.HTTPError:
-            raise AuthenticationError('Was not able to authenticate credentials provided\n'
+            raise AuthenticationError('Was not able to authenticate with credentials provided\n'
                                       'This could be due to invalid credentials or a connection error.')
     else:
         try:

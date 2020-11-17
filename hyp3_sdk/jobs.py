@@ -51,7 +51,7 @@ class Job:
         return Job(
             job_type=input_dict['job_type'],
             job_id=input_dict['job_id'],
-            request_time=input_dict['request_time'],
+            request_time=parse_date(input_dict['request_time']),
             status_code=input_dict['status_code'],
             user_id=input_dict['user_id'],
             name=input_dict.get('name'),
@@ -67,28 +67,21 @@ class Job:
             'job_type': self.job_type,
         }
 
-        for key in ['job_id', 'request_time', 'status_code', 'user_id']:
-            value = self.__getattribute__(key)
-            if not for_resubmit:
-                job_dict[key] = value
-
         for key in ['name', 'job_parameters']:
             value = self.__getattribute__(key)
             if value is not None:
                 job_dict[key] = value
 
-        for key in ['files', 'browse_images', 'thumbnail_images']:
-            value = self.__getattribute__(key)
-            if value is not None and not for_resubmit:
-                job_dict[key] = value
-
-        if self.expiration_time is not None and not for_resubmit:
-            job_dict['expiration_time'] = self.expiration_time.isoformat(timespec='seconds')
-
+        if not for_resubmit:
+            for key in ['files', 'browse_images', 'thumbnail_images', 'job_id', 'status_code', 'user_id',
+                        'expiration_time', 'request_time']:
+                value = self.__getattribute__(key)
+                if value is not None:
+                    if isinstance(value, datetime):
+                        job_dict[key] = value.isoformat(timespec='seconds')
+                    else:
+                        job_dict[key] = value
         return job_dict
-
-    def complete(self) -> bool:
-        return self.status_code in ('FAILED', 'SUCCEEDED')
 
     def succeeded(self) -> bool:
         return self.status_code == 'SUCCEEDED'
@@ -96,8 +89,11 @@ class Job:
     def failed(self) -> bool:
         return self.status_code == 'FAILED'
 
+    def complete(self) -> bool:
+        return self.succeeded() or self.failed()
+
     def running(self) -> bool:
-        return self.status_code in ('PENDING', 'RUNNING')
+        return not self.complete()
 
     def expired(self) -> bool:
         try:
@@ -191,15 +187,15 @@ class Batch:
         return False
 
     def filter_jobs(
-            self, succeeded: bool = True, running: bool = True, failed: bool = False,  include_expired: bool = True,
+            self, succeeded: bool = True, running: bool = True, failed: bool = False, include_expired: bool = True,
     ) -> 'Batch':
         """Filter jobs by status. By default, only succeeded and still running jobs will be in the returned batch.
 
         Args:
-            succeeded: Select all succeeded jobs
-            running: Select all running jobs
-            failed: Select all failed jobs
-            include_expired: include expired jobs in the result
+            succeeded: Include all succeeded jobs
+            running: Include all running jobs
+            failed: Include all failed jobs
+            include_expired: Include expired jobs in the result
 
 
         Returns:

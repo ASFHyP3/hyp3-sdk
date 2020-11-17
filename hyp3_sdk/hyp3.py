@@ -21,8 +21,10 @@ class HyP3:
         """
         Args:
             api_url: Address of the HyP3 API
-            username: Username for authenticating to urs.earthdata.nasa.gov. Both username and password must be provided
-            password: Password for authenticating to urs.earthdata.nasa.gov. Both username and password must be provided
+            username: Username for authenticating to urs.earthdata.nasa.gov.
+                Both username and password must be provided if either is provided.
+            password: Password for authenticating to urs.earthdata.nasa.gov.
+               Both username and password must be provided if either is provided.
         """
         self.url = api_url
         self.session = get_authenticated_session(username, password)
@@ -55,7 +57,10 @@ class HyP3:
             params['status_code'] = status
 
         response = self.session.get(urljoin(self.url, '/jobs'), params=params)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except HTTPError:
+            raise HyP3Error(f'Error while trying to query {response.url}')
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
         return Batch(jobs)
 
@@ -68,11 +73,11 @@ class HyP3:
         return Job.from_dict(response.json())
 
     # TODO: Some sort of visual indication this is still going
-    def watch(self, obj: Union[Batch, Job], timeout: int = 10800, interval: Union[int, float] = 60):
+    def watch(self, job_or_batch: Union[Batch, Job], timeout: int = 10800, interval: Union[int, float] = 60):
         """Watch jobs until they complete
 
         Args:
-            obj: A Batch or Job object of jobs to watch
+            job_or_batch: A Batch or Job object of jobs to watch
             timeout: How long to wait until exiting in seconds
             interval: How often to check for updates in seconds
 
@@ -81,34 +86,34 @@ class HyP3:
         """
         end_time = datetime.now() + timedelta(seconds=timeout)
         while datetime.now() < end_time:
-            obj = self.refresh(obj)
-            if obj.complete():
-                return obj
+            job_or_batch = self.refresh(job_or_batch)
+            if job_or_batch.complete():
+                return job_or_batch
             time.sleep(interval)
         raise HyP3Error('Timeout occurred while waiting for jobs')
 
     @singledispatchmethod
-    def refresh(self, obj: Union[Batch, Job]) -> Union[Batch, Job]:
+    def refresh(self, job_or_batch: Union[Batch, Job]) -> Union[Batch, Job]:
         """Refresh each jobs' information
 
         Args:
-            obj: A Batch of Job object to refresh
+            job_or_batch: A Batch of Job object to refresh
 
         Returns:
             obj: A Batch or Job object with refreshed information
         """
-        raise NotImplementedError(f'Cannot refresh {type(obj)} type object')
+        raise NotImplementedError(f'Cannot refresh {type(job_or_batch)} type object')
 
     @refresh.register
-    def _refresh_batch(self, obj: Batch):
+    def _refresh_batch(self, batch: Batch):
         jobs = []
-        for job in obj.jobs:
+        for job in batch.jobs:
             jobs.append(self.refresh(job))
         return Batch(jobs)
 
     @refresh.register
-    def _refresh_job(self, obj: Job):
-        return self._get_job_by_id(obj.job_id)
+    def _refresh_job(self, job: Job):
+        return self._get_job_by_id(job.job_id)
 
     def submit_job_dict(self, job_dict: dict, name: Optional[str] = None, validate_only: bool = False) -> Job:
         if name is not None:
@@ -118,7 +123,10 @@ class HyP3:
 
         payload = {'jobs': [job_dict], 'validate_only': validate_only}
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except HTTPError:
+            raise HyP3Error('Error while submitting job to HyP3')
         return Job.from_dict(response.json()['jobs'][0])
 
     def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Job:
@@ -190,9 +198,5 @@ class HyP3:
         Returns:
             The number of jobs left in your quota
         """
-        try:
-            response = self.session.get(urljoin(self.url, '/user'))
-            response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error('Unable to get user information from API')
-        return response.json()['quota']['remaining']
+        info = self.my_info()
+        return info['quota']['remaining']
