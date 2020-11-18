@@ -18,8 +18,7 @@ There are 3 main classes that the sdk exposes for you to use:
 - Job: which is used to perform operations on single jobs (download, check status)
 - Batch: which is used to perfrom operations on multiple jobs at once (download, check status)
 
-The First thing you will need to interact with HyP3 is an instance of the `HyP3` class which is used to interact with
-the external HyP3 API.
+An instance of the `HyP3` class will be needed to interact with the external HyP3 API.
 ```python
 from hyp3_sdk import HyP3
 
@@ -35,11 +34,11 @@ api = HyP3('https://hyp3.example.com')
 
 ## Submitting Jobs
 
-An instance of HyP3 will have member functions for submitting new jobs:
+The instance of HyP3 has member functions for submitting new jobs:
 - `job = submit_rtc_job('job_name', 'granule_id')` 
 - `job = submit_insar_job('job_name', 'reference_granule_id', 'secondary_granule_id')` 
 - `job = submit_rtc_job('job_name', 'reference_granule_id', 'secondary_granule_id')` 
-Each of these functions will return an instance of the Job class.
+Each of these functions will return an instance of the Job class that represents a new HyP3 job request.
 
 ## Finding existing Jobs
 To find HyP3 Jobs that were run previously, you can use the `find_jobs()` member
