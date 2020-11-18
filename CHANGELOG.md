@@ -14,6 +14,9 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Job.download_files and Batch.download_files now except strings for location in addition to pathlib.Path
 
+## [unreleased]
+- Updated documentation to represent version 0.3.0
+
 ## [0.3.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.2.1...v0.2.2)
 
 ### Changed
