@@ -1,6 +1,13 @@
 # HyP3 SDK
 
 A python wrapper around the HyP3 API
+```python
+>>> from hyp3_sdk import HyP3
+>>> hyp3 = HyP3(username='MyUsername', password='MyPassword')  
+>>> rtc_job = hyp3.submit_rtc_job(name='MyNewJob', granule='S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
+>>> rtc_job = hyp3.wait(rtc_job)
+>>> rtc_job.download_files()
+```
 
 ## Install
 
@@ -10,66 +17,67 @@ The HyP3 SDK can be installed via `pip`:
 python -m pip install hyp3_sdk
 ```
 
-## Usage
+## Quickstart
 
-There are 3 main classes that the sdk exposes for you to use:
+There are 3 main classes that the SDK exposes:
 
-- HyP3: which is used to perfrom api operations (getting jobs, refreshing information, submitting new requests)
-- Job: which is used to perform operations on single jobs (download, check status)
-- Batch: which is used to perfrom operations on multiple jobs at once (download, check status)
+- `HyP3`: to perform HyP3 operations (find jobs, refresh job information, submitting new jobs)
+- `Job`: to perform operations on single jobs (downloading products, check status)
+- `Batch`: to perform operations on multiple jobs at once (downloading products, check status)
 
 An instance of the `HyP3` class will be needed to interact with the external HyP3 API.
 ```python
 from hyp3_sdk import HyP3
 
 # Must either have credentials for urs.earthdata.nasa.gov in a .netrc
+hyp3 = HyP3()
 # or provide them in the username and password keyword args
-hyp3 = HyP3()
+hyp3 = HyP3(username='MyUsername', password='MyPassword')
 ```
-If you want to use an API other then the one at `https://hyp3-api.asf.alaska.edu`, you may provide 
-the URL (including scheme) as a parameter
+
+### Submitting Jobs
+
+`hyp3` has member functions for submitting new jobs:
 ```python
-hyp3 = HyP3('https://hyp3.example.com')
+rtc_job = hyp3.submit_rtc_job('job_name', 'granule_id')
+insar_job = hyp3.submit_insar_job('job_name', 'reference_granule_id', 'secondary_granule_id')
+autorift_job = hyp3.submit_autorift_job('job_name', 'reference_granule_id', 'secondary_granule_id')
 ```
+Each of these functions will return an instance of the Job class that represents a new HyP3 `Job` request.
 
-## Submitting Jobs
-
-The instance of HyP3 has member functions for submitting new jobs:
-- `job = submit_rtc_job('job_name', 'granule_id')` 
-- `job = submit_insar_job('job_name', 'reference_granule_id', 'secondary_granule_id')` 
-- `job = submit_rtc_job('job_name', 'reference_granule_id', 'secondary_granule_id')` 
-Each of these functions will return an instance of the Job class that represents a new HyP3 job request.
-
-## Finding existing Jobs
+### Finding Existing Jobs
 To find HyP3 Jobs that were run previously, you can use the `find_jobs()` member
-of a HyP3 instance.
+of `hyp3`.
 ```python
-hyp3 = HyP3()
-
 batch = hyp3.find_jobs()
 ```
-By default, this will return a Batch instance representing all jobs owned by your user.
+This will return a Batch instance representing all jobs owned by you. You can also pass parameters to 
+query to a specific set of jobs
 
 
-## Operations on Job and batch
+### Operations on Job and Batch
 
 If your jobs are not complete you can use the HyP3 instance to update them, and wait from completion
 ```python
-job_or_batch = hyp3.find_jobs()
-job_or_batch = hyp3.refresh(job_or_batch) # gets new information and overwrites the existing Job/batch with it
-
-job_or_batch = hyp3.watch(job_or_batch) # will run until job is complete this will take quite some time
+batch = hyp3.find_jobs()
+if not job_or_batch.complete():
+    # to get updated information
+    batch = hyp3.refresh(batch)
+    # or to wait until completion and get updated information (which will take a fair bit)
+    batch = hyp3.wait(batch) 
 ```
 
 Once you have complete jobs you can download the products to your machine
 ```python
-job_or_batch = hyp3.find_jobs()
-hyp3.wait(job_or_batch)
-
-job_or_batch.download_files()
+batch.download_files()
 ```
 
-You can also use the HyP3 instance to refresh and wait for batches of jobs.
+These operations also work on Jobs
+```python
+rtc_job = hyp3.submit_rtc_job('MyJobName', 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
+rtc_job = hyp3.wait(rtc_job)
+rtc_job.download
+```
 
 ## SDK API Reference
 
