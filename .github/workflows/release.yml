@@ -22,6 +22,19 @@ jobs:
           ALLOW_TAG_PREFIX: "true"
           RELEASE_NAME_PREFIX: "HyP3 SDK "
 
+      - name: Get SDK version number
+        id: get_version
+        run: |
+          echo ::set-output name=version_tag::${GITHUB_REF#refs/tags/}
+
+      - name: Bump SDK version in HyP3 docs
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Update HyP3 SDK version
+          token: ${{ secrets.TOOLS_BOT_PAK }}
+          repo: ASFHyP3/ASFHyP3
+          inputs: '{"sdk_version": "${{ steps.get_version.outputs.version_tag }}"}'
+
       - name: Attempt fast-forward develop from main
         run: |
           git fetch --prune
