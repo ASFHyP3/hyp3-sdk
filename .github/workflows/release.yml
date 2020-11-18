@@ -33,7 +33,7 @@ jobs:
           workflow: Update HyP3 SDK version
           token: ${{ secrets.TOOLS_BOT_PAK }}
           repo: ASFHyP3/ASFHyP3
-          ref: refs/heads/main
+          ref: main
           inputs: '{"sdk_version": "${{ steps.get_version.outputs.version_tag }}"}'
 
       - name: Attempt fast-forward develop from main
