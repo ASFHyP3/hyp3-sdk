@@ -102,13 +102,14 @@ class Job:
             raise HyP3Error('Only SUCCEEDED jobs have an expiration time')
 
     # TODO: handle expired products
-    def download_files(self, location: Path) -> List[Path]:
+    def download_files(self, location: Union[Path, str]) -> List[Path]:
         """
         Args:
             location: Directory location to put files into
 
         Returns: list of Path objects to downloaded files
         """
+        location = Path(location)
         if not self.complete():
             raise HyP3Error('Incomplete jobs cannot be downloaded')
         downloaded_files = []
@@ -162,7 +163,7 @@ class Batch:
         return True
 
     # TODO: skip expired products
-    def download_files(self, location: Path) -> List[Path]:
+    def download_files(self, location: Union[Path, str]) -> List[Path]:
         """
         Args:
             location: Directory location to put files into
