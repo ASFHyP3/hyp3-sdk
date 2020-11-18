@@ -34,6 +34,7 @@ jobs:
           token: ${{ secrets.TOOLS_BOT_PAK }}
           repo: ASFHyP3/ASFHyP3
           inputs: '{"sdk_version": "${{ steps.get_version.outputs.version_tag }}"}'
+          ref: refs/heads/main
 
       - name: Attempt fast-forward develop from main
         run: |
