@@ -7,7 +7,7 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [unreleased]
+## [0.3.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.0...v0.3.1)
 ### Changed
 - Correctly specifies the minimum python version (3.8) in `setup.py`
 - Job.download_files and Batch.download_files now except strings for location in addition to pathlib.Path
