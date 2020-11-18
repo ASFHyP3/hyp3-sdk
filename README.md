@@ -14,29 +14,16 @@ python -m pip install hyp3_sdk
 
 The HyP3 object interactions with the HyP3 API are done using an instance of the `HyP3` class
 ```python
-from hyp3_sdk import HyP3
+>>> from hyp3_sdk import HyP3
 
-# Must either have credentials for urs.earthdata.nasa.gov in a .netrc
-# or provide them in the username and password keyword args
+>>> hyp3 = HyP3(username='MyUsername', password='MyPassword')  
 
-api = HyP3()  
+>>> rtc_job = hyp3.submit_rtc_job('MyNewJob', 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
+
+>>> rtc_job = hyp3.wait(rtc_job)
+
+>>> rtc_job.download_files()
 ```
-
-Submit a new job
-```python
-rtc_job = api.submit_rtc_job('MyNewJob', 'granule_id')
-```
-
-Wait for that job to complete
-```python
-rtc_job = api.wait(rtc_job)
-```
-
-Download files
-```python
-rtc_job.download_files()
-```
-
 ## Documentation
 
 For advanced usage and the SDK API Reference, see [the HyP3 documentation](https://asfhyp3.github.io/using/sdk/)

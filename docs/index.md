@@ -24,12 +24,12 @@ from hyp3_sdk import HyP3
 
 # Must either have credentials for urs.earthdata.nasa.gov in a .netrc
 # or provide them in the username and password keyword args
-api = HyP3()
+hyp3 = HyP3()
 ```
 If you want to use an API other then the one at `https://hyp3-api.asf.alaska.edu`, you may provide 
 the URL (including scheme) as a parameter
 ```python
-api = HyP3('https://hyp3.example.com')
+hyp3 = HyP3('https://hyp3.example.com')
 ```
 
 ## Submitting Jobs
@@ -44,9 +44,9 @@ Each of these functions will return an instance of the Job class that represents
 To find HyP3 Jobs that were run previously, you can use the `find_jobs()` member
 of a HyP3 instance.
 ```python
-api = HyP3()
+hyp3 = HyP3()
 
-batch = api.find_jobs()
+batch = hyp3.find_jobs()
 ```
 By default, this will return a Batch instance representing all jobs owned by your user.
 
@@ -55,16 +55,16 @@ By default, this will return a Batch instance representing all jobs owned by you
 
 If your jobs are not complete you can use the HyP3 instance to update them, and wait from completion
 ```python
-job_or_batch = api.find_jobs()
-job_or_batch = api.refresh(job_or_batch) # gets new information and overwrites the existing Job/batch with it
+job_or_batch = hyp3.find_jobs()
+job_or_batch = hyp3.refresh(job_or_batch) # gets new information and overwrites the existing Job/batch with it
 
-job_or_batch = api.watch(job_or_batch) # will run until job is complete this will take quite some time
+job_or_batch = hyp3.watch(job_or_batch) # will run until job is complete this will take quite some time
 ```
 
 Once you have complete jobs you can download the products to your machine
 ```python
-job_or_batch = api.find_jobs()
-api.wait(job_or_batch)
+job_or_batch = hyp3.find_jobs()
+hyp3.wait(job_or_batch)
 
 job_or_batch.download_files()
 ```
