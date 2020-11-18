@@ -1,5 +1,6 @@
 """Extra utilities for working with HyP3"""
 from pathlib import Path
+from typing import Union
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -38,7 +39,7 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
     return s
 
 
-def download_file(url: str, filepath: Path, chunk_size=None, retries=2, backoff_factor=1) -> Path:
+def download_file(url: str, filepath: Union[Path, str], chunk_size=None, retries=2, backoff_factor=1) -> Path:
     """Download a file
     Args:
         url: URL of the file to download
@@ -49,6 +50,7 @@ def download_file(url: str, filepath: Path, chunk_size=None, retries=2, backoff_
     Returns:
         download_path: The path to the downloaded file
     """
+    filepath = Path(filepath)
     session = requests.Session()
     retry_strategy = Retry(
         total=retries,
