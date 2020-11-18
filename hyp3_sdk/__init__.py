@@ -1,7 +1,6 @@
 """A python wrapper around the HyP3 API"""
 
-# FIXME: Python 3.8+ this should be `from importlib.metadata...`
-from importlib_metadata import PackageNotFoundError, version
+from importlib.metadata import PackageNotFoundError, version
 
 from .config import TESTING  # noqa
 from .hyp3 import HYP3_PROD, HYP3_TEST, HyP3
