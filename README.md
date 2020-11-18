@@ -22,7 +22,7 @@ The HyP3 object interactions with the HyP3 API are done using an instance of the
 ```
 ## Documentation
 
-For advanced usage and the SDK API Reference, see [the HyP3 documentation](https://asfhyp3.github.io/using/sdk/)
+For advanced usage and the SDK API Reference, see [the HyP3 documentation](https://hyp3-docs.asf.alaska.edu/using/sdk/)
 
 ## Contact Us
 

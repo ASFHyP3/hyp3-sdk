@@ -43,7 +43,7 @@ rtc_job = hyp3.submit_rtc_job('job_name', 'granule_id')
 insar_job = hyp3.submit_insar_job('job_name', 'reference_granule_id', 'secondary_granule_id')
 autorift_job = hyp3.submit_autorift_job('job_name', 'reference_granule_id', 'secondary_granule_id')
 ```
-Each of these functions will return an instance of the Job class that represents a new HyP3 `Job` request.
+Each of these functions will return an instance of the `Job` class that represents a new HyP3 job request.
 
 ### Finding Existing Jobs
 To find HyP3 Jobs that were run previously, you can use the `find_jobs()` member
@@ -51,7 +51,7 @@ of `hyp3`.
 ```python
 batch = hyp3.find_jobs()
 ```
-This will return a Batch instance representing all jobs owned by you. You can also pass parameters to 
+This will return a `Batch` instance representing all jobs owned by you. You can also pass parameters to 
 query to a specific set of jobs
 
 
@@ -72,11 +72,11 @@ Once you have complete jobs you can download the products to your machine
 batch.download_files()
 ```
 
-These operations also work on Jobs
+These operations also work on `Job` objects
 ```python
-rtc_job = hyp3.submit_rtc_job('MyJobName', 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
-rtc_job = hyp3.wait(rtc_job)
-rtc_job.download
+job = hyp3.submit_rtc_job('MyJobName', 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
+job = hyp3.wait(rtc_job)
+job.download_files()
 ```
 
 ## SDK API Reference
