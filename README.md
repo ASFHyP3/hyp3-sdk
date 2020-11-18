@@ -16,21 +16,25 @@ The HyP3 object interactions with the HyP3 API are done using an instance of the
 ```python
 from hyp3_sdk import HyP3
 
-api = HyP3()  # Must have credentials for urs.earthdata.nasa.gov in a .netrc file for this to work
+# Must either have credentials for urs.earthdata.nasa.gov in a .netrc
+# or provide them in the username and password keyword args
+
+api = HyP3()  
 ```
 
-The `submit_jobs` method will submit jobs to the API for processing
+Submit a new job
 ```python
-from hyp3_sdk import make_rtc_gamma_job
-
-jobs = [make_rtc_gamma_job('job_name', 'granule_name')]
-
-response = api.submit_jobs(jobs)
+rtc_job = api.submit_rtc_job('MyNewJob', 'granule_id')
 ```
 
-The `get_jobs` method will request all jobs from the API and return them in a list of dictionaries
+Wait for that job to complete
 ```python
-response = api.get_jobs()
+rtc_job = api.wait(rtc_job)
+```
+
+Download files
+```python
+rtc_job.download_files()
 ```
 
 ## Documentation

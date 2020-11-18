@@ -22,8 +22,8 @@ An instance of the `HyP3` class will be needed to interact with the external HyP
 ```python
 from hyp3_sdk import HyP3
 
-# Can either authenticate with .netrc credentials for urs.earthdata.nasa.gov
-# Or you can provide credentials in the username and password keyword arguments
+# Must either have credentials for urs.earthdata.nasa.gov in a .netrc
+# or provide them in the username and password keyword args
 api = HyP3()
 ```
 If you want to use an API other then the one at `https://hyp3-api.asf.alaska.edu`, you may provide 
