@@ -15,13 +15,9 @@ python -m pip install hyp3_sdk
 The HyP3 object interactions with the HyP3 API are done using an instance of the `HyP3` class
 ```python
 >>> from hyp3_sdk import HyP3
-
 >>> hyp3 = HyP3(username='MyUsername', password='MyPassword')  
-
 >>> rtc_job = hyp3.submit_rtc_job('MyNewJob', 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
-
 >>> rtc_job = hyp3.wait(rtc_job)
-
 >>> rtc_job.download_files()
 ```
 ## Documentation
