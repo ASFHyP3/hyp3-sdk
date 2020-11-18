@@ -99,12 +99,12 @@ def test_job_download_files(tmp_path, get_mock_job):
     assert path == tmp_path / 'file'
     assert contents == 'foobar'
 
-    job = get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}])
-    responses.add(responses.GET, 'https://foo.com/file1', body='foobar1')
+    job = get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/f1', 'size': 0, 'filename': 'f1'}])
+    responses.add(responses.GET, 'https://foo.com/f1', body='foobar1')
 
     path = job.download_files(str(tmp_path))[0]
     contents = path.read_text()
-    assert path == tmp_path / 'file1'
+    assert path == tmp_path / 'f1'
     assert contents == 'foobar1'
 
 
