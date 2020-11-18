@@ -12,40 +12,65 @@ python -m pip install hyp3_sdk
 
 ## Usage
 
-The HyP3 object interactions with the HyP3 API are done using an instance of the `HyP3` class
+There are 3 main classes that the sdk exposes for you to use:
+
+- HyP3: which is used to perfrom api operations (getting jobs, refreshing information, submitting new requests)
+- Job: which is used to perform operations on single jobs (download, check status)
+- Batch: which is used to perfrom operations on multiple jobs at once (download, check status)
+
+The First thing you will need to interact with HyP3 is an instance of the `HyP3` class which is used to interact with
+the external HyP3 API.
 ```python
 from hyp3_sdk import HyP3
 
-api = HyP3()  # Must have credentials for urs.earthdata.nasa.gov in a .netrc file for this to work
+# Can either authenticate with .netrc credentials for urs.earthdata.nasa.gov
+# Or you can provide credentials in the username and password keyword arguments
+api = HyP3()
 ```
 If you want to use an API other then the one at `https://hyp3-api.asf.alaska.edu`, you may provide 
 the URL (including scheme) as a parameter
 ```python
 api = HyP3('https://hyp3.example.com')
 ```
-If you want to pass in a [Requests](https://requests.readthedocs.io/en/latest/user/advanced/) `Session`
-object for the API to use, it must first be authenticated and then it can be passed into the API
+
+## Submitting Jobs
+
+An instance of HyP3 will have member functions for submitting new jobs:
+- `job = submit_rtc_job('job_name', 'granule_id')` 
+- `job = submit_insar_job('job_name', 'reference_granule_id', 'secondary_granule_id')` 
+- `job = submit_rtc_job('job_name', 'reference_granule_id', 'secondary_granule_id')` 
+Each of these functions will return an instance of the Job class.
+
+## Finding existing Jobs
+To find HyP3 Jobs that were run previously, you can use the `find_jobs()` member
+of a HyP3 instance.
 ```python
-import requests
+api = HyP3()
 
-session = requests.Session()
-session.get(...)  # Authenticate
+batch = api.find_jobs()
+```
+By default, this will return a Batch instance representing all jobs owned by your user.
 
-api = HyP3(authenticated_session=session)
+
+## Operations on Job and batch
+
+If your jobs are not complete you can use the HyP3 instance to update them, and wait from completion
+```python
+job_or_batch = api.find_jobs()
+job_or_batch = api.refresh(job_or_batch) # gets new information and overwrites the existing Job/batch with it
+
+job_or_batch = api.watch(job_or_batch) # will run until job is complete this will take quite some time
 ```
 
-The `submit_jobs` method will submit Job objects to the API for processing
+Once you have complete jobs you can download the products to your machine
 ```python
-jobs = [make_rtc_gamma_job('job_name', 'granule_name')]
+job_or_batch = api.find_jobs()
+api.wait(job_or_batch)
 
-response = api.submit_jobs(jobs)
+job_or_batch.download_files()
 ```
 
-The `get_jobs` method will request all jobs from the API and return them in a list of dictionaries
-```python
-response = api.get_jobs()
-```
-
+You can also use the HyP3 instance to refresh and wait for batches of jobs.
 
 ## SDK API Reference
 
