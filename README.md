@@ -1,5 +1,11 @@
 # HyP3 SDK
 
+[![PyPI license](https://img.shields.io/pypi/l/hyp3_sdk.svg)](https://pypi.python.org/pypi/hyp3_sdk/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/hyp3_sdk.svg)](https://pypi.python.org/pypi/hyp3_sdk/)
+[![PyPI version](https://img.shields.io/pypi/v/hyp3_sdk.svg)](https://pypi.python.org/pypi/hyp3_sdk/)
+[![Conda version](https://img.shields.io/conda/vn/conda-forge/hyp3_sdk)](https://anaconda.org/conda-forge/hyp3_sdk)
+[![Conda platforms](https://img.shields.io/conda/pn/conda-forge/hyp3_sdk)](https://anaconda.org/conda-forge/hyp3_sdk)
+
 A python wrapper around the HyP3 API
 
 ## Install
