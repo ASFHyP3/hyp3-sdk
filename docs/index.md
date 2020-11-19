@@ -11,7 +11,13 @@ A python wrapper around the HyP3 API
 
 ## Install
 
-The HyP3 SDK can be installed via `pip`:
+The HyP3 SDK can be installed via [Anaconda/Miniconda](https://docs.conda.io/en/latest/index.html):
+
+```
+conda install -c conda-forge hyp3_sdk
+```
+
+Or using [`pip`](https://pypi.org/project/hyp3-sdk/):
 
 ```
 python -m pip install hyp3_sdk
