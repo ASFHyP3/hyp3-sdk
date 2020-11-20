@@ -4,7 +4,7 @@ A python wrapper around the HyP3 API
 ```python
 >>> from hyp3_sdk import HyP3
 >>> hyp3 = HyP3(username='MyUsername', password='MyPassword')  
->>> job = hyp3.submit_rtc_job(name='MyNewJob', granule='S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
+>>> job = hyp3.submit_rtc_job(granule='S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8', name='MyNewJob')
 >>> job = hyp3.watch(job)
 >>> job.download_files()
 ```
@@ -45,9 +45,9 @@ hyp3 = HyP3(username='MyUsername', password='MyPassword')
 
 `hyp3` has member functions for submitting new jobs:
 ```python
-rtc_job = hyp3.submit_rtc_job('job_name', 'granule_id')
-insar_job = hyp3.submit_insar_job('job_name', 'reference_granule_id', 'secondary_granule_id')
-autorift_job = hyp3.submit_autorift_job('job_name', 'reference_granule_id', 'secondary_granule_id')
+rtc_job = hyp3.submit_rtc_job('granule_id', 'job_name')
+insar_job = hyp3.submit_insar_job('reference_granule_id', 'secondary_granule_id', 'job_name')
+autorift_job = hyp3.submit_autorift_job('reference_granule_id', 'secondary_granule_id', 'job_name')
 ```
 Each of these functions will return an instance of the `Job` class that represents a new HyP3 job request.
 
@@ -79,7 +79,7 @@ batch.download_files()
 
 These operations also work on `Job` objects
 ```python
-job = hyp3.submit_rtc_job('MyJobName', 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
+job = hyp3.submit_rtc_job('S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8', 'MyJobName')
 job = hyp3.watch(job)
 job.download_files()
 ```
