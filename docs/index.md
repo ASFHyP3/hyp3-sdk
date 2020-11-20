@@ -5,7 +5,7 @@ A python wrapper around the HyP3 API
 >>> from hyp3_sdk import HyP3
 >>> hyp3 = HyP3(username='MyUsername', password='MyPassword')  
 >>> job = hyp3.submit_rtc_job(name='MyNewJob', granule='S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
->>> job = hyp3.wait(job)
+>>> job = hyp3.watch(job)
 >>> job.download_files()
 ```
 
@@ -69,7 +69,7 @@ if not job_or_batch.complete():
     # to get updated information
     batch = hyp3.refresh(batch)
     # or to wait until completion and get updated information (which will take a fair bit)
-    batch = hyp3.wait(batch) 
+    batch = hyp3.watch(batch)
 ```
 
 Once you have complete jobs you can download the products to your machine
@@ -80,7 +80,7 @@ batch.download_files()
 These operations also work on `Job` objects
 ```python
 job = hyp3.submit_rtc_job('MyJobName', 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8')
-job = hyp3.wait(job)
+job = hyp3.watch(job)
 job.download_files()
 ```
 
