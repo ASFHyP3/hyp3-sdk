@@ -1,3 +1,4 @@
+import os
 from copy import copy
 from datetime import datetime, timedelta
 
@@ -106,6 +107,15 @@ def test_job_download_files(tmp_path, get_mock_job):
     contents = path.read_text()
     assert path == tmp_path / 'f1'
     assert contents == 'foobar1'
+
+    os.chdir(tmp_path)
+    job = get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/f2', 'size': 0, 'filename': 'f2'}])
+    responses.add(responses.GET, 'https://foo.com/f2', body='foobar2')
+
+    path = job.download_files()[0]
+    contents = path.read_text()
+    assert path.absolute() == (tmp_path / 'f2').absolute()
+    assert contents == 'foobar2'
 
 
 def test_batch_len():

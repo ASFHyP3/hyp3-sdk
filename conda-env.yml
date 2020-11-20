@@ -10,6 +10,7 @@ dependencies:
   - wheel
   - pytest
   - pytest-cov
+  - responses
   # For running
   - python-dateutil
   - requests
