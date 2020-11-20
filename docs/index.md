@@ -65,7 +65,7 @@ query to a specific set of jobs
 If your jobs are not complete you can use the HyP3 instance to update them, and wait from completion
 ```python
 batch = hyp3.find_jobs()
-if not job_or_batch.complete():
+if not batch.complete():
     # to get updated information
     batch = hyp3.refresh(batch)
     # or to wait until completion and get updated information (which will take a fair bit)
