@@ -29,7 +29,7 @@ The HyP3 object interactions with the HyP3 API are done using an instance of the
 >>> from hyp3_sdk import HyP3
 >>> hyp3 = HyP3(username='MyUsername', password='MyPassword')
 
->>> granule='S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8'
+>>> granule = 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8'
 >>> job = hyp3.submit_rtc_job(granule=granule, name='MyNewJob')
 >>> job = hyp3.watch(job)
 >>> job.download_files()
