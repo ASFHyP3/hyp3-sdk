@@ -6,6 +6,8 @@
 [![Conda version](https://img.shields.io/conda/vn/conda-forge/hyp3_sdk)](https://anaconda.org/conda-forge/hyp3_sdk)
 [![Conda platforms](https://img.shields.io/conda/pn/conda-forge/hyp3_sdk)](https://anaconda.org/conda-forge/hyp3_sdk)
 
+[![DOI](https://zenodo.org/badge/283858964.svg)](https://zenodo.org/badge/latestdoi/283858964)
+
 A python wrapper around the HyP3 API
 
 ## Install
