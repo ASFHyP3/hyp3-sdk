@@ -16,7 +16,7 @@ def test_session_headers():
     responses.add(responses.GET, urljoin(api.url, '/foo'), body='{"foo": "bar"}')
     response = api.session.get(urljoin(api.url, '/foo'))
     assert response.json() == {'foo': 'bar'}
-    assert responses.calls[0].request.headers['User-Agent'] == f'{hyp3_sdk.__name__} v{hyp3_sdk.__version__}'
+    assert responses.calls[0].request.headers['User-Agent'] == f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'
 
 
 @responses.activate

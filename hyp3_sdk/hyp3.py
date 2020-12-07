@@ -29,7 +29,7 @@ class HyP3:
         """
         self.url = api_url
         self.session = get_authenticated_session(username, password)
-        self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__} v{hyp3_sdk.__version__}'})
+        self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
     def find_jobs(self, start: Optional[datetime] = None, end: Optional[datetime] = None,
                   status: Optional[str] = None, name: Optional[str] = None) -> Batch:
