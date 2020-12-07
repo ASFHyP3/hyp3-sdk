@@ -11,6 +11,15 @@ hyp3_sdk.TESTING = True
 
 
 @responses.activate
+def test_session_headers():
+    api = HyP3()
+    responses.add(responses.GET, urljoin(api.url, '/foo'), body='{"foo": "bar"}')
+    response = api.session.get(urljoin(api.url, '/foo'))
+    assert response.json() == {'foo': 'bar'}
+    assert responses.calls[0].request.headers['User-Agent'] == f'{hyp3_sdk.__name__} v{hyp3_sdk.__version__}'
+
+
+@responses.activate
 def test_find_jobs(get_mock_job):
     api_response_mock = {
         'jobs': [
