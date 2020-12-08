@@ -66,7 +66,7 @@ class HyP3:
             raise HyP3Error(f'Error while trying to query {response.url}')
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
         if not jobs:
-            warnings.warn('Did not find any matching jobs. Creating an empty Batch.', UserWarning)
+            warnings.warn('Found zero jobs', UserWarning)
         return Batch(jobs)
 
     def _get_job_by_id(self, job_id):
