@@ -1,4 +1,5 @@
 import time
+import warnings
 from datetime import datetime, timedelta
 from functools import singledispatchmethod
 from typing import Optional, Union
@@ -64,6 +65,8 @@ class HyP3:
         except HTTPError:
             raise HyP3Error(f'Error while trying to query {response.url}')
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
+        if not jobs:
+            warnings.warn('Did not find any matching jobs. Creating an empty Batch.', UserWarning)
         return Batch(jobs)
 
     def _get_job_by_id(self, job_id):
