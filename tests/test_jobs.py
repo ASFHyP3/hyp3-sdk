@@ -119,8 +119,10 @@ def test_job_download_files(tmp_path, get_mock_job):
 
 
 def test_batch_len():
-    with pytest.warns(UserWarning):
-        batch = Batch([])
+    batch = Batch()
+    assert len(batch) == 0
+
+    batch = Batch([])
     assert len(batch) == 0
 
     batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(FAILED_JOB)])
