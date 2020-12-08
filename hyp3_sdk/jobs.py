@@ -1,4 +1,3 @@
-import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Union
@@ -124,10 +123,9 @@ class Job:
 
 
 class Batch:
-    def __init__(self, jobs: List[Job]):
-        if len(jobs) == 0:
-            warnings.warn('Jobs list is empty; creating an empty Batch', UserWarning)
-
+    def __init__(self, jobs: Optional[List[Job]] = None):
+        if jobs is None:
+            jobs = []
         self.jobs = jobs
 
     def __len__(self):
