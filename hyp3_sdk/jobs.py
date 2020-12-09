@@ -1,4 +1,3 @@
-import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Union
@@ -102,7 +101,7 @@ class Job:
             raise HyP3Error('Only SUCCEEDED jobs have an expiration time')
 
     # TODO: handle expired products
-    def download_files(self, location: Union[Path, str] = '') -> List[Path]:
+    def download_files(self, location: Union[Path, str] = '.') -> List[Path]:
         """
         Args:
             location: Directory location to put files into
@@ -124,10 +123,9 @@ class Job:
 
 
 class Batch:
-    def __init__(self, jobs: List[Job]):
-        if len(jobs) == 0:
-            warnings.warn('Jobs list is empty; creating an empty Batch', UserWarning)
-
+    def __init__(self, jobs: Optional[List[Job]] = None):
+        if jobs is None:
+            jobs = []
         self.jobs = jobs
 
     def __len__(self):
@@ -163,7 +161,7 @@ class Batch:
         return True
 
     # TODO: skip expired products
-    def download_files(self, location: Union[Path, str] = '') -> List[Path]:
+    def download_files(self, location: Union[Path, str] = '.') -> List[Path]:
         """
         Args:
             location: Directory location to put files into

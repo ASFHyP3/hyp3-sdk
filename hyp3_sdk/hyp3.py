@@ -1,4 +1,5 @@
 import time
+import warnings
 from datetime import datetime, timedelta
 from functools import singledispatchmethod
 from typing import Optional, Union
@@ -6,6 +7,7 @@ from urllib.parse import urljoin
 
 from requests.exceptions import HTTPError, RequestException
 
+import hyp3_sdk
 from hyp3_sdk.exceptions import HyP3Error, ValidationError
 from hyp3_sdk.jobs import Batch, Job
 from hyp3_sdk.util import get_authenticated_session
@@ -28,6 +30,7 @@ class HyP3:
         """
         self.url = api_url
         self.session = get_authenticated_session(username, password)
+        self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
     def find_jobs(self, start: Optional[datetime] = None, end: Optional[datetime] = None,
                   status: Optional[str] = None, name: Optional[str] = None) -> Batch:
@@ -62,6 +65,8 @@ class HyP3:
         except HTTPError:
             raise HyP3Error(f'Error while trying to query {response.url}')
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
+        if not jobs:
+            warnings.warn('Found zero jobs', UserWarning)
         return Batch(jobs)
 
     def _get_job_by_id(self, job_id):

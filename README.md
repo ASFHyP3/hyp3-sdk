@@ -6,6 +6,8 @@
 [![Conda version](https://img.shields.io/conda/vn/conda-forge/hyp3_sdk)](https://anaconda.org/conda-forge/hyp3_sdk)
 [![Conda platforms](https://img.shields.io/conda/pn/conda-forge/hyp3_sdk)](https://anaconda.org/conda-forge/hyp3_sdk)
 
+[![DOI](https://zenodo.org/badge/283858964.svg)](https://zenodo.org/badge/latestdoi/283858964)
+
 A python wrapper around the HyP3 API
 
 ## Install
@@ -27,8 +29,10 @@ python -m pip install hyp3_sdk
 The HyP3 object interactions with the HyP3 API are done using an instance of the `HyP3` class
 ```python
 >>> from hyp3_sdk import HyP3
->>> hyp3 = HyP3(username='MyUsername', password='MyPassword')  
->>> job = hyp3.submit_rtc_job(granule='S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8', name='MyNewJob')
+>>> hyp3 = HyP3(username='MyUsername', password='MyPassword')
+
+>>> granule = 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8'
+>>> job = hyp3.submit_rtc_job(granule=granule, name='MyNewJob')
 >>> job = hyp3.watch(job)
 >>> job.download_files()
 ```

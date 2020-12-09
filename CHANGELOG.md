@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+##  [0.3.3](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.2...v0.3.3)
+### Added
+- SDK will attach a `User-Agent` statement like `hyp3_sdk/VERSION` to all API interactions
+
+### Changed
+- Providing a job list to `Batch.__init__()` is now optional; an empty batch will 
+  be created if the job list is not provided
+- `Batch.__init__()` no longer issues a warning when creating an empty batch
+- `HyP3.find_jobs()` will now issue a warning when a zero jobs were found
 
 ## [0.3.2](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.1...v0.3.2)
 ### Changed
