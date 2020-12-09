@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
+import pytest
 import responses
 
 import hyp3_sdk
@@ -33,10 +34,17 @@ def test_find_jobs(get_mock_job):
                          thumbnail_images=['https://foo.com/thumbnail.png']).to_dict()
         ]
     }
+
     api = HyP3()
     responses.add(responses.GET, urljoin(api.url, '/jobs'), json=api_response_mock)
-    response = api.find_jobs()
-    assert len(response) == 3
+    responses.add(responses.GET, urljoin(api.url, '/jobs'), json={'jobs': []})
+
+    batch = api.find_jobs()
+    assert len(batch) == 3
+
+    with pytest.warns(UserWarning):
+        batch = api.find_jobs()
+    assert len(batch) == 0
 
 
 @responses.activate
