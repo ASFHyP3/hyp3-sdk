@@ -4,6 +4,7 @@ from typing import List, Optional, Union
 
 from dateutil import tz
 from dateutil.parser import parse as parse_date
+from requests import RequestException
 
 from hyp3_sdk.exceptions import HyP3Error
 from hyp3_sdk.util import download_file
@@ -117,7 +118,7 @@ class Job:
             filename = location / file['filename']
             try:
                 downloaded_files.append(download_file(download_url, filename))
-            except Exception:
+            except RequestException:
                 raise HyP3Error('unable to download file')
         return downloaded_files
 

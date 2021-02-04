@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.3...v0.4.0)
+
+### Added
+- `hyp3_sdk.asf_search` module to find granule(s) metadata, and a granule's nearest neighbors for InSAR
+
 ##  [0.3.3](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.2...v0.3.3)
+
 ### Added
 - SDK will attach a `User-Agent` statement like `hyp3_sdk/VERSION` to all API interactions
 
@@ -17,6 +23,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `HyP3.find_jobs()` will now issue a warning when a zero jobs were found
 
 ## [0.3.2](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.1...v0.3.2)
+
 ### Changed
 - `Job.download_files` and `Batch.download_files` now default to downloading to working directory
 
@@ -24,6 +31,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Corrected syntax errors in documentation examples
 
 ## [0.3.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.0...v0.3.1)
+
 ### Changed
 - Correctly specifies the minimum python version (3.8) in `setup.py`
 - Job.download_files and `Batch.download_files` now except strings for location in addition to `pathlib.Path`
