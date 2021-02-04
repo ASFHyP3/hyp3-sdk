@@ -10,10 +10,10 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
     """Get the metadata for a granule or list of granules
 
     Args:
-        granules:
+        granules: granule(s) to lookup metadata for
 
     Returns:
-        metadata:
+        metadata: metadata for the granule(s)
     """
     if isinstance(granules, str):
         granule_list = granules

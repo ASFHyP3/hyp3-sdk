@@ -9,7 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.3...v0.4.0)
 
 ### Added
-- `hyp3_sdk.asf_search` module to find granule metadata and a granules nearest neighbors (for InSAR)
+- `hyp3_sdk.asf_search` module to find granule(s) metadata, and a granule's nearest neighbors for InSAR
 
 ##  [0.3.3](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.2...v0.3.3)
 
