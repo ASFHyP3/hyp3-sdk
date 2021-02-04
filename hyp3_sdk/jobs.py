@@ -2,9 +2,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Union
 
-from requests import RequestException
 from dateutil import tz
 from dateutil.parser import parse as parse_date
+from requests import RequestException
 
 from hyp3_sdk.exceptions import HyP3Error
 from hyp3_sdk.util import download_file
