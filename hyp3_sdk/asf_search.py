@@ -36,12 +36,12 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
     return metadata
 
 
-def get_nearest_neighbors(granule: str, total: int = 2,) -> List[dict]:
+def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
     """Get a granules nearest neighbors from a temporal stack (backwards in time)
 
     Args:
         granule: reference granule
-        total: total neighbors to return
+        max_neighbors: maximum number of neighbors to return
 
     Returns:
         neighbors: a list of neighbors sorted by time
@@ -56,4 +56,4 @@ def get_nearest_neighbors(granule: str, total: int = 2,) -> List[dict]:
     selected_neighbors = [n for n in all_neighbors if n['temporalBaseline'] < 0]
     selected_neighbors.sort(key=lambda k: k['temporalBaseline'], reverse=True)
 
-    return selected_neighbors[:total]
+    return selected_neighbors[:max_neighbors]
