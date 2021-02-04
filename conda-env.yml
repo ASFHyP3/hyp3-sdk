@@ -15,14 +15,7 @@ dependencies:
   - python-dateutil
   - requests
   - urllib3
-  # For documentation
-  - mkdocs
-  - mkdocs-material
-  - mkdocs-material-extensions
   - pip:
     # For packaging and testing
     - s3pypi
     - safety
-    # For documentation
-    - mkdocstrings
-
