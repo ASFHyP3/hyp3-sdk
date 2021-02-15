@@ -85,7 +85,7 @@ def test_refresh(get_mock_job):
 
 
 @responses.activate
-def test_submit_job_payload():
+def test_submit_prepared_jobs():
     payload = [
         {
             'job_type': '1',
@@ -109,26 +109,25 @@ def test_submit_job_payload():
         json={'jobs': []},
     )
 
-    response = api.submit_job_payload(payload)
+    response = api.submit_prepared_jobs(payload)
     assert response == []
 
 
-@responses.activate
-def test_prepare_rtc_dict():
-    assert foo.prepare_rtc_dict(granule='my_granule') == {
+def test_prepare_rtc_jobs():
+    assert HyP3.prepare_rtc_job(granule='my_granule') == {
         'job_type': 'RTC_GAMMA',
         'job_parameters': {
             'granules': ['my_granule'],
         }
     }
-    assert foo.prepare_rtc_dict(granule='my_granule', name='my_name') == {
+    assert HyP3.prepare_rtc_job(granule='my_granule', name='my_name') == {
         'job_type': 'RTC_GAMMA',
         'name': 'my_name',
         'job_parameters': {
             'granules': ['my_granule'],
         },
     }
-    assert foo.prepare_rtc_dict(granule='my_granule', x='foo', y=1.0, z=True) == {
+    assert HyP3.prepare_rtc_job(granule='my_granule', x='foo', y=1.0, z=True) == {
         'job_type': 'RTC_GAMMA',
         'job_parameters': {
             'granules': ['my_granule'],
@@ -139,22 +138,21 @@ def test_prepare_rtc_dict():
     }
 
 
-@responses.activate
-def test_prepare_insar_dict():
-    assert foo.prepare_rtc_dict(granule1='my_granule1', granule2='my_granule2') == {
+def test_prepare_insar_jobs():
+    assert HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2') == {
         'job_type': 'INSAR_GAMMA',
         'job_parameters': {
             'granules': ['my_granule1', 'my_granule2'],
         }
     }
-    assert foo.prepare_rtc_dict(granule='my_granule', name='my_name') == {
+    assert HyP3.prepare_insar_job(granule1='my_granule1',  granule2='my_granule2', name='my_name') == {
         'job_type': 'INSAR_GAMMA',
         'name': 'my_name',
         'job_parameters': {
             'granules': ['my_granule1', 'my_granule2'],
         },
     }
-    assert foo.prepare_rtc_dict(granule='my_granule', x='foo', y=1.0, z=True) == {
+    assert HyP3.prepare_insar_job(granule1='my_granule1',  granule2='my_granule2', x='foo', y=1.0, z=True) == {
         'job_type': 'INSAR_GAMMA',
         'job_parameters': {
             'granules': ['my_granule1', 'my_granule2'],
@@ -166,7 +164,7 @@ def test_prepare_insar_dict():
 
 
 @responses.activate
-def test_submit_job_dict(get_mock_job):
+def test_submit_prepared_jobs(get_mock_job):
     job = get_mock_job()
     api_response = {
         'jobs': [
@@ -175,7 +173,7 @@ def test_submit_job_dict(get_mock_job):
     }
     api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
-    response = api.submit_job_dict(job.to_dict(for_resubmit=True))
+    response = api.submit_prepared_jobs(job.to_dict(for_resubmit=True))
     assert response == job
 
 
