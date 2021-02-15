@@ -85,6 +85,87 @@ def test_refresh(get_mock_job):
 
 
 @responses.activate
+def test_submit_job_payload():
+    payload = [
+        {
+            'job_type': '1',
+            'job_parameters': {
+                'foo': 'bar',
+            },
+        },
+        {
+            'job_type': '2',
+            'job_parameters': {
+                'hello': 'world',
+            },
+        },
+    ]
+
+    api = HyP3()
+    responses.add(
+        responses.POST,
+        url=urljoin(api.url, '/jobs'),
+        match=[responses.json_params_matcher({'jobs': payload})],
+        json={'jobs': []},
+    )
+
+    response = api.submit_job_payload(payload)
+    assert response == []
+
+
+@responses.activate
+def test_prepare_rtc_dict():
+    assert foo.prepare_rtc_dict(granule='my_granule') == {
+        'job_type': 'RTC_GAMMA',
+        'job_parameters': {
+            'granules': ['my_granule'],
+        }
+    }
+    assert foo.prepare_rtc_dict(granule='my_granule', name='my_name') == {
+        'job_type': 'RTC_GAMMA',
+        'name': 'my_name',
+        'job_parameters': {
+            'granules': ['my_granule'],
+        },
+    }
+    assert foo.prepare_rtc_dict(granule='my_granule', x='foo', y=1.0, z=True) == {
+        'job_type': 'RTC_GAMMA',
+        'job_parameters': {
+            'granules': ['my_granule'],
+            'x': 'foo',
+            'y': 1.0,
+            'z': True,
+        }
+    }
+
+
+@responses.activate
+def test_prepare_insar_dict():
+    assert foo.prepare_rtc_dict(granule1='my_granule1', granule2='my_granule2') == {
+        'job_type': 'INSAR_GAMMA',
+        'job_parameters': {
+            'granules': ['my_granule1', 'my_granule2'],
+        }
+    }
+    assert foo.prepare_rtc_dict(granule='my_granule', name='my_name') == {
+        'job_type': 'INSAR_GAMMA',
+        'name': 'my_name',
+        'job_parameters': {
+            'granules': ['my_granule1', 'my_granule2'],
+        },
+    }
+    assert foo.prepare_rtc_dict(granule='my_granule', x='foo', y=1.0, z=True) == {
+        'job_type': 'INSAR_GAMMA',
+        'job_parameters': {
+            'granules': ['my_granule1', 'my_granule2'],
+            'x': 'foo',
+            'y': 1.0,
+            'z': True,
+        }
+    }
+
+
+@responses.activate
 def test_submit_job_dict(get_mock_job):
     job = get_mock_job()
     api_response = {
