@@ -13,7 +13,6 @@ dependencies:
   - setuptools_scm
   - wheel
   - pytest
-  - pytest-console-scripts
   - pytest-cov
   - responses
   # For running
