@@ -140,7 +140,10 @@ class HyP3:
         except HTTPError:
             raise HyP3Error('Error while submitting job to HyP3')
 
-        return Batch(response.json()['jobs'])
+        batch = Batch()
+        for job in response.json()['jobs']:
+            batch += Job.from_dict(job)
+        return batch
 
     def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Batch:
         """Submit an autoRIFT job
