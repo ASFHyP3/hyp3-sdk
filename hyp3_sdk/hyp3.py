@@ -120,7 +120,7 @@ class HyP3:
     def _refresh_job(self, job: Job):
         return self._get_job_by_id(job.job_id)
 
-    def submit_prepared_jobs(self, prepared_jobs: Union[dict, List[dict]]) -> Job:
+    def submit_prepared_jobs(self, prepared_jobs: Union[dict, List[dict]]) -> Batch:
         """Submit a prepared job dictionary, or list of prepared job dictionaries
 
         Args:
@@ -139,9 +139,10 @@ class HyP3:
             response.raise_for_status()
         except HTTPError:
             raise HyP3Error('Error while submitting job to HyP3')
-        return Job.from_dict(response.json()['jobs'][0])
 
-    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Job:
+        return Batch(response.json()['jobs'])
+
+    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Batch:
         """Submit an autoRIFT job
 
         Args:
@@ -175,7 +176,7 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_rtc_job(self, granule: str, name: Optional[str] = None, **kwargs) -> Job:
+    def submit_rtc_job(self, granule: str, name: Optional[str] = None, **kwargs) -> Batch:
         """Submit an RTC job
 
         Args:
@@ -209,7 +210,7 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> Job:
+    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> Batch:
         """Submit an InSAR job
 
         Args:

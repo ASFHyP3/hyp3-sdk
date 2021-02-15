@@ -106,11 +106,12 @@ def test_submit_prepared_jobs():
         responses.POST,
         url=urljoin(api.url, '/jobs'),
         match=[responses.json_params_matcher({'jobs': payload})],
-        json={'jobs': []},
+        json={'jobs': payload},
     )
 
-    response = api.submit_prepared_jobs(payload)
-    assert response == []
+    batch = api.submit_prepared_jobs(payload)
+    assert batch.jobs[0] == payload[0]
+    assert batch.jobs[1] == payload[1]
 
 
 def test_prepare_rtc_jobs():
@@ -164,20 +165,6 @@ def test_prepare_insar_jobs():
 
 
 @responses.activate
-def test_submit_prepared_jobs(get_mock_job):
-    job = get_mock_job()
-    api_response = {
-        'jobs': [
-            job.to_dict()
-        ]
-    }
-    api = HyP3()
-    responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
-    response = api.submit_prepared_jobs(job.to_dict(for_resubmit=True))
-    assert response == job
-
-
-@responses.activate
 def test_submit_autorift_job(get_mock_job):
     job = get_mock_job('AUTORIFT', job_parameters={'granules': ['g1', 'g2']})
     api_response = {
@@ -187,8 +174,8 @@ def test_submit_autorift_job(get_mock_job):
     }
     api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
-    response = api.submit_autorift_job('g1', 'g2')
-    assert response == job
+    batch = api.submit_autorift_job('g1', 'g2')
+    assert batch.jobs[0] == job.to_dict()
 
 
 @responses.activate
@@ -201,8 +188,8 @@ def test_submit_rtc_job(get_mock_job):
     }
     api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
-    response = api.submit_rtc_job('g1')
-    assert response == job
+    batch = api.submit_rtc_job('g1')
+    assert batch.jobs[0] == job.to_dict()
 
 
 @responses.activate
@@ -215,8 +202,22 @@ def test_submit_insar_job(get_mock_job):
     }
     api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
-    response = api.submit_insar_job('g1', 'g2')
-    assert response == job
+    batch = api.submit_insar_job('g1', 'g2')
+    assert batch.jobs[0] == job.to_dict()
+
+
+@responses.activate
+def test_resubmit_previous_job(get_mock_job):
+    job = get_mock_job()
+    api_response = {
+        'jobs': [
+            job.to_dict()
+        ]
+    }
+    api = HyP3()
+    responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
+    batch = api.submit_prepared_jobs(job.to_dict(for_resubmit=True))
+    assert batch.jobs[0] == job.to_dict()
 
 
 @responses.activate
