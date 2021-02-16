@@ -1,3 +1,4 @@
+import math
 import time
 import warnings
 from datetime import datetime, timedelta
@@ -94,17 +95,15 @@ class HyP3:
 
     @watch.register
     def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60):
-        end_time = datetime.now() + timedelta(seconds=timeout)
         bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timout in {timeout}s']) as pbar:
-            while datetime.now() < end_time:
+            for ii in reversed(range(math.ceil(timeout / interval))):
                 batch = self.refresh(batch)
 
                 counts = batch._count_statuses()
                 complete = counts['SUCCEEDED'] + counts['FAILED']
 
-                time_delta = (end_time - datetime.now()).seconds
-                pbar.postfix = [f'timout in {time_delta}s']
+                pbar.postfix = [f'timout in {(ii + 1) * interval}s']
                 # to control n/total manually; update is n += value
                 pbar.n = complete
                 pbar.update(0)
@@ -116,14 +115,11 @@ class HyP3:
 
     @watch.register
     def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60):
-        end_time = datetime.now() + timedelta(seconds=timeout)
         bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=1, bar_format=bar_format, postfix=[f'timout in {timeout}s']) as pbar:
-            while datetime.now() < end_time:
+            for ii in reversed(range(math.ceil(timeout / interval))):
                 job = self.refresh(job)
-
-                time_delta = (end_time - datetime.now()).seconds
-                pbar.postfix = [f'timout in {time_delta}s']
+                pbar.postfix = [f'timout in {(ii + 1) * interval}s']
                 pbar.update(int(job.complete()))
 
                 if job.complete():
