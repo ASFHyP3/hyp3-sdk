@@ -5,6 +5,7 @@ from functools import singledispatchmethod
 from typing import List, Optional, Union
 from urllib.parse import urljoin
 
+from tqdm.auto import tqdm
 from requests.exceptions import HTTPError, RequestException
 
 import hyp3_sdk
@@ -77,7 +78,7 @@ class HyP3:
             raise HyP3Error('Unable to get job by ID')
         return Job.from_dict(response.json())
 
-    # TODO: Some sort of visual indication this is still going
+    @singledispatchmethod
     def watch(self, job_or_batch: Union[Batch, Job], timeout: int = 10800, interval: Union[int, float] = 60):
         """Watch jobs until they complete
 
@@ -89,13 +90,46 @@ class HyP3:
         Returns:
             A Batch or Job object with refreshed watched jobs
         """
+        raise NotImplementedError(f'Cannot watch {type(job_or_batch)} type object')
+
+    @watch.register
+    def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60):
         end_time = datetime.now() + timedelta(seconds=timeout)
-        while datetime.now() < end_time:
-            job_or_batch = self.refresh(job_or_batch)
-            if job_or_batch.complete():
-                return job_or_batch
-            time.sleep(interval)
-        raise HyP3Error('Timeout occurred while waiting for jobs')
+        bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
+        with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timout in {timeout}s']) as pbar:
+            while datetime.now() < end_time:
+                batch = self.refresh(batch)
+
+                counts = batch._count_statuses()
+                complete = counts['SUCCEEDED'] + counts['FAILED']
+
+                time_delta = (end_time - datetime.now()).seconds
+                pbar.postfix = [f'timout in {time_delta}s']
+                # to control n/total manually; update is n += value
+                pbar.n = complete
+                pbar.update(0)
+
+                if batch.complete():
+                    return batch
+                time.sleep(interval)
+        raise HyP3Error(f'Timeout occurred while waiting for {batch}')
+
+    @watch.register
+    def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60):
+        end_time = datetime.now() + timedelta(seconds=timeout)
+        bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
+        with tqdm(total=1, bar_format=bar_format, postfix=[f'timout in {timeout}s']) as pbar:
+            while datetime.now() < end_time:
+                job = self.refresh(job)
+
+                time_delta = (end_time - datetime.now()).seconds
+                pbar.postfix = [f'timout in {time_delta}s']
+                pbar.update(int(job.complete()))
+
+                if job.complete():
+                    return job
+                time.sleep(interval)
+        raise HyP3Error(f'Timeout occurred while waiting for {job}')
 
     @singledispatchmethod
     def refresh(self, job_or_batch: Union[Batch, Job]) -> Union[Batch, Job]:
