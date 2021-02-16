@@ -192,8 +192,6 @@ def test_submit_insar_job(get_mock_job):
     api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
     batch = api.submit_insar_job('g1', 'g2')
-    print(type(batch.jobs[0]))
-    print(type(job))
     assert batch.jobs[0] == job
 
 

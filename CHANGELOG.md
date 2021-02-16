@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Added
+- Methods to prepare jobs for submission to HyP3
+  - `HyP3.prepare_autorift_job`
+  - `HyP3.prepare_rtc_job`
+  - `HyP3.prepare_insar_job`
+    
+### Changed
+- HyP3 submit methods will always return a `Batch` containing the submitted job(s)
+- `HyP3.submit_job_dict` has been renamed to `HyP3.submit_prepared_jobs` and can
+  submit one or more prepared job dictionaries.
+
 ## [0.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.3...v0.4.0)
 
 ### Added
