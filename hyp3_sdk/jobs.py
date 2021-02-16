@@ -129,9 +129,6 @@ class Batch:
             jobs = []
         self.jobs = jobs
 
-    def __len__(self):
-        return len(self.jobs)
-
     def __add__(self, other: Union[Job, 'Batch']):
         if isinstance(other, Batch):
             return Batch(self.jobs + other.jobs)
@@ -139,6 +136,12 @@ class Batch:
             return Batch(self.jobs + [other])
         else:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
+
+    def __iter__(self):
+        return iter(self.jobs)
+
+    def __len__(self):
+        return len(self.jobs)
 
     def __repr__(self):
         return str([job.to_dict() for job in self.jobs])
