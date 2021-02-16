@@ -2,13 +2,13 @@ import time
 import warnings
 from datetime import datetime, timedelta
 from functools import singledispatchmethod
-from typing import Optional, Union
+from typing import List, Optional, Union
 from urllib.parse import urljoin
 
 from requests.exceptions import HTTPError, RequestException
 
 import hyp3_sdk
-from hyp3_sdk.exceptions import HyP3Error, ValidationError
+from hyp3_sdk.exceptions import HyP3Error
 from hyp3_sdk.jobs import Batch, Job
 from hyp3_sdk.util import get_authenticated_session
 
@@ -105,7 +105,7 @@ class HyP3:
             job_or_batch: A Batch of Job object to refresh
 
         Returns:
-            obj: A Batch or Job object with refreshed information
+            A Batch or Job object with refreshed information
         """
         raise NotImplementedError(f'Cannot refresh {type(job_or_batch)} type object')
 
@@ -120,71 +120,134 @@ class HyP3:
     def _refresh_job(self, job: Job):
         return self._get_job_by_id(job.job_id)
 
-    def submit_job_dict(self, job_dict: dict, name: Optional[str] = None, validate_only: bool = False) -> Job:
-        if name is not None:
-            if len(name) > 20:
-                raise ValidationError('Job name too long; must be less than 20 characters')
-            job_dict['name'] = name
+    def submit_prepared_jobs(self, prepared_jobs: Union[dict, List[dict]]) -> Batch:
+        """Submit a prepared job dictionary, or list of prepared job dictionaries
 
-        payload = {'jobs': [job_dict], 'validate_only': validate_only}
+        Args:
+            prepared_jobs: A prepared job dictionary, or list of prepared job dictionaries
+
+        Returns:
+            A Batch object containing the submitted job(s)
+        """
+        if isinstance(prepared_jobs, dict):
+            payload = {'jobs': [prepared_jobs]}
+        else:
+            payload = {'jobs': prepared_jobs}
+
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
         try:
             response.raise_for_status()
         except HTTPError:
             raise HyP3Error('Error while submitting job to HyP3')
-        return Job.from_dict(response.json()['jobs'][0])
 
-    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Job:
+        batch = Batch()
+        for job in response.json()['jobs']:
+            batch += Job.from_dict(job)
+        return batch
+
+    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Batch:
         """Submit an autoRIFT job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
-            name: A name for the job (must be <= 20 characters)
+            name: A name for the job
 
         Returns:
             A Batch object containing the autoRIFT job
+        """
+        job_dict = self.prepare_autorift_job(granule1, granule2, name=name)
+        return self.submit_prepared_jobs(prepared_jobs=job_dict)
+
+    @classmethod
+    def prepare_autorift_job(cls, granule1: str, granule2: str, name: Optional[str] = None) -> dict:
+        """Submit an autoRIFT job
+
+        Args:
+            granule1: The first granule (scene) to use
+            granule2: The second granule (scene) to use
+            name: A name for the job
+
+        Returns:
+            A dictionary containing the prepared autoRIFT job
         """
         job_dict = {
             'job_parameters': {'granules': [granule1, granule2]},
             'job_type': 'AUTORIFT',
         }
-        return self.submit_job_dict(job_dict=job_dict, name=name)
+        if name is not None:
+            job_dict['name'] = name
+        return job_dict
 
-    def submit_rtc_job(self, granule: str, name: Optional[str] = None, **kwargs) -> Job:
+    def submit_rtc_job(self, granule: str, name: Optional[str] = None, **kwargs) -> Batch:
         """Submit an RTC job
 
         Args:
             granule: The granule (scene) to use
-            name: A name for the job (must be <= 20 characters)
+            name: A name for the job
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the RTC job
         """
+        job_dict = self.prepare_rtc_job(granule, name=name, **kwargs)
+        return self.submit_prepared_jobs(prepared_jobs=job_dict)
+
+    @classmethod
+    def prepare_rtc_job(cls, granule: str, name: Optional[str] = None, **kwargs) -> dict:
+        """Submit an RTC job
+
+        Args:
+            granule: The granule (scene) to use
+            name: A name for the job
+            **kwargs: Extra job parameters specifying custom processing options
+
+        Returns:
+            A dictionary containing the prepared RTC job
+        """
         job_dict = {
             'job_parameters': {'granules': [granule], **kwargs},
             'job_type': 'RTC_GAMMA',
         }
-        return self.submit_job_dict(job_dict=job_dict, name=name)
+        if name is not None:
+            job_dict['name'] = name
+        return job_dict
 
-    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> Job:
+    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> Batch:
         """Submit an InSAR job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
-            name: A name for the job (must be <= 20 characters)
+            name: A name for the job
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the InSAR job
         """
+        job_dict = self.prepare_insar_job(granule1, granule2, name=name, **kwargs)
+        return self.submit_prepared_jobs(prepared_jobs=job_dict)
+
+    @classmethod
+    def prepare_insar_job(cls, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> dict:
+        """Submit an InSAR job
+
+        Args:
+            granule1: The first granule (scene) to use
+            granule2: The second granule (scene) to use
+            name: A name for the job
+            **kwargs: Extra job parameters specifying custom processing options
+
+        Returns:
+            A dictionary containing the prepared InSAR job
+        """
         job_dict = {
             'job_parameters': {'granules': [granule1, granule2], **kwargs},
             'job_type': 'INSAR_GAMMA',
         }
-        return self.submit_job_dict(job_dict=job_dict, name=name)
+        if name is not None:
+            job_dict['name'] = name
+        return job_dict
 
     def my_info(self) -> dict:
         """
