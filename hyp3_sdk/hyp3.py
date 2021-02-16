@@ -71,7 +71,7 @@ class HyP3:
             warnings.warn('Found zero jobs', UserWarning)
         return Batch(jobs)
 
-    def _get_job_by_id(self, job_id):
+    def get_job_by_id(self, job_id):
         try:
             response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
             response.raise_for_status()
@@ -150,7 +150,7 @@ class HyP3:
 
     @refresh.register
     def _refresh_job(self, job: Job):
-        return self._get_job_by_id(job.job_id)
+        return self.get_job_by_id(job.job_id)
 
     def submit_prepared_jobs(self, prepared_jobs: Union[dict, List[dict]]) -> Batch:
         """Submit a prepared job dictionary, or list of prepared job dictionaries
