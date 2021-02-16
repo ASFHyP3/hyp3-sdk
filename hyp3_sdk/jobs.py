@@ -106,7 +106,6 @@ class Job:
         except TypeError:
             raise HyP3Error('Only SUCCEEDED jobs have an expiration time')
 
-    # TODO: handle expired products
     def download_files(self, location: Union[Path, str] = '.', create: bool = True) -> List[Path]:
         """
         Args:
@@ -120,6 +119,8 @@ class Job:
             location.mkdir(parents=True)
         if not self.complete():
             raise HyP3Error('Incomplete jobs cannot be downloaded')
+        if self.expired():
+            raise HyP3Error('Expired jobs cannot be downloaded')
         downloaded_files = []
         for file in self.files:
             download_url = file['url']
@@ -184,7 +185,6 @@ class Batch:
                 return False
         return True
 
-    # TODO: skip expired products
     def download_files(self, location: Union[Path, str] = '.', create: bool = True) -> List[Path]:
         """
         Args:
@@ -193,11 +193,12 @@ class Batch:
 
         Returns: list of Path objects to downloaded files
         """
-        if not self.complete():
-            raise HyP3Error('Incomplete jobs cannot be downloaded')
         downloaded_files = []
         for job in tqdm(self.jobs):
-            downloaded_files.extend(job.download_files(location, create))
+            try:
+                downloaded_files.extend(job.download_files(location, create))
+            except HyP3Error as e:
+                print(f'Warning: {e}. Skipping download for {job}.')
         return downloaded_files
 
     def any_expired(self) -> bool:
