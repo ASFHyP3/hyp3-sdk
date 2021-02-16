@@ -118,17 +118,6 @@ def test_job_download_files(tmp_path, get_mock_job):
     assert contents == 'foobar2'
 
 
-def test_batch_len():
-    batch = Batch()
-    assert len(batch) == 0
-
-    batch = Batch([])
-    assert len(batch) == 0
-
-    batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(FAILED_JOB)])
-    assert len(batch) == 2
-
-
 def test_batch_add():
     a = Batch([Job.from_dict(SUCCEEDED_JOB)])
     b = Batch([Job.from_dict(FAILED_JOB)])
@@ -145,6 +134,24 @@ def test_batch_add():
     assert d.jobs[0].succeeded()
     assert d.jobs[1].failed()
     assert d.jobs[2].running()
+
+
+def test_batch_iter():
+    defined_jobs = [Job.from_dict(SUCCEEDED_JOB), Job.from_dict(FAILED_JOB)]
+    batch = Batch(defined_jobs)
+    for batch_job, defined_job in zip(batch, defined_jobs):
+        assert batch_job == defined_job
+
+
+def test_batch_len():
+    batch = Batch()
+    assert len(batch) == 0
+
+    batch = Batch([])
+    assert len(batch) == 0
+
+    batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(FAILED_JOB)])
+    assert len(batch) == 2
 
 
 def test_batch_complete_succeeded():

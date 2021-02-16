@@ -15,6 +15,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - `HyP3.prepare_insar_job`
     
 ### Changed
+- HyP3 `Batch` objects are now iterable
 - HyP3 submit methods will always return a `Batch` containing the submitted job(s)
 - `HyP3.submit_job_dict` has been renamed to `HyP3.submit_prepared_jobs` and can
   submit one or more prepared job dictionaries.
