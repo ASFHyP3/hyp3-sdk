@@ -136,7 +136,6 @@ def test_job_download_files(tmp_path, get_mock_job):
     assert contents == 'foobar2'
 
 
-
 @responses.activate
 def test_job_download_files_expired(tmp_path, get_mock_job):
     expired_time = (datetime.now(tz=tz.UTC) - timedelta(days=7)).isoformat(timespec='seconds')
