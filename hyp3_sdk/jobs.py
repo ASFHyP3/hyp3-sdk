@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Union
@@ -40,7 +41,10 @@ class Job:
         self.expiration_time = expiration_time
 
     def __repr__(self):
-        return str(self.to_dict())
+        return f'Job.from_dict({self.to_dict()})'
+
+    def __str__(self):
+        return f'HyP3 {self.job_type} job {self.job_id}'
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -144,7 +148,19 @@ class Batch:
         return len(self.jobs)
 
     def __repr__(self):
-        return str([job.to_dict() for job in self.jobs])
+        reprs = ", ".join([job.__repr__() for job in self.jobs])
+        return f'Batch([{reprs}])'
+
+    def __str__(self):
+        count = self._count_statuses()
+        return f'{len(self)} HyP3 Jobs: ' \
+               f'{count["SUCCEEDED"]} succeeded, ' \
+               f'{count["FAILED"]} failed, ' \
+               f'{count["RUNNING"]} running, ' \
+               f'{count["PENDING"]} pending.'
+
+    def _count_statuses(self):
+        return Counter([job.status_code for job in self.jobs])
 
     def complete(self) -> bool:
         """
