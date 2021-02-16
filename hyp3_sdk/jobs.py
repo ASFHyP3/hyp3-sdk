@@ -125,7 +125,6 @@ class Job:
 
 class Batch:
     def __init__(self, jobs: Optional[List[Job]] = None):
-        self._job_idx = 0
         if jobs is None:
             jobs = []
         self.jobs = jobs
