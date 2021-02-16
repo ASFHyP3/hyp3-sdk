@@ -103,7 +103,23 @@ def test_submit_prepared_jobs(get_mock_job):
     assert batch.jobs == [rtc_job, insar_job]
 
 
-def test_prepare_rtc_jobs():
+def test_prepare_autorift_job():
+    assert HyP3.prepare_autorift_job(granule1='my_granule1', granule2='my_granule2') == {
+        'job_type': 'AUTORIFT',
+        'job_parameters': {
+            'granules': ['my_granule1', 'my_granule2'],
+        }
+    }
+    assert HyP3.prepare_autorift_job(granule1='my_granule1',  granule2='my_granule2', name='my_name') == {
+        'job_type': 'AUTORIFT',
+        'name': 'my_name',
+        'job_parameters': {
+            'granules': ['my_granule1', 'my_granule2'],
+        },
+    }
+
+
+def test_prepare_rtc_job():
     assert HyP3.prepare_rtc_job(granule='my_granule') == {
         'job_type': 'RTC_GAMMA',
         'job_parameters': {
@@ -128,7 +144,7 @@ def test_prepare_rtc_jobs():
     }
 
 
-def test_prepare_insar_jobs():
+def test_prepare_insar_job():
     assert HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2') == {
         'job_type': 'INSAR_GAMMA',
         'job_parameters': {
