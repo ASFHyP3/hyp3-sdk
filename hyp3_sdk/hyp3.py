@@ -1,13 +1,13 @@
 import math
 import time
 import warnings
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import singledispatchmethod
 from typing import List, Optional, Union
 from urllib.parse import urljoin
 
-from tqdm.auto import tqdm
 from requests.exceptions import HTTPError, RequestException
+from tqdm.auto import tqdm
 
 import hyp3_sdk
 from hyp3_sdk.exceptions import HyP3Error
@@ -96,7 +96,7 @@ class HyP3:
     @watch.register
     def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60):
         bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
-        with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timout in {timeout}s']) as pbar:
+        with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timout in {timeout} s']) as pbar:
             for ii in reversed(range(math.ceil(timeout / interval))):
                 batch = self.refresh(batch)
 
@@ -116,7 +116,7 @@ class HyP3:
     @watch.register
     def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60):
         bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
-        with tqdm(total=1, bar_format=bar_format, postfix=[f'timout in {timeout}s']) as pbar:
+        with tqdm(total=1, bar_format=bar_format, postfix=[f'timout in {timeout} s']) as pbar:
             for ii in reversed(range(math.ceil(timeout / interval))):
                 job = self.refresh(job)
                 pbar.postfix = [f'timout in {(ii + 1) * interval}s']
