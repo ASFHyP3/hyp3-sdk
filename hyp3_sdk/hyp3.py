@@ -97,17 +97,17 @@ class HyP3:
     def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60):
         iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
-        with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as pbar:
+        with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
             for ii in range(iterations_until_timeout):
                 batch = self.refresh(batch)
 
                 counts = batch._count_statuses()
                 complete = counts['SUCCEEDED'] + counts['FAILED']
 
-                pbar.postfix = [f'timeout in {timeout - ii * interval}s']
+                progress_bar.postfix = [f'timeout in {timeout - ii * interval}s']
                 # to control n/total manually; update is n += value
-                pbar.n = complete
-                pbar.update(0)
+                progress_bar.n = complete
+                progress_bar.update(0)
 
                 if batch.complete():
                     return batch
@@ -118,11 +118,11 @@ class HyP3:
     def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60):
         iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
-        with tqdm(total=1, bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as pbar:
+        with tqdm(total=1, bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
             for ii in range(iterations_until_timeout):
                 job = self.refresh(job)
-                pbar.postfix = [f'timeout in {timeout - ii * interval}s']
-                pbar.update(int(job.complete()))
+                progress_bar.postfix = [f'timeout in {timeout - ii * interval}s']
+                progress_bar.update(int(job.complete()))
 
                 if job.complete():
                     return job

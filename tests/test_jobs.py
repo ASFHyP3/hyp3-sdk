@@ -117,7 +117,7 @@ def test_job_download_files_create_dirs(tmp_path, get_mock_job):
     job = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
                        files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(NotADirectoryError):
         job.download_files(tmp_path / 'not_a_dir', create=False)
 
     responses.add(responses.GET, 'https://foo.com/file', body='foobar')
@@ -210,7 +210,7 @@ def test_batch_download(tmp_path, get_mock_job):
     assert set(paths) == {tmp_path / 'file1', tmp_path / 'file2', tmp_path / 'file3'}
     assert set(contents) == {'foobar1', 'foobar2', 'foobar3'}
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(NotADirectoryError):
         batch.download_files(tmp_path / 'not_a_dir', create=False)
 
     paths = batch.download_files(tmp_path / 'not_a_dir', create=True)

@@ -122,8 +122,10 @@ class Job:
             raise HyP3Error(f'Expired jobs cannot be downloaded; '
                             f'job expired {self.expiration_time.isoformat(timespec="seconds")}.')
 
-        if create and not location.is_dir():
-            location.mkdir(parents=True)
+        if create:
+            location.mkdir(parents=True, exist_ok=True)
+        elif not location.is_dir():
+            raise NotADirectoryError(str(location))
 
         downloaded_files = []
         for file in self.files:
