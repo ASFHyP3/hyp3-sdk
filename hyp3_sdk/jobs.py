@@ -115,12 +115,16 @@ class Job:
         Returns: list of Path objects to downloaded files
         """
         location = Path(location)
+
+        if not self.succeeded():
+            raise HyP3Error(f'Only succeeded jobs can be downloaded; job is {self.status_code}.')
+        if self.expired():
+            raise HyP3Error(f'Expired jobs cannot be downloaded; '
+                            f'job expired {self.expiration_time.isoformat(timespec="seconds")}.')
+
         if create and not location.is_dir():
             location.mkdir(parents=True)
-        if not self.complete():
-            raise HyP3Error('Incomplete jobs cannot be downloaded')
-        if self.expired():
-            raise HyP3Error('Expired jobs cannot be downloaded')
+
         downloaded_files = []
         for file in self.files:
             download_url = file['url']
