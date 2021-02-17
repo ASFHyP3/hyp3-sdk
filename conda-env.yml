@@ -16,7 +16,6 @@ dependencies:
   - pytest-cov
   - responses
   # For running
-  - colorama # [win]
   - python-dateutil
   - requests
   - tqdm
