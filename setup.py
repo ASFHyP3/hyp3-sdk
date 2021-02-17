@@ -36,6 +36,7 @@ setup(
         'python-dateutil',
         'requests',
         'urllib3',
+        'tqdm',
     ],
 
     extras_require={

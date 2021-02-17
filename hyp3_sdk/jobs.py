@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Union
@@ -5,6 +6,7 @@ from typing import List, Optional, Union
 from dateutil import tz
 from dateutil.parser import parse as parse_date
 from requests import RequestException
+from tqdm.auto import tqdm
 
 from hyp3_sdk.exceptions import HyP3Error
 from hyp3_sdk.util import download_file
@@ -40,7 +42,10 @@ class Job:
         self.expiration_time = expiration_time
 
     def __repr__(self):
-        return str(self.to_dict())
+        return f'Job.from_dict({self.to_dict()})'
+
+    def __str__(self):
+        return f'HyP3 {self.job_type} job {self.job_id}'
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -101,25 +106,35 @@ class Job:
         except TypeError:
             raise HyP3Error('Only SUCCEEDED jobs have an expiration time')
 
-    # TODO: handle expired products
-    def download_files(self, location: Union[Path, str] = '.') -> List[Path]:
+    def download_files(self, location: Union[Path, str] = '.', create: bool = True) -> List[Path]:
         """
         Args:
             location: Directory location to put files into
+            create: Create `location` if it does not point to an existing directory
 
         Returns: list of Path objects to downloaded files
         """
         location = Path(location)
-        if not self.complete():
-            raise HyP3Error('Incomplete jobs cannot be downloaded')
+
+        if not self.succeeded():
+            raise HyP3Error(f'Only succeeded jobs can be downloaded; job is {self.status_code}.')
+        if self.expired():
+            raise HyP3Error(f'Expired jobs cannot be downloaded; '
+                            f'job expired {self.expiration_time.isoformat(timespec="seconds")}.')
+
+        if create:
+            location.mkdir(parents=True, exist_ok=True)
+        elif not location.is_dir():
+            raise NotADirectoryError(str(location))
+
         downloaded_files = []
         for file in self.files:
             download_url = file['url']
             filename = location / file['filename']
             try:
-                downloaded_files.append(download_file(download_url, filename))
+                downloaded_files.append(download_file(download_url, filename, chunk_size=10485760))
             except RequestException:
-                raise HyP3Error('unable to download file')
+                raise HyP3Error(f'Unable to download file: {download_url}')
         return downloaded_files
 
 
@@ -144,7 +159,19 @@ class Batch:
         return len(self.jobs)
 
     def __repr__(self):
-        return str([job.to_dict() for job in self.jobs])
+        reprs = ", ".join([job.__repr__() for job in self.jobs])
+        return f'Batch([{reprs}])'
+
+    def __str__(self):
+        count = self._count_statuses()
+        return f'{len(self)} HyP3 Jobs: ' \
+               f'{count["SUCCEEDED"]} succeeded, ' \
+               f'{count["FAILED"]} failed, ' \
+               f'{count["RUNNING"]} running, ' \
+               f'{count["PENDING"]} pending.'
+
+    def _count_statuses(self):
+        return Counter([job.status_code for job in self.jobs])
 
     def complete(self) -> bool:
         """
@@ -164,19 +191,20 @@ class Batch:
                 return False
         return True
 
-    # TODO: skip expired products
-    def download_files(self, location: Union[Path, str] = '.') -> List[Path]:
+    def download_files(self, location: Union[Path, str] = '.', create: bool = True) -> List[Path]:
         """
         Args:
             location: Directory location to put files into
+            create: Create `location` if it does not point to an existing directory
 
         Returns: list of Path objects to downloaded files
         """
-        if not self.complete():
-            raise HyP3Error('Incomplete jobs cannot be downloaded')
         downloaded_files = []
-        for job in self.jobs:
-            downloaded_files.extend(job.download_files(location))
+        for job in tqdm(self.jobs):
+            try:
+                downloaded_files.extend(job.download_files(location, create))
+            except HyP3Error as e:
+                print(f'Warning: {e}. Skipping download for {job}.')
         return downloaded_files
 
     def any_expired(self) -> bool:

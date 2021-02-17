@@ -16,8 +16,10 @@ dependencies:
   - pytest-cov
   - responses
   # For running
+  - colorama # [win]
   - python-dateutil
   - requests
+  - tqdm
   - urllib3
   - pip:
     # For packaging and testing
