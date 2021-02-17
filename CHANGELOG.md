@@ -35,6 +35,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   submit one or more prepared job dictionaries.
 - `Job.download_files` and `Batch.download_files` will (optionally) create the
   download location if it doesn't exist
+- `Hyp3._get_job_by_id` has been made public and renamed to `Hyp3.get_job_by_id`
 
 ## [0.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.3...v0.4.0)
 
