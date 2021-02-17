@@ -177,8 +177,8 @@ class HyP3:
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
         try:
             response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error('Error while submitting job to HyP3')
+        except HTTPError as e:
+            raise HyP3Error(str(e))
 
         batch = Batch()
         for job in response.json()['jobs']:
