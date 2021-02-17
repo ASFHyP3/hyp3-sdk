@@ -132,7 +132,7 @@ class Job:
             try:
                 downloaded_files.append(download_file(download_url, filename, chunk_size=10485760))
             except RequestException:
-                raise HyP3Error('unable to download file')
+                raise HyP3Error(f'Unable to download file: {download_url}')
         return downloaded_files
 
 
