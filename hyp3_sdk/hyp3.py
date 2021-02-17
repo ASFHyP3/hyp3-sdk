@@ -95,10 +95,10 @@ class HyP3:
 
     @watch.register
     def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60):
-        iterations_until_timout = math.ceil(timeout / interval)
+        iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as pbar:
-            for ii in range(iterations_until_timout):
+            for ii in range(iterations_until_timeout):
                 batch = self.refresh(batch)
 
                 counts = batch._count_statuses()
@@ -116,10 +116,10 @@ class HyP3:
 
     @watch.register
     def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60):
-        iterations_until_timout = math.ceil(timeout / interval)
+        iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=1, bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as pbar:
-            for ii in range(iterations_until_timout):
+            for ii in range(iterations_until_timeout):
                 job = self.refresh(job)
                 pbar.postfix = [f'timeout in {timeout - ii * interval}s']
                 pbar.update(int(job.complete()))
