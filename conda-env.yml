@@ -5,6 +5,10 @@ channels:
 dependencies:
   - pip
   # For packaging, and testing
+  - flake8
+  - flake8-import-order
+  - flake8-blind-except
+  - flake8-builtins
   - setuptools
   - setuptools_scm
   - wheel
@@ -12,10 +16,11 @@ dependencies:
   - pytest-cov
   - responses
   # For running
+  - colorama # [win]
   - python-dateutil
   - requests
+  - tqdm
   - urllib3
   - pip:
     # For packaging and testing
     - s3pypi
-    - safety

@@ -1,4 +1,3 @@
-import os
 from copy import copy
 from datetime import datetime, timedelta
 
@@ -92,7 +91,9 @@ def test_job_expired():
 
 @responses.activate
 def test_job_download_files(tmp_path, get_mock_job):
-    job = get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
+    job = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
     responses.add(responses.GET, 'https://foo.com/file', body='foobar')
 
     path = job.download_files(tmp_path)[0]
@@ -100,7 +101,8 @@ def test_job_download_files(tmp_path, get_mock_job):
     assert path == tmp_path / 'file'
     assert contents == 'foobar'
 
-    job = get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/f1', 'size': 0, 'filename': 'f1'}])
+    job = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+                       files=[{'url': 'https://foo.com/f1', 'size': 0, 'filename': 'f1'}])
     responses.add(responses.GET, 'https://foo.com/f1', body='foobar1')
 
     path = job.download_files(str(tmp_path))[0]
@@ -108,25 +110,31 @@ def test_job_download_files(tmp_path, get_mock_job):
     assert path == tmp_path / 'f1'
     assert contents == 'foobar1'
 
-    os.chdir(tmp_path)
-    job = get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/f2', 'size': 0, 'filename': 'f2'}])
-    responses.add(responses.GET, 'https://foo.com/f2', body='foobar2')
 
-    path = job.download_files()[0]
+@responses.activate
+def test_job_download_files_create_dirs(tmp_path, get_mock_job):
+    unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
+    job = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+
+    with pytest.raises(NotADirectoryError):
+        job.download_files(tmp_path / 'not_a_dir', create=False)
+
+    responses.add(responses.GET, 'https://foo.com/file', body='foobar')
+    path = job.download_files(tmp_path / 'not_a_dir', create=True)[0]
     contents = path.read_text()
-    assert path.absolute() == (tmp_path / 'f2').absolute()
-    assert contents == 'foobar2'
+    assert path == tmp_path / 'not_a_dir' / 'file'
+    assert contents == 'foobar'
 
 
-def test_batch_len():
-    batch = Batch()
-    assert len(batch) == 0
+@responses.activate
+def test_job_download_files_expired(tmp_path, get_mock_job):
+    expired_time = (datetime.now(tz=tz.UTC) - timedelta(days=7)).isoformat(timespec='seconds')
+    job = get_mock_job(status_code='SUCCEEDED', expiration_time=expired_time,
+                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
 
-    batch = Batch([])
-    assert len(batch) == 0
-
-    batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(FAILED_JOB)])
-    assert len(batch) == 2
+    with pytest.raises(HyP3Error):
+        job.download_files(tmp_path)
 
 
 def test_batch_add():
@@ -147,6 +155,24 @@ def test_batch_add():
     assert d.jobs[2].running()
 
 
+def test_batch_iter():
+    defined_jobs = [Job.from_dict(SUCCEEDED_JOB), Job.from_dict(FAILED_JOB)]
+    batch = Batch(defined_jobs)
+    for batch_job, defined_job in zip(batch, defined_jobs):
+        assert batch_job == defined_job
+
+
+def test_batch_len():
+    batch = Batch()
+    assert len(batch) == 0
+
+    batch = Batch([])
+    assert len(batch) == 0
+
+    batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(FAILED_JOB)])
+    assert len(batch) == 2
+
+
 def test_batch_complete_succeeded():
     batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(SUCCEEDED_JOB)])
     assert batch.complete()
@@ -165,10 +191,14 @@ def test_batch_complete_succeeded():
 
 @responses.activate
 def test_batch_download(tmp_path, get_mock_job):
+    expiration_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
     batch = Batch([
-        get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}]),
-        get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file2', 'size': 0, 'filename': 'file2'}]),
-        get_mock_job(status_code='SUCCEEDED', files=[{'url': 'https://foo.com/file3', 'size': 0, 'filename': 'file3'}])
+        get_mock_job(status_code='SUCCEEDED', expiration_time=expiration_time,
+                     files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}]),
+        get_mock_job(status_code='SUCCEEDED', expiration_time=expiration_time,
+                     files=[{'url': 'https://foo.com/file2', 'size': 0, 'filename': 'file2'}]),
+        get_mock_job(status_code='SUCCEEDED', expiration_time=expiration_time,
+                     files=[{'url': 'https://foo.com/file3', 'size': 0, 'filename': 'file3'}])
     ])
     responses.add(responses.GET, 'https://foo.com/file1', body='foobar1')
     responses.add(responses.GET, 'https://foo.com/file2', body='foobar2')
@@ -179,6 +209,40 @@ def test_batch_download(tmp_path, get_mock_job):
     assert len(paths) == 3
     assert set(paths) == {tmp_path / 'file1', tmp_path / 'file2', tmp_path / 'file3'}
     assert set(contents) == {'foobar1', 'foobar2', 'foobar3'}
+
+    with pytest.raises(NotADirectoryError):
+        batch.download_files(tmp_path / 'not_a_dir', create=False)
+
+    paths = batch.download_files(tmp_path / 'not_a_dir', create=True)
+    contents = [path.read_text() for path in paths]
+    assert len(paths) == 3
+    assert set(paths) == {tmp_path / 'not_a_dir' / 'file1',
+                          tmp_path / 'not_a_dir' / 'file2',
+                          tmp_path / 'not_a_dir' / 'file3'}
+    assert set(contents) == {'foobar1', 'foobar2', 'foobar3'}
+
+
+@responses.activate
+def test_batch_download_expired(tmp_path, get_mock_job):
+    expired_time = (datetime.now(tz=tz.UTC) - timedelta(days=7)).isoformat(timespec='seconds')
+    unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
+    batch = Batch([
+        get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+                     files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}]),
+        get_mock_job(status_code='SUCCEEDED', expiration_time=expired_time,
+                     files=[{'url': 'https://foo.com/file2', 'size': 0, 'filename': 'file2'}]),
+        get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+                     files=[{'url': 'https://foo.com/file3', 'size': 0, 'filename': 'file3'}])
+    ])
+    responses.add(responses.GET, 'https://foo.com/file1', body='foobar1')
+    responses.add(responses.GET, 'https://foo.com/file2', body='foobar2')
+    responses.add(responses.GET, 'https://foo.com/file3', body='foobar3')
+
+    paths = batch.download_files(tmp_path)
+    contents = [path.read_text() for path in paths]
+    assert len(paths) == 2
+    assert set(paths) == {tmp_path / 'file1', tmp_path / 'file3'}
+    assert set(contents) == {'foobar1', 'foobar3'}
 
 
 def test_batch_any_expired():

@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.4.0...v0.5.0)
+
+### Added
+- Methods to prepare jobs for submission to HyP3
+  - `HyP3.prepare_autorift_job`
+  - `HyP3.prepare_rtc_job`
+  - `HyP3.prepare_insar_job`
+- `HyP3.watch`, `Job.download_files`, and `Batch.download_files` now display progress bars
+    
+### Changed
+- HyP3 `Job` objects provide a better string representation
+  ```python
+  >>> print(job)
+  HyP3 RTC_GAMMA job dd884703-cdbf-47ff-848c-de1e2b9917c1
+  ```
+
+- HyP3 `Batch` objects
+  - are now iterable
+  - provide a better string representation
+    ```python
+    >>> print(batch)
+    2 HyP3 Jobs: 0 succeeded, 0 failed, 2 running, 0 pending.
+    ```
+
+- HyP3 submit methods will always return a `Batch` containing the submitted job(s)
+- `HyP3.submit_job_dict` has been renamed to `HyP3.submit_prepared_jobs` and can
+  submit one or more prepared job dictionaries.
+- `Job.download_files` and `Batch.download_files` will (optionally) create the
+  download location if it doesn't exist
+- `Hyp3._get_job_by_id` has been made public and renamed to `Hyp3.get_job_by_id`
+
 ## [0.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.3.3...v0.4.0)
 
 ### Added

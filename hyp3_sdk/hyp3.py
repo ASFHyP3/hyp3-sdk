@@ -1,14 +1,16 @@
+import math
 import time
 import warnings
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import singledispatchmethod
-from typing import Optional, Union
+from typing import List, Optional, Union
 from urllib.parse import urljoin
 
 from requests.exceptions import HTTPError, RequestException
+from tqdm.auto import tqdm
 
 import hyp3_sdk
-from hyp3_sdk.exceptions import HyP3Error, ValidationError
+from hyp3_sdk.exceptions import HyP3Error
 from hyp3_sdk.jobs import Batch, Job
 from hyp3_sdk.util import get_authenticated_session
 
@@ -69,15 +71,23 @@ class HyP3:
             warnings.warn('Found zero jobs', UserWarning)
         return Batch(jobs)
 
-    def _get_job_by_id(self, job_id):
+    def get_job_by_id(self, job_id: str) -> Job:
+        """Get job by job ID
+
+        Args:
+            job_id: A job ID
+
+        Returns:
+            A Job object
+        """
         try:
             response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
             response.raise_for_status()
         except RequestException:
-            raise HyP3Error('Unable to get job by ID')
+            raise HyP3Error(f'Unable to get job by ID {job_id}')
         return Job.from_dict(response.json())
 
-    # TODO: Some sort of visual indication this is still going
+    @singledispatchmethod
     def watch(self, job_or_batch: Union[Batch, Job], timeout: int = 10800, interval: Union[int, float] = 60):
         """Watch jobs until they complete
 
@@ -89,13 +99,43 @@ class HyP3:
         Returns:
             A Batch or Job object with refreshed watched jobs
         """
-        end_time = datetime.now() + timedelta(seconds=timeout)
-        while datetime.now() < end_time:
-            job_or_batch = self.refresh(job_or_batch)
-            if job_or_batch.complete():
-                return job_or_batch
-            time.sleep(interval)
-        raise HyP3Error('Timeout occurred while waiting for jobs')
+        raise NotImplementedError(f'Cannot watch {type(job_or_batch)} type object')
+
+    @watch.register
+    def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60):
+        iterations_until_timeout = math.ceil(timeout / interval)
+        bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
+        with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
+            for ii in range(iterations_until_timeout):
+                batch = self.refresh(batch)
+
+                counts = batch._count_statuses()
+                complete = counts['SUCCEEDED'] + counts['FAILED']
+
+                progress_bar.postfix = [f'timeout in {timeout - ii * interval}s']
+                # to control n/total manually; update is n += value
+                progress_bar.n = complete
+                progress_bar.update(0)
+
+                if batch.complete():
+                    return batch
+                time.sleep(interval)
+        raise HyP3Error(f'Timeout occurred while waiting for {batch}')
+
+    @watch.register
+    def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60):
+        iterations_until_timeout = math.ceil(timeout / interval)
+        bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
+        with tqdm(total=1, bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
+            for ii in range(iterations_until_timeout):
+                job = self.refresh(job)
+                progress_bar.postfix = [f'timeout in {timeout - ii * interval}s']
+                progress_bar.update(int(job.complete()))
+
+                if job.complete():
+                    return job
+                time.sleep(interval)
+        raise HyP3Error(f'Timeout occurred while waiting for {job}')
 
     @singledispatchmethod
     def refresh(self, job_or_batch: Union[Batch, Job]) -> Union[Batch, Job]:
@@ -105,7 +145,7 @@ class HyP3:
             job_or_batch: A Batch of Job object to refresh
 
         Returns:
-            obj: A Batch or Job object with refreshed information
+            A Batch or Job object with refreshed information
         """
         raise NotImplementedError(f'Cannot refresh {type(job_or_batch)} type object')
 
@@ -118,73 +158,136 @@ class HyP3:
 
     @refresh.register
     def _refresh_job(self, job: Job):
-        return self._get_job_by_id(job.job_id)
+        return self.get_job_by_id(job.job_id)
 
-    def submit_job_dict(self, job_dict: dict, name: Optional[str] = None, validate_only: bool = False) -> Job:
-        if name is not None:
-            if len(name) > 20:
-                raise ValidationError('Job name too long; must be less than 20 characters')
-            job_dict['name'] = name
+    def submit_prepared_jobs(self, prepared_jobs: Union[dict, List[dict]]) -> Batch:
+        """Submit a prepared job dictionary, or list of prepared job dictionaries
 
-        payload = {'jobs': [job_dict], 'validate_only': validate_only}
+        Args:
+            prepared_jobs: A prepared job dictionary, or list of prepared job dictionaries
+
+        Returns:
+            A Batch object containing the submitted job(s)
+        """
+        if isinstance(prepared_jobs, dict):
+            payload = {'jobs': [prepared_jobs]}
+        else:
+            payload = {'jobs': prepared_jobs}
+
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
         try:
             response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error('Error while submitting job to HyP3')
-        return Job.from_dict(response.json()['jobs'][0])
+        except HTTPError as e:
+            raise HyP3Error(str(e))
 
-    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Job:
+        batch = Batch()
+        for job in response.json()['jobs']:
+            batch += Job.from_dict(job)
+        return batch
+
+    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Batch:
         """Submit an autoRIFT job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
-            name: A name for the job (must be <= 20 characters)
+            name: A name for the job
 
         Returns:
             A Batch object containing the autoRIFT job
+        """
+        job_dict = self.prepare_autorift_job(granule1, granule2, name=name)
+        return self.submit_prepared_jobs(prepared_jobs=job_dict)
+
+    @classmethod
+    def prepare_autorift_job(cls, granule1: str, granule2: str, name: Optional[str] = None) -> dict:
+        """Submit an autoRIFT job
+
+        Args:
+            granule1: The first granule (scene) to use
+            granule2: The second granule (scene) to use
+            name: A name for the job
+
+        Returns:
+            A dictionary containing the prepared autoRIFT job
         """
         job_dict = {
             'job_parameters': {'granules': [granule1, granule2]},
             'job_type': 'AUTORIFT',
         }
-        return self.submit_job_dict(job_dict=job_dict, name=name)
+        if name is not None:
+            job_dict['name'] = name
+        return job_dict
 
-    def submit_rtc_job(self, granule: str, name: Optional[str] = None, **kwargs) -> Job:
+    def submit_rtc_job(self, granule: str, name: Optional[str] = None, **kwargs) -> Batch:
         """Submit an RTC job
 
         Args:
             granule: The granule (scene) to use
-            name: A name for the job (must be <= 20 characters)
+            name: A name for the job
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the RTC job
         """
+        job_dict = self.prepare_rtc_job(granule, name=name, **kwargs)
+        return self.submit_prepared_jobs(prepared_jobs=job_dict)
+
+    @classmethod
+    def prepare_rtc_job(cls, granule: str, name: Optional[str] = None, **kwargs) -> dict:
+        """Submit an RTC job
+
+        Args:
+            granule: The granule (scene) to use
+            name: A name for the job
+            **kwargs: Extra job parameters specifying custom processing options
+
+        Returns:
+            A dictionary containing the prepared RTC job
+        """
         job_dict = {
             'job_parameters': {'granules': [granule], **kwargs},
             'job_type': 'RTC_GAMMA',
         }
-        return self.submit_job_dict(job_dict=job_dict, name=name)
+        if name is not None:
+            job_dict['name'] = name
+        return job_dict
 
-    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> Job:
+    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> Batch:
         """Submit an InSAR job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
-            name: A name for the job (must be <= 20 characters)
+            name: A name for the job
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the InSAR job
         """
+        job_dict = self.prepare_insar_job(granule1, granule2, name=name, **kwargs)
+        return self.submit_prepared_jobs(prepared_jobs=job_dict)
+
+    @classmethod
+    def prepare_insar_job(cls, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> dict:
+        """Submit an InSAR job
+
+        Args:
+            granule1: The first granule (scene) to use
+            granule2: The second granule (scene) to use
+            name: A name for the job
+            **kwargs: Extra job parameters specifying custom processing options
+
+        Returns:
+            A dictionary containing the prepared InSAR job
+        """
         job_dict = {
             'job_parameters': {'granules': [granule1, granule2], **kwargs},
             'job_type': 'INSAR_GAMMA',
         }
-        return self.submit_job_dict(job_dict=job_dict, name=name)
+        if name is not None:
+            job_dict['name'] = name
+        return job_dict
 
     def my_info(self) -> dict:
         """

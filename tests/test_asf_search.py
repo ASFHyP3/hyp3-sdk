@@ -39,7 +39,7 @@ def test_get_nearest_neighbor():
             {'temporalBaseline': -24},
         ]
     }
-    responses.add(responses.GET, asf_search._BASLINE_API, json=mock_response)
+    responses.add(responses.GET, asf_search._BASELINE_API, json=mock_response)
 
     assert asf_search.get_nearest_neighbors('S1B_IW_SLC_') == \
            [{'temporalBaseline': -12}, {'temporalBaseline': -24}]

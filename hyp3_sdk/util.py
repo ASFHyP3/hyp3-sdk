@@ -4,6 +4,7 @@ from typing import Union
 
 import requests
 from requests.adapters import HTTPAdapter
+from tqdm.auto import tqdm
 from urllib3.util.retry import Retry
 
 import hyp3_sdk
@@ -63,7 +64,8 @@ def download_file(url: str, filepath: Union[Path, str], chunk_size=None, retries
 
     with session.get(url, stream=True) as s:
         s.raise_for_status()
-        with open(filepath, "wb") as f:
+        with tqdm.wrapattr(open(filepath, "wb"), 'write', miniters=1, desc=filepath.name,
+                           total=int(s.headers.get('content-length', 0))) as f:
             for chunk in s.iter_content(chunk_size=chunk_size):
                 if chunk:
                     f.write(chunk)
