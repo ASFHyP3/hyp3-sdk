@@ -3,7 +3,7 @@ import time
 import warnings
 from datetime import datetime
 from functools import singledispatchmethod
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Literal, TypedDict
 from urllib.parse import urljoin
 
 from requests.exceptions import HTTPError, RequestException
@@ -219,47 +219,119 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_rtc_job(self, granule: str, name: Optional[str] = None, **kwargs) -> Batch:
+    def submit_rtc_job(self,
+                       granule: str,
+                       name: Optional[str] = None,
+                       dem_matching: Optional[bool] = None,
+                       include_dem: Optional[bool] = None,
+                       include_inc_map: Optional[bool] = None,
+                       include_scattering_area: Optional[bool] = None,
+                       radiometry: Union[Literal['gamma0'], Literal['sigma0']] = None,
+                       resolution: Literal[30] = None,
+                       scale: Union[Literal['power'], Literal['amplitude']] = None,
+                       speckle_filter: Optional[bool] = None,
+                       **kwargs) -> Batch:
         """Submit an RTC job
 
         Args:
             granule: The granule (scene) to use
             name: A name for the job
+            dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
+            include_dem: Include the DEM file in the product package
+            include_inc_map: Include the incidence angle map in the product package
+            include_scattering_area: Include the scattering area in the product package
+            radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area projected into the look direction (gamma0)
+            resolution: Desired output pixel spacing in meters
+            scale: Scale of output image; either power or amplitude
+            speckle_filter: Apply an Enhanced Lee speckle filter
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the RTC job
         """
-        job_dict = self.prepare_rtc_job(granule, name=name, **kwargs)
+        job_dict = self.prepare_rtc_job(granule,
+                                        name=name,
+                                        dem_matching=dem_matching,
+                                        include_dem=include_dem,
+                                        include_inc_map=include_inc_map,
+                                        include_scattering_area=include_scattering_area,
+                                        radiometry=radiometry,
+                                        resolution=resolution,
+                                        scale=scale,
+                                        speckle_filter=speckle_filter,
+                                        **kwargs)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_rtc_job(cls, granule: str, name: Optional[str] = None, **kwargs) -> dict:
+    def prepare_rtc_job(cls,
+                        granule: str,
+                        name: Optional[str] = None,
+                        dem_matching: Optional[bool] = None,
+                        include_dem: Optional[bool] = None,
+                        include_inc_map: Optional[bool] = None,
+                        include_scattering_area: Optional[bool] = None,
+                        radiometry: Union[Literal['gamma0'], Literal['sigma0']] = None,
+                        resolution: Literal[30] = None,
+                        scale: Union[Literal['power'], Literal['amplitude']] = None,
+                        speckle_filter: Optional[bool] = None,
+                        **kwargs) -> dict:
         """Submit an RTC job
 
         Args:
             granule: The granule (scene) to use
             name: A name for the job
+            dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
+            include_dem: Include the DEM file in the product package
+            include_inc_map: Include the incidence angle map in the product package
+            include_scattering_area: Include the scattering area in the product package
+            radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area projected into the look direction (gamma0)
+            resolution: Desired output pixel spacing in meters
+            scale: Scale of output image; either power or amplitude
+            speckle_filter: Apply an Enhanced Lee speckle filter
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A dictionary containing the prepared RTC job
         """
+        job_parameters = {
+            'dem_matching': dem_matching,
+            'include_dem': include_dem,
+            'include-inc_map': include_inc_map,
+            'include_scatteering_area': include_scattering_area,
+            'radiometry': radiometry,
+            'resolution': resolution,
+            'scale': scale,
+            'speckle_filter': speckle_filter,
+            **kwargs
+        }
+        for k, v in job_parameters:
+            if v is None:
+                del job_parameters[k]
         job_dict = {
-            'job_parameters': {'granules': [granule], **kwargs},
+            'job_parameters': {'granules': [granule], **job_parameters},
             'job_type': 'RTC_GAMMA',
         }
         if name is not None:
             job_dict['name'] = name
         return job_dict
 
-    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> Batch:
+    def submit_insar_job(self,
+                         granule1: str,
+                         granule2: str,
+                         name: Optional[str] = None,
+                         include_look_vectors: Optional[bool] = None,
+                         include_los_displacement: Optional[bool] = None,
+                         looks: Union[Literal['20x4'], Literal['10x2']] = None,
+                         **kwargs) -> Batch:
         """Submit an InSAR job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
             name: A name for the job
+            include_look_vectors: Include the look vector theta and phi files in the product package
+            include_los_displacement: Include a GeoTIFF in the product package containing displacement values along the Line-Of-Sight (LOS)
+            looks: Number of looks to take in range and azimuth
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
@@ -269,20 +341,39 @@ class HyP3:
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_insar_job(cls, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> dict:
+    def prepare_insar_job(cls,
+                          granule1: str,
+                          granule2: str,
+                          name: Optional[str] = None,
+                          include_look_vectors: Optional[bool] = None,
+                          include_los_displacement: Optional[bool] = None,
+                          looks: Union[Literal['20x4'], Literal['10x2']] = None,
+                          **kwargs) -> dict:
         """Submit an InSAR job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
             name: A name for the job
+            include_look_vectors: Include the look vector theta and phi files in the product package
+            include_los_displacement: Include a GeoTIFF in the product package containing displacement values along the Line-Of-Sight (LOS)
+            looks: Number of looks to take in range and azimuth
             **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A dictionary containing the prepared InSAR job
         """
+        job_parameters = {
+            'include_look_vectors': include_look_vectors,
+            'include_los_displacement': include_los_displacement,
+            'looks': looks,
+            **kwargs
+        }
+        for k, v in job_parameters:
+            if v is None:
+                del job_parameters[k]
         job_dict = {
-            'job_parameters': {'granules': [granule1, granule2], **kwargs},
+            'job_parameters': {'granules': [granule1, granule2], **job_parameters},
             'job_type': 'INSAR_GAMMA',
         }
         if name is not None:
