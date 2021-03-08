@@ -31,7 +31,7 @@ jobs:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
           activate-environment: hyp3-sdk
-          environment-file: conda-env.yml
+          environment-file: environment.yml
 
       - name: Pytest in conda environment
         shell: bash -l {0}
@@ -146,7 +146,7 @@ jobs:
           auto-update-conda: true
           python-version: 3.8
           activate-environment: hyp3-sdk
-          environment-file: conda-env.yml
+          environment-file: environment.yml
 
       - name: Pip install ${{ needs.package.outputs.SDIST_VERSION }}
         shell: bash -l {0}
