@@ -304,11 +304,9 @@ class HyP3:
             'speckle_filter': speckle_filter,
             **kwargs
         }
-        for k, v in job_parameters:
-            if v is None:
-                del job_parameters[k]
+
         job_dict = {
-            'job_parameters': {'granules': [granule], **job_parameters},
+            'job_parameters': {'granules': [granule], **{k: v for k, v in job_parameters.items() if v is not None}},
             'job_type': 'RTC_GAMMA',
         }
         if name is not None:
@@ -369,11 +367,9 @@ class HyP3:
             'looks': looks,
             **kwargs
         }
-        for k, v in job_parameters:
-            if v is None:
-                del job_parameters[k]
         job_dict = {
-            'job_parameters': {'granules': [granule1, granule2], **job_parameters},
+            'job_parameters': {'granules': [granule1, granule2],
+                               **{k: v for k, v in job_parameters.items() if v is not None}},
             'job_type': 'INSAR_GAMMA',
         }
         if name is not None:
