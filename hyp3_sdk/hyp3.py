@@ -28,7 +28,7 @@ class HyP3:
             username: Username for authenticating to urs.earthdata.nasa.gov.
                 Both username and password must be provided if either is provided.
             password: Password for authenticating to urs.earthdata.nasa.gov.
-               Both username and password must be provided if either is provided.
+                Both username and password must be provided if either is provided.
         """
         self.url = api_url
         self.session = get_authenticated_session(username, password)
