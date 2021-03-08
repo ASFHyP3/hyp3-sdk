@@ -3,7 +3,7 @@ import time
 import warnings
 from datetime import datetime
 from functools import singledispatchmethod
-from typing import List, Optional, Union, Literal
+from typing import List, Literal, Optional, Union
 from urllib.parse import urljoin
 
 from requests.exceptions import HTTPError, RequestException
@@ -240,7 +240,8 @@ class HyP3:
             include_dem: Include the DEM file in the product package
             include_inc_map: Include the incidence angle map in the product package
             include_scattering_area: Include the scattering area in the product package
-            radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area projected into the look direction (gamma0)
+            radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
+            projected into the look direction (gamma0)
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
@@ -284,7 +285,8 @@ class HyP3:
             include_dem: Include the DEM file in the product package
             include_inc_map: Include the incidence angle map in the product package
             include_scattering_area: Include the scattering area in the product package
-            radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area projected into the look direction (gamma0)
+            radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
+            projected into the look direction (gamma0)
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
@@ -328,7 +330,8 @@ class HyP3:
             granule2: The second granule (scene) to use
             name: A name for the job
             include_look_vectors: Include the look vector theta and phi files in the product package
-            include_los_displacement: Include a GeoTIFF in the product package containing displacement values along the Line-Of-Sight (LOS)
+            include_los_displacement: Include a GeoTIFF in the product package containing displacement values
+            along the Line-Of-Sight (LOS)
             looks: Number of looks to take in range and azimuth
             **kwargs: Extra job parameters specifying custom processing options
 
@@ -354,7 +357,8 @@ class HyP3:
             granule2: The second granule (scene) to use
             name: A name for the job
             include_look_vectors: Include the look vector theta and phi files in the product package
-            include_los_displacement: Include a GeoTIFF in the product package containing displacement values along the Line-Of-Sight (LOS)
+            include_los_displacement: Include a GeoTIFF in the product package containing displacement values
+            along the Line-Of-Sight (LOS)
             looks: Number of looks to take in range and azimuth
             **kwargs: Extra job parameters specifying custom processing options
 
