@@ -3,7 +3,7 @@ import time
 import warnings
 from datetime import datetime
 from functools import singledispatchmethod
-from typing import List, Optional, Union, Literal, TypedDict
+from typing import List, Optional, Union, Literal
 from urllib.parse import urljoin
 
 from requests.exceptions import HTTPError, RequestException
