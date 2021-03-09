@@ -250,17 +250,11 @@ class HyP3:
         Returns:
             A Batch object containing the RTC job
         """
-        job_dict = self.prepare_rtc_job(granule,
-                                        name=name,
-                                        dem_matching=dem_matching,
-                                        include_dem=include_dem,
-                                        include_inc_map=include_inc_map,
-                                        include_scattering_area=include_scattering_area,
-                                        radiometry=radiometry,
-                                        resolution=resolution,
-                                        scale=scale,
-                                        speckle_filter=speckle_filter,
-                                        **kwargs)
+        arguments = locals()
+        arguments.update(kwargs)
+        arguments.pop('kwargs')
+        arguments.pop('self')
+        job_dict = self.prepare_rtc_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
@@ -295,17 +289,10 @@ class HyP3:
         Returns:
             A dictionary containing the prepared RTC job
         """
-        job_parameters = {
-            'dem_matching': dem_matching,
-            'include_dem': include_dem,
-            'include-inc_map': include_inc_map,
-            'include_scatteering_area': include_scattering_area,
-            'radiometry': radiometry,
-            'resolution': resolution,
-            'scale': scale,
-            'speckle_filter': speckle_filter,
-            **kwargs
-        }
+        job_parameters = locals().copy()
+        job_parameters.update(kwargs)
+        for key in ['kwargs', 'granule', 'name', 'cls']:
+            job_parameters.pop(key, None)
 
         job_dict = {
             'job_parameters': {'granules': [granule], **{k: v for k, v in job_parameters.items() if v is not None}},
@@ -338,7 +325,11 @@ class HyP3:
         Returns:
             A Batch object containing the InSAR job
         """
-        job_dict = self.prepare_insar_job(granule1, granule2, name=name, **kwargs)
+        arguments = locals().copy()
+        arguments.update(kwargs)
+        arguments.pop('kwargs')
+        arguments.pop('self')
+        job_dict = self.prepare_insar_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
@@ -365,12 +356,11 @@ class HyP3:
         Returns:
             A dictionary containing the prepared InSAR job
         """
-        job_parameters = {
-            'include_look_vectors': include_look_vectors,
-            'include_los_displacement': include_los_displacement,
-            'looks': looks,
-            **kwargs
-        }
+        job_parameters = locals().copy()
+        job_parameters.update(kwargs)
+        for key in ['kwargs', 'cls', 'granule1', 'granule2', 'name']:
+            job_parameters.pop(key)
+
         job_dict = {
             'job_parameters': {'granules': [granule1, granule2],
                                **{k: v for k, v in job_parameters.items() if v is not None}},
