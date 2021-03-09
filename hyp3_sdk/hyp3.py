@@ -225,6 +225,7 @@ class HyP3:
                        dem_matching: bool = False,
                        include_dem: bool = False,
                        include_inc_map: bool = False,
+                       include_rgb: bool = False,
                        include_scattering_area: bool = False,
                        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
                        resolution: Literal[30] = 30,
@@ -238,6 +239,7 @@ class HyP3:
             dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
             include_dem: Include the DEM file in the product package
             include_inc_map: Include the incidence angle map in the product package
+            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules (ignored for single-pol granules)
             include_scattering_area: Include the scattering area in the product package
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
                 projected into the look direction (gamma0)
@@ -260,6 +262,7 @@ class HyP3:
                         dem_matching: bool = False,
                         include_dem: bool = False,
                         include_inc_map: bool = False,
+                        include_rgb: bool = False,
                         include_scattering_area: bool = False,
                         radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
                         resolution: Literal[30] = 30,
@@ -273,6 +276,7 @@ class HyP3:
             dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
             include_dem: Include the DEM file in the product package
             include_inc_map: Include the incidence angle map in the product package
+            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules (ignored for single-pol granules)
             include_scattering_area: Include the scattering area in the product package
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
                 projected into the look direction (gamma0)
