@@ -241,7 +241,7 @@ class HyP3:
             include_inc_map: Include the incidence angle map in the product package
             include_scattering_area: Include the scattering area in the product package
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
-            projected into the look direction (gamma0)
+                projected into the look direction (gamma0)
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
@@ -265,9 +265,9 @@ class HyP3:
                         include_dem: Optional[bool] = None,
                         include_inc_map: Optional[bool] = None,
                         include_scattering_area: Optional[bool] = None,
-                       radiometry: Literal['sigma0', 'gamma0'] = None,
-                       resolution: Literal[30] = None,
-                       scale: Literal['amplitude', 'power'] = None,
+                        radiometry: Literal['sigma0', 'gamma0'] = None,
+                        resolution: Literal[30] = None,
+                        scale: Literal['amplitude', 'power'] = None,
                         speckle_filter: Optional[bool] = None,
                         **kwargs) -> dict:
         """Submit an RTC job
@@ -280,7 +280,7 @@ class HyP3:
             include_inc_map: Include the incidence angle map in the product package
             include_scattering_area: Include the scattering area in the product package
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
-            projected into the look direction (gamma0)
+                projected into the look direction (gamma0)
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
@@ -318,7 +318,7 @@ class HyP3:
             name: A name for the job
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
-            along the Line-Of-Sight (LOS)
+                along the Line-Of-Sight (LOS)
             looks: Number of looks to take in range and azimuth
             **kwargs: Extra job parameters specifying custom processing options
 
@@ -349,7 +349,7 @@ class HyP3:
             name: A name for the job
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
-            along the Line-Of-Sight (LOS)
+                along the Line-Of-Sight (LOS)
             looks: Number of looks to take in range and azimuth
             **kwargs: Extra job parameters specifying custom processing options
 
@@ -358,15 +358,8 @@ class HyP3:
         """
         job_parameters = locals().copy()
         job_parameters.update(kwargs)
-        for key in ['kwargs', 'cls', 'granule1', 'granule2', 'name']:
-            job_parameters.pop(key)arguments = locals()
-        for key in ['kwargs', 'granule1', 'granule2', 'name', 'cls']:
-            arguments.pop(key)
-
-        job_parameters = {
-            **arguments,
-            **kwargs
-        }
+        for key in ['cls', 'granule1', 'granule2', 'name', 'kwargs']:
+            job_parameters.pop(key)
 
         job_dict = {
             'job_parameters': {'granules': [granule1, granule2],
