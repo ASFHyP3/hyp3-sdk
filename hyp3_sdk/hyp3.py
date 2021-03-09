@@ -239,7 +239,8 @@ class HyP3:
             dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
             include_dem: Include the DEM file in the product package
             include_inc_map: Include the incidence angle map in the product package
-            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules (ignored for single-pol granules)
+            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules
+            (ignored for single-pol granules)
             include_scattering_area: Include the scattering area in the product package
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
                 projected into the look direction (gamma0)
@@ -276,7 +277,8 @@ class HyP3:
             dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
             include_dem: Include the DEM file in the product package
             include_inc_map: Include the incidence angle map in the product package
-            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules (ignored for single-pol granules)
+            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules
+            (ignored for single-pol granules)
             include_scattering_area: Include the scattering area in the product package
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
                 projected into the look direction (gamma0)
