@@ -3,12 +3,14 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
+  - python>=3.8
   - pip
   # For packaging, and testing
   - flake8
   - flake8-import-order
   - flake8-blind-except
   - flake8-builtins
+  - jupyter
   - setuptools
   - setuptools_scm
   - wheel
@@ -23,3 +25,4 @@ dependencies:
   - pip:
     # For packaging and testing
     - s3pypi
+    - -e .[develop]
