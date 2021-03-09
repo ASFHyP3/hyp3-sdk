@@ -226,9 +226,9 @@ class HyP3:
                        include_dem: Optional[bool] = None,
                        include_inc_map: Optional[bool] = None,
                        include_scattering_area: Optional[bool] = None,
-                       radiometry: Union[Literal['gamma0'], Literal['sigma0']] = None,
+                       radiometry: Literal['sigma0', 'gamma0'] = None,
                        resolution: Literal[30] = None,
-                       scale: Union[Literal['power'], Literal['amplitude']] = None,
+                       scale: Literal['amplitude', 'power'] = None,
                        speckle_filter: Optional[bool] = None,
                        **kwargs) -> Batch:
         """Submit an RTC job
@@ -265,9 +265,9 @@ class HyP3:
                         include_dem: Optional[bool] = None,
                         include_inc_map: Optional[bool] = None,
                         include_scattering_area: Optional[bool] = None,
-                        radiometry: Union[Literal['gamma0'], Literal['sigma0']] = None,
-                        resolution: Literal[30] = None,
-                        scale: Union[Literal['power'], Literal['amplitude']] = None,
+                       radiometry: Literal['sigma0', 'gamma0'] = None,
+                       resolution: Literal[30] = None,
+                       scale: Literal['amplitude', 'power'] = None,
                         speckle_filter: Optional[bool] = None,
                         **kwargs) -> dict:
         """Submit an RTC job
@@ -308,7 +308,7 @@ class HyP3:
                          name: Optional[str] = None,
                          include_look_vectors: Optional[bool] = None,
                          include_los_displacement: Optional[bool] = None,
-                         looks: Union[Literal['20x4'], Literal['10x2']] = None,
+                         looks: Literal['10x2', '20x2'] = None,
                          **kwargs) -> Batch:
         """Submit an InSAR job
 
@@ -359,7 +359,14 @@ class HyP3:
         job_parameters = locals().copy()
         job_parameters.update(kwargs)
         for key in ['kwargs', 'cls', 'granule1', 'granule2', 'name']:
-            job_parameters.pop(key)
+            job_parameters.pop(key)arguments = locals()
+        for key in ['kwargs', 'granule1', 'granule2', 'name', 'cls']:
+            arguments.pop(key)
+
+        job_parameters = {
+            **arguments,
+            **kwargs
+        }
 
         job_dict = {
             'job_parameters': {'granules': [granule1, granule2],
