@@ -222,15 +222,14 @@ class HyP3:
     def submit_rtc_job(self,
                        granule: str,
                        name: Optional[str] = None,
-                       dem_matching: Optional[bool] = None,
-                       include_dem: Optional[bool] = None,
-                       include_inc_map: Optional[bool] = None,
-                       include_scattering_area: Optional[bool] = None,
-                       radiometry: Literal['sigma0', 'gamma0'] = None,
-                       resolution: Literal[30] = None,
-                       scale: Literal['amplitude', 'power'] = None,
-                       speckle_filter: Optional[bool] = None,
-                       **kwargs) -> Batch:
+                       dem_matching: bool = False,
+                       include_dem: bool = False,
+                       include_inc_map: bool = False,
+                       include_scattering_area: bool = False,
+                       radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+                       resolution: Literal[30] = 30,
+                       scale: Literal['amplitude', 'power'] = 'power',
+                       speckle_filter: bool = False) -> Batch:
         """Submit an RTC job
 
         Args:
@@ -245,14 +244,11 @@ class HyP3:
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
-            **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the RTC job
         """
         arguments = locals()
-        arguments.update(kwargs)
-        arguments.pop('kwargs')
         arguments.pop('self')
         job_dict = self.prepare_rtc_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
@@ -261,15 +257,14 @@ class HyP3:
     def prepare_rtc_job(cls,
                         granule: str,
                         name: Optional[str] = None,
-                        dem_matching: Optional[bool] = None,
-                        include_dem: Optional[bool] = None,
-                        include_inc_map: Optional[bool] = None,
-                        include_scattering_area: Optional[bool] = None,
-                        radiometry: Literal['sigma0', 'gamma0'] = None,
-                        resolution: Literal[30] = None,
-                        scale: Literal['amplitude', 'power'] = None,
-                        speckle_filter: Optional[bool] = None,
-                        **kwargs) -> dict:
+                        dem_matching: bool = False,
+                        include_dem: bool = False,
+                        include_inc_map: bool = False,
+                        include_scattering_area: bool = False,
+                        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+                        resolution: Literal[30] = 30,
+                        scale: Literal['amplitude', 'power'] = 'power',
+                        speckle_filter: bool = False) -> dict:
         """Submit an RTC job
 
         Args:
@@ -284,14 +279,12 @@ class HyP3:
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
-            **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A dictionary containing the prepared RTC job
         """
         job_parameters = locals().copy()
-        job_parameters.update(kwargs)
-        for key in ['kwargs', 'granule', 'name', 'cls']:
+        for key in ['granule', 'name', 'cls']:
             job_parameters.pop(key, None)
 
         job_dict = {
@@ -306,10 +299,9 @@ class HyP3:
                          granule1: str,
                          granule2: str,
                          name: Optional[str] = None,
-                         include_look_vectors: Optional[bool] = None,
-                         include_los_displacement: Optional[bool] = None,
-                         looks: Literal['10x2', '20x2'] = None,
-                         **kwargs) -> Batch:
+                         include_look_vectors: bool = False,
+                         include_los_displacement: bool = False,
+                         looks: Literal['20x4', '10x2'] = '20x4') -> Batch:
         """Submit an InSAR job
 
         Args:
@@ -320,14 +312,11 @@ class HyP3:
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
                 along the Line-Of-Sight (LOS)
             looks: Number of looks to take in range and azimuth
-            **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the InSAR job
         """
         arguments = locals().copy()
-        arguments.update(kwargs)
-        arguments.pop('kwargs')
         arguments.pop('self')
         job_dict = self.prepare_insar_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
@@ -337,10 +326,9 @@ class HyP3:
                           granule1: str,
                           granule2: str,
                           name: Optional[str] = None,
-                          include_look_vectors: Optional[bool] = None,
-                          include_los_displacement: Optional[bool] = None,
-                          looks: Literal['20x4', '10x2'] = None,
-                          **kwargs) -> dict:
+                          include_look_vectors: bool = False,
+                          include_los_displacement: bool = False,
+                          looks: Literal['20x4', '10x2'] = '20x4') -> dict:
         """Submit an InSAR job
 
         Args:
@@ -351,14 +339,12 @@ class HyP3:
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
                 along the Line-Of-Sight (LOS)
             looks: Number of looks to take in range and azimuth
-            **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A dictionary containing the prepared InSAR job
         """
         job_parameters = locals().copy()
-        job_parameters.update(kwargs)
-        for key in ['cls', 'granule1', 'granule2', 'name', 'kwargs']:
+        for key in ['cls', 'granule1', 'granule2', 'name']:
             job_parameters.pop(key)
 
         job_dict = {
