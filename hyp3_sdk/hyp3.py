@@ -288,7 +288,7 @@ class HyP3:
             job_parameters.pop(key, None)
 
         job_dict = {
-            'job_parameters': {'granules': [granule], **{k: v for k, v in job_parameters.items() if v is not None}},
+            'job_parameters': {'granules': [granule], **job_parameters},
             'job_type': 'RTC_GAMMA',
         }
         if name is not None:
@@ -348,8 +348,7 @@ class HyP3:
             job_parameters.pop(key)
 
         job_dict = {
-            'job_parameters': {'granules': [granule1, granule2],
-                               **{k: v for k, v in job_parameters.items() if v is not None}},
+            'job_parameters': {'granules': [granule1, granule2], **job_parameters},
             'job_type': 'INSAR_GAMMA',
         }
         if name is not None:
