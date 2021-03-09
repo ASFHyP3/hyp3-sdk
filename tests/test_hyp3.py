@@ -124,6 +124,14 @@ def test_prepare_rtc_job():
         'job_type': 'RTC_GAMMA',
         'job_parameters': {
             'granules': ['my_granule'],
+            'dem_matching': False,
+            'include_dem': False,
+            'include_inc_map': False,
+            'include_scattering_area': False,
+            'radiometry': 'gamma0',
+            'resolution': 30,
+            'scale': 'power',
+            'speckle_filter': False,
         }
     }
     assert HyP3.prepare_rtc_job(granule='my_granule', name='my_name') == {
@@ -131,16 +139,15 @@ def test_prepare_rtc_job():
         'name': 'my_name',
         'job_parameters': {
             'granules': ['my_granule'],
+            'dem_matching': False,
+            'include_dem': False,
+            'include_inc_map': False,
+            'include_scattering_area': False,
+            'radiometry': 'gamma0',
+            'resolution': 30,
+            'scale': 'power',
+            'speckle_filter': False,
         },
-    }
-    assert HyP3.prepare_rtc_job(granule='my_granule', x='foo', y=1.0, z=True) == {
-        'job_type': 'RTC_GAMMA',
-        'job_parameters': {
-            'granules': ['my_granule'],
-            'x': 'foo',
-            'y': 1.0,
-            'z': True,
-        }
     }
 
 
@@ -149,6 +156,9 @@ def test_prepare_insar_job():
         'job_type': 'INSAR_GAMMA',
         'job_parameters': {
             'granules': ['my_granule1', 'my_granule2'],
+            'include_look_vectors': False,
+            'include_los_displacement': False,
+            'looks': '20x4',
         }
     }
     assert HyP3.prepare_insar_job(granule1='my_granule1',  granule2='my_granule2', name='my_name') == {
@@ -156,16 +166,10 @@ def test_prepare_insar_job():
         'name': 'my_name',
         'job_parameters': {
             'granules': ['my_granule1', 'my_granule2'],
+            'include_look_vectors': False,
+            'include_los_displacement': False,
+            'looks': '20x4',
         },
-    }
-    assert HyP3.prepare_insar_job(granule1='my_granule1',  granule2='my_granule2', x='foo', y=1.0, z=True) == {
-        'job_type': 'INSAR_GAMMA',
-        'job_parameters': {
-            'granules': ['my_granule1', 'my_granule2'],
-            'x': 'foo',
-            'y': 1.0,
-            'z': True,
-        }
     }
 
 
