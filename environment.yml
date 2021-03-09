@@ -25,3 +25,4 @@ dependencies:
   - pip:
     # For packaging and testing
     - s3pypi
+    - -e .[develop]
