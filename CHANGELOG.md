@@ -8,8 +8,8 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.5.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.5.0...v0.5.1)
 
-## Changed
-- `util.AUTH_URL` changed so that no login page is loaded, and a 401 is given on auth failure.
+### Fixed
+- `get_authenticated_session` now correctly throws `AuthenticationError` when no `.netrc` file exists and no credentials are provided
 
 ## [0.5.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.4.0...v0.5.0)
 
