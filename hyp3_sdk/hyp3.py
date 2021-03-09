@@ -339,7 +339,7 @@ class HyP3:
                           name: Optional[str] = None,
                           include_look_vectors: Optional[bool] = None,
                           include_los_displacement: Optional[bool] = None,
-                          looks: Union[Literal['20x4'], Literal['10x2']] = None,
+                          looks: Literal['20x4', '10x2'] = None,
                           **kwargs) -> dict:
         """Submit an InSAR job
 
