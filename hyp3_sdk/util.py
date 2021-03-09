@@ -11,7 +11,7 @@ import hyp3_sdk
 from hyp3_sdk.exceptions import AuthenticationError
 
 AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
-           '&redirect_uri=https://auth.asf.alaska.edu/login'
+           '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
 
 
 def get_authenticated_session(username: str, password: str) -> requests.Session:

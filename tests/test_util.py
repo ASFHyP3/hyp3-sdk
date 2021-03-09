@@ -2,7 +2,7 @@ from pathlib import Path
 
 import responses
 
-from hyp3_sdk.util import download_file
+from hyp3_sdk.util import download_file, AUTH_URL, get_authenticated_session
 
 
 @responses.activate
