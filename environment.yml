@@ -23,6 +23,4 @@ dependencies:
   - tqdm
   - urllib3
   - pip:
-    # For packaging and testing
-    - s3pypi
     - -e .[develop]
