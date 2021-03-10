@@ -17,6 +17,10 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - HyP3 prepare and submit methods now include processing options as named parameters
 - Exceptions raised for HyP3 errors will include the HyP3 API response details
+- `asf_search.get_nearest_neighbors` is no longer dependent on state vector information in CMR
+  - now limited to Sentinel-1 granules
+  - now raises `ASFSearchError` when the reference granule cannot be found
+  - results no longer include `perpendicularBaseline` or `temporalBaseline` fields
 
 ### Fixed
 - `get_authenticated_session` now correctly throws `AuthenticationError` when no `.netrc` file
