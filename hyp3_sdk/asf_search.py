@@ -2,7 +2,7 @@ from typing import Iterable, List, Union
 
 import requests
 
-from hyp3_sdk.exceptions import handle_search_request_response
+from hyp3_sdk.exceptions import search_raise_for_status
 
 _BASELINE_API = 'https://api.daac.asf.alaska.edu/services/search/baseline'
 _SEARCH_API = 'https://api.daac.asf.alaska.edu/services/search/param'
@@ -27,7 +27,7 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
         'granule_list': granule_list,
     }
     response = requests.post(_SEARCH_API, params=params)
-    handle_search_request_response(response)
+    search_raise_for_status(response)
 
     metadata = [result for result in response.json()['results']
                 if not result['productType'].startswith('METADATA_')]
@@ -53,7 +53,7 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
         'master': granule,
     }
     response = requests.get(_BASELINE_API, params=params)
-    handle_search_request_response(response)
+    search_raise_for_status(response)
 
     all_neighbors = response.json()['results']
     selected_neighbors = [n for n in all_neighbors if n['temporalBaseline'] < 0]

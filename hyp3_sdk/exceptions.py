@@ -16,21 +16,19 @@ class AuthenticationError(HyP3Error):
     """Raise when authentication does not succeed"""
 
 
-def handle_hyp3_request_response(response: Response) -> Response:
+def hyp3_raise_for_status(response: Response):
     try:
         response.raise_for_status()
     except HTTPError:
         if 400 <= response.status_code < 500:
             raise HyP3Error(f'{response} {response.json()["detail"]}')
         raise
-    return response
 
 
-def handle_search_request_response(response: Response) -> Response:
+def search_raise_for_status(response: Response):
     try:
         response.raise_for_status()
     except HTTPError:
         if 400 <= response.status_code < 500:
             raise ASFSearchError(f'{response} {response.json()["error"]["report"]}')
         raise
-    return response
