@@ -9,7 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.6.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.5.0...v0.6.0)
 
 ### Added
-- `asf_search` module will now raise a `exceptions.ASFSearchError` when it encounters problems and
+- `asf_search` module will now raise an `exceptions.ASFSearchError` when it encounters problems and
   will include the Search API response details
 
 ### Changed
