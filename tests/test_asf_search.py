@@ -93,7 +93,6 @@ def test_get_nearest_neighbor():
            [{'startTime': 4}, {'startTime': 3}, {'startTime': 2}]
 
 
-
 @responses.activate
 def test_get_nearest_neighbors_no_reference():
     responses.add(responses.POST, asf_search._SEARCH_API, json=[[]])
