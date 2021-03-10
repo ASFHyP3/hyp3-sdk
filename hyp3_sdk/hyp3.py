@@ -6,7 +6,7 @@ from functools import singledispatchmethod
 from typing import List, Literal, Optional, Union
 from urllib.parse import urljoin
 
-from requests.exceptions import HTTPError, RequestException
+from requests.exceptions import RequestException
 from tqdm.auto import tqdm
 
 import hyp3_sdk
@@ -64,8 +64,9 @@ class HyP3:
         response = self.session.get(urljoin(self.url, '/jobs'), params=params)
         try:
             response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error(f'Error while trying to query {response.url}')
+        except RequestException:
+            raise HyP3Error(f'{response} {response.json()["detail"]}')
+
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
         if not jobs:
             warnings.warn('Found zero jobs', UserWarning)
@@ -80,11 +81,11 @@ class HyP3:
         Returns:
             A Job object
         """
+        response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
         try:
-            response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
             response.raise_for_status()
         except RequestException:
-            raise HyP3Error(f'Unable to get job by ID {job_id}')
+            raise HyP3Error(f'{response} {response.json()["detail"]}')
         return Job.from_dict(response.json())
 
     @singledispatchmethod
@@ -177,8 +178,8 @@ class HyP3:
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
         try:
             response.raise_for_status()
-        except HTTPError as e:
-            raise HyP3Error(str(e))
+        except RequestException:
+            raise HyP3Error(f'{response} {response.json()["detail"]}')
 
         batch = Batch()
         for job in response.json()['jobs']:
@@ -367,11 +368,11 @@ class HyP3:
         Returns:
             Your user information
         """
+        response = self.session.get(urljoin(self.url, '/user'))
         try:
-            response = self.session.get(urljoin(self.url, '/user'))
             response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error('Unable to get user information from API')
+        except RequestException:
+            raise HyP3Error(f'{response} {response.json()["detail"]}')
         return response.json()
 
     def check_quota(self) -> int:
