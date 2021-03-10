@@ -21,7 +21,7 @@ HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 class HyP3:
     """A python wrapper around the HyP3 API"""
 
-    def __init__(self, api_url: str = HYP3_PROD, username: Optional = None, password: Optional = None,
+    def __init__(self, api_url: str = HYP3_PROD, username: Optional[str] = None, password: Optional[str] = None,
                  prompt: bool = False):
         """
         Args:
