@@ -6,11 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+<<<<<<< HEAD
 ## [0.5.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.4.0...v0.5.0)
 
 ### Changed
 - Hyp3 prepare and submit methods now include processing options as named parameters
 
+=======
+## [0.6.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.5.0...v0.6.0)
+
+### Changed
+- HyP3 prepare and submit methods now include processing options as named parameters
+
+### Fixed
+- `get_authenticated_session` now correctly throws `AuthenticationError` when no `.netrc` file exists and no credentials are provided
+>>>>>>> 5cb607705ce5c8ec49d28a96ebca9ef863446a04
 
 ## [0.5.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.4.0...v0.5.0)
 

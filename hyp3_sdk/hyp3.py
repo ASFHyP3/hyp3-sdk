@@ -28,7 +28,7 @@ class HyP3:
             username: Username for authenticating to urs.earthdata.nasa.gov.
                 Both username and password must be provided if either is provided.
             password: Password for authenticating to urs.earthdata.nasa.gov.
-               Both username and password must be provided if either is provided.
+                Both username and password must be provided if either is provided.
         """
         self.url = api_url
         self.session = get_authenticated_session(username, password)
@@ -222,15 +222,15 @@ class HyP3:
     def submit_rtc_job(self,
                        granule: str,
                        name: Optional[str] = None,
-                       dem_matching: Optional[bool] = None,
-                       include_dem: Optional[bool] = None,
-                       include_inc_map: Optional[bool] = None,
-                       include_scattering_area: Optional[bool] = None,
-                       radiometry: Literal['sigma0', 'gamma0'] = None,
-                       resolution: Literal[30] = None,
-                       scale: Literal['amplitude', 'power'] = None,
-                       speckle_filter: Optional[bool] = None,
-                       **kwargs) -> Batch:
+                       dem_matching: bool = False,
+                       include_dem: bool = False,
+                       include_inc_map: bool = False,
+                       include_rgb: bool = False,
+                       include_scattering_area: bool = False,
+                       radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+                       resolution: Literal[30] = 30,
+                       scale: Literal['amplitude', 'power'] = 'power',
+                       speckle_filter: bool = False) -> Batch:
         """Submit an RTC job
 
         Args:
@@ -239,20 +239,19 @@ class HyP3:
             dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
             include_dem: Include the DEM file in the product package
             include_inc_map: Include the incidence angle map in the product package
+            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules
+            (ignored for single-pol granules)
             include_scattering_area: Include the scattering area in the product package
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
             projected into the look direction (gamma0)
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
-            **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the RTC job
         """
         arguments = locals()
-        arguments.update(kwargs)
-        arguments.pop('kwargs')
         arguments.pop('self')
         job_dict = self.prepare_rtc_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
@@ -261,15 +260,15 @@ class HyP3:
     def prepare_rtc_job(cls,
                         granule: str,
                         name: Optional[str] = None,
-                        dem_matching: Optional[bool] = None,
-                        include_dem: Optional[bool] = None,
-                        include_inc_map: Optional[bool] = None,
-                        include_scattering_area: Optional[bool] = None,
-                       radiometry: Literal['sigma0', 'gamma0'] = None,
-                       resolution: Literal[30] = None,
-                       scale: Literal['amplitude', 'power'] = None,
-                        speckle_filter: Optional[bool] = None,
-                        **kwargs) -> dict:
+                        dem_matching: bool = False,
+                        include_dem: bool = False,
+                        include_inc_map: bool = False,
+                        include_rgb: bool = False,
+                        include_scattering_area: bool = False,
+                        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+                        resolution: Literal[30] = 30,
+                        scale: Literal['amplitude', 'power'] = 'power',
+                        speckle_filter: bool = False) -> dict:
         """Submit an RTC job
 
         Args:
@@ -278,26 +277,27 @@ class HyP3:
             dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
             include_dem: Include the DEM file in the product package
             include_inc_map: Include the incidence angle map in the product package
+            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules
+            (ignored for single-pol granules)
             include_scattering_area: Include the scattering area in the product package
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
-            projected into the look direction (gamma0)
+                projected into the look direction (gamma0)
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
-            **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A dictionary containing the prepared RTC job
         """
         job_parameters = locals().copy()
-        job_parameters.update(kwargs)
         for key in ['kwargs', 'granule', 'name', 'cls']:
             job_parameters.pop(key, None)
 
         job_dict = {
             'job_parameters': {'granules': [granule], **{k: v for k, v in job_parameters.items() if v is not None}},
-            'job_type': 'RTC_GAMMA',
+            'job_type': 'RTC_GAMMA'
         }
+
         if name is not None:
             job_dict['name'] = name
         return job_dict
@@ -306,10 +306,9 @@ class HyP3:
                          granule1: str,
                          granule2: str,
                          name: Optional[str] = None,
-                         include_look_vectors: Optional[bool] = None,
-                         include_los_displacement: Optional[bool] = None,
-                         looks: Literal['10x2', '20x2'] = None,
-                         **kwargs) -> Batch:
+                         include_look_vectors: bool = False,
+                         include_los_displacement: bool = False,
+                         looks: Literal['20x4', '10x2'] = '20x4') -> Batch:
         """Submit an InSAR job
 
         Args:
@@ -318,16 +317,13 @@ class HyP3:
             name: A name for the job
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
-            along the Line-Of-Sight (LOS)
+                along the Line-Of-Sight (LOS)
             looks: Number of looks to take in range and azimuth
-            **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A Batch object containing the InSAR job
         """
         arguments = locals().copy()
-        arguments.update(kwargs)
-        arguments.pop('kwargs')
         arguments.pop('self')
         job_dict = self.prepare_insar_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
@@ -337,10 +333,9 @@ class HyP3:
                           granule1: str,
                           granule2: str,
                           name: Optional[str] = None,
-                          include_look_vectors: Optional[bool] = None,
-                          include_los_displacement: Optional[bool] = None,
-                          looks: Union[Literal['20x4'], Literal['10x2']] = None,
-                          **kwargs) -> dict:
+                          include_look_vectors: bool = False,
+                          include_los_displacement: bool = False,
+                          looks: Literal['20x4', '10x2'] = '20x4') -> dict:
         """Submit an InSAR job
 
         Args:
@@ -349,28 +344,18 @@ class HyP3:
             name: A name for the job
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
-            along the Line-Of-Sight (LOS)
+                along the Line-Of-Sight (LOS)
             looks: Number of looks to take in range and azimuth
-            **kwargs: Extra job parameters specifying custom processing options
 
         Returns:
             A dictionary containing the prepared InSAR job
         """
         job_parameters = locals().copy()
-        job_parameters.update(kwargs)
-        for key in ['kwargs', 'cls', 'granule1', 'granule2', 'name']:
-            job_parameters.pop(key)arguments = locals()
-        for key in ['kwargs', 'granule1', 'granule2', 'name', 'cls']:
-            arguments.pop(key)
-
-        job_parameters = {
-            **arguments,
-            **kwargs
-        }
+        for key in ['cls', 'granule1', 'granule2', 'name']:
+            job_parameters.pop(key)
 
         job_dict = {
-            'job_parameters': {'granules': [granule1, granule2],
-                               **{k: v for k, v in job_parameters.items() if v is not None}},
+            'job_parameters': {'granules': [granule1, granule2], **job_parameters},
             'job_type': 'INSAR_GAMMA',
         }
         if name is not None:
