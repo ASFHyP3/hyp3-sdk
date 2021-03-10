@@ -16,7 +16,7 @@ class AuthenticationError(HyP3Error):
     """Raise when authentication does not succeed"""
 
 
-def hyp3_raise_for_status(response: Response):
+def raise_for_hyp3_status(response: Response):
     try:
         response.raise_for_status()
     except HTTPError:
@@ -25,7 +25,7 @@ def hyp3_raise_for_status(response: Response):
         raise
 
 
-def search_raise_for_status(response: Response):
+def raise_for_search_status(response: Response):
     try:
         response.raise_for_status()
     except HTTPError:
