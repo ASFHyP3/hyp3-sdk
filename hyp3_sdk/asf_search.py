@@ -2,7 +2,6 @@ from typing import Iterable, List, Union
 
 import requests
 
-_BASELINE_API = 'https://api.daac.asf.alaska.edu/services/search/baseline'
 _SEARCH_API = 'https://api.daac.asf.alaska.edu/services/search/param'
 
 
@@ -37,7 +36,7 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
 
 
 def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
-    """Get a granules nearest neighbors from a temporal stack (backwards in time)
+    """Get a Sentinel-1 granule's nearest neighbors from a temporal stack (backwards in time)
 
     Args:
         granule: reference granule
@@ -47,13 +46,34 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
         neighbors: a list of neighbors sorted by time
     """
     params = {
-        'output': 'jsonlite',
-        'master': granule,
+        'output': 'json',  # jsonlite doesn't include centerLat/centerLon
+        'granule_list': granule,
     }
-    response = requests.get(_BASELINE_API, params=params)
+    response = requests.post(_SEARCH_API, params=params)
     response.raise_for_status()
-    all_neighbors = response.json()['results']
-    selected_neighbors = [n for n in all_neighbors if n['temporalBaseline'] < 0]
-    selected_neighbors.sort(key=lambda k: k['temporalBaseline'], reverse=True)
+    reference = [r for r in response.json()[0] if not r['processingLevel'].startswith('METADATA_')][0]
 
-    return selected_neighbors[:max_neighbors]
+    params = {
+        'output': 'jsonlite',
+        'platform': 'S1',
+        'intersectsWith': f'POINT ({reference["centerLon"]} {reference["centerLat"]})',
+        'end': reference['startTime'],  # includes reference scene
+        'beamMode': reference['beamMode'],
+        'flightDirection': reference['flightDirection'],
+        'processingLevel': reference['processingLevel'],
+        'relativeOrbit': reference['relativeOrbit'],
+        'polarization': _get_polarization(reference['polarization']),
+        'lookDirection': reference['lookDirection'],
+    }
+    response = requests.post(_SEARCH_API, params=params)
+    response.raise_for_status()
+    neighbors = sorted(response.json()['results'], key=lambda x: x['startTime'], reverse=True)
+    return neighbors[1:max_neighbors+1]
+
+
+def _get_polarization(input_polarization: str):
+    if input_polarization in ('VV', 'VV+VH'):
+        return 'VV,VV+VH'
+    if input_polarization in ('HH', 'HH+HV'):
+        return 'HH,HH+HV'
+    return input_polarization
