@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 
 from dateutil import tz
 from dateutil.parser import parse as parse_date
-from requests import RequestException
+from requests import HTTPError
 from tqdm.auto import tqdm
 
 from hyp3_sdk.exceptions import HyP3Error
@@ -133,7 +133,7 @@ class Job:
             filename = location / file['filename']
             try:
                 downloaded_files.append(download_file(download_url, filename, chunk_size=10485760))
-            except RequestException:
+            except HTTPError:
                 raise HyP3Error(f'Unable to download file: {download_url}')
         return downloaded_files
 

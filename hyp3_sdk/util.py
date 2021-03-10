@@ -28,14 +28,14 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
         response = s.get(AUTH_URL, auth=(username, password))
         try:
             response.raise_for_status()
-        except requests.RequestException:
+        except requests.HTTPError:
             raise AuthenticationError('Was not able to authenticate with credentials provided\n'
                                       'This could be due to invalid credentials or a connection error.')
     else:
         response = s.get(AUTH_URL)
         try:
             response.raise_for_status()
-        except requests.RequestException:
+        except requests.HTTPError:
             raise AuthenticationError('Was not able to authenticate with .netrc file and no credentials provided\n'
                                       'This could be due to invalid credentials in .netrc or a connection error.')
     return s

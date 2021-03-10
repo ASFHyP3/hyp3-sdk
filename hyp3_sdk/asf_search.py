@@ -29,7 +29,7 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
     response = requests.post(_SEARCH_API, params=params)
     try:
         response.raise_for_status()
-    except requests.RequestException:
+    except requests.HTTPError:
         raise ASFSearchError(f'{response} {response.json()["detail"]}')
 
     metadata = [result for result in response.json()['results']
@@ -58,7 +58,7 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
     response = requests.get(_BASELINE_API, params=params)
     try:
         response.raise_for_status()
-    except requests.RequestException:
+    except requests.HTTPError:
         raise ASFSearchError(f'{response} {response.json()["detail"]}')
 
     all_neighbors = response.json()['results']

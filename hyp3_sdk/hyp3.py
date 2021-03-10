@@ -6,7 +6,7 @@ from functools import singledispatchmethod
 from typing import List, Literal, Optional, Union
 from urllib.parse import urljoin
 
-from requests.exceptions import RequestException
+from requests.exceptions import HTTPError
 from tqdm.auto import tqdm
 
 import hyp3_sdk
@@ -64,7 +64,7 @@ class HyP3:
         response = self.session.get(urljoin(self.url, '/jobs'), params=params)
         try:
             response.raise_for_status()
-        except RequestException:
+        except HTTPError:
             raise HyP3Error(f'{response} {response.json()["detail"]}')
 
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
@@ -84,7 +84,7 @@ class HyP3:
         response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
         try:
             response.raise_for_status()
-        except RequestException:
+        except HTTPError:
             raise HyP3Error(f'{response} {response.json()["detail"]}')
         return Job.from_dict(response.json())
 
@@ -178,7 +178,7 @@ class HyP3:
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
         try:
             response.raise_for_status()
-        except RequestException:
+        except HTTPError:
             raise HyP3Error(f'{response} {response.json()["detail"]}')
 
         batch = Batch()
@@ -371,7 +371,7 @@ class HyP3:
         response = self.session.get(urljoin(self.url, '/user'))
         try:
             response.raise_for_status()
-        except RequestException:
+        except HTTPError:
             raise HyP3Error(f'{response} {response.json()["detail"]}')
         return response.json()
 
