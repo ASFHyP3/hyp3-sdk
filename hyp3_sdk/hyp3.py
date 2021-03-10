@@ -6,11 +6,10 @@ from functools import singledispatchmethod
 from typing import List, Literal, Optional, Union
 from urllib.parse import urljoin
 
-from requests.exceptions import HTTPError
 from tqdm.auto import tqdm
 
 import hyp3_sdk
-from hyp3_sdk.exceptions import HyP3Error
+from hyp3_sdk.exceptions import HyP3Error, handle_hyp3_request_response
 from hyp3_sdk.jobs import Batch, Job
 from hyp3_sdk.util import get_authenticated_session
 
@@ -62,10 +61,7 @@ class HyP3:
             params['status_code'] = status
 
         response = self.session.get(urljoin(self.url, '/jobs'), params=params)
-        try:
-            response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error(f'{response} {response.json()["detail"]}')
+        handle_hyp3_request_response(response)
 
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
         if not jobs:
@@ -82,10 +78,8 @@ class HyP3:
             A Job object
         """
         response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
-        try:
-            response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error(f'{response} {response.json()["detail"]}')
+        handle_hyp3_request_response(response)
+
         return Job.from_dict(response.json())
 
     @singledispatchmethod
@@ -176,10 +170,7 @@ class HyP3:
             payload = {'jobs': prepared_jobs}
 
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
-        try:
-            response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error(f'{response} {response.json()["detail"]}')
+        handle_hyp3_request_response(response)
 
         batch = Batch()
         for job in response.json()['jobs']:
@@ -369,10 +360,7 @@ class HyP3:
             Your user information
         """
         response = self.session.get(urljoin(self.url, '/user'))
-        try:
-            response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error(f'{response} {response.json()["detail"]}')
+        handle_hyp3_request_response(response)
         return response.json()
 
     def check_quota(self) -> int:
