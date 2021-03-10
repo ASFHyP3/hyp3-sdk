@@ -8,11 +8,17 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.6.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.5.0...v0.6.0)
 
+### Added
+- `asf_search` module will now raise a `exceptions.ASFSearchError` when it encounters problems and
+  will include the Search API response details
+
 ### Changed
 - HyP3 prepare and submit methods now include processing options as named parameters
+- Exceptions raised for HyP3 errors will include the HyP3 API response details
 
 ### Fixed
-- `get_authenticated_session` now correctly throws `AuthenticationError` when no `.netrc` file exists and no credentials are provided
+- `get_authenticated_session` now correctly throws `AuthenticationError` when no `.netrc` file
+  exists and no credentials are provided
 
 
 ## [0.5.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.4.0...v0.5.0)
