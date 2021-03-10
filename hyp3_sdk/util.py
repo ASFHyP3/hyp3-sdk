@@ -24,7 +24,7 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
     s = requests.Session()
     if hyp3_sdk.TESTING:
         return s
-    if (username and password) is not None:
+    if username is not None and password is not None:
         response = s.get(AUTH_URL, auth=(username, password))
         try:
             response.raise_for_status()
