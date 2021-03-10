@@ -11,6 +11,8 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - `asf_search` module will now raise an `exceptions.ASFSearchError` when it encounters problems and
   will include the Search API response details
+- `HyP3` initialization now accepts a `prompt=True` (default `False`) keyword argument
+  which will prompt users for their username or password if not provided
 
 ### Changed
 - HyP3 prepare and submit methods now include processing options as named parameters

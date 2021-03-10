@@ -3,6 +3,7 @@ import time
 import warnings
 from datetime import datetime
 from functools import singledispatchmethod
+from getpass import getpass
 from typing import List, Literal, Optional, Union
 from urllib.parse import urljoin
 
@@ -20,16 +21,25 @@ HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 class HyP3:
     """A python wrapper around the HyP3 API"""
 
-    def __init__(self, api_url: str = HYP3_PROD, username: Optional = None, password: Optional = None):
+    def __init__(self, api_url: str = HYP3_PROD, username: Optional = None, password: Optional = None,
+                 prompt: bool = False):
         """
         Args:
             api_url: Address of the HyP3 API
-            username: Username for authenticating to urs.earthdata.nasa.gov.
+            username: Username for authenticating to `urs.earthdata.nasa.gov`.
                 Both username and password must be provided if either is provided.
-            password: Password for authenticating to urs.earthdata.nasa.gov.
+            password: Password for authenticating to `urs.earthdata.nasa.gov`.
                 Both username and password must be provided if either is provided.
+            prompt: Get *unprovided* username and password for authenticating to
+                `urs.earthdata.nasa.gov` from user input
         """
         self.url = api_url
+
+        if prompt and username is None:
+            username = input('NASA Earthdata username: ')
+        if prompt and password is None:
+            password = getpass('NASA Earthdata password: ')
+
         self.session = get_authenticated_session(username, password)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
