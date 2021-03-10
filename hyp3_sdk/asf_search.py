@@ -2,6 +2,8 @@ from typing import Iterable, List, Union
 
 import requests
 
+from hyp3_sdk.exceptions import raise_for_search_status
+
 _SEARCH_API = 'https://api.daac.asf.alaska.edu/services/search/param'
 
 
@@ -24,7 +26,7 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
         'granule_list': granule_list,
     }
     response = requests.post(_SEARCH_API, params=params)
-    response.raise_for_status()
+    raise_for_search_status(response)
 
     metadata = [result for result in response.json()['results']
                 if not result['productType'].startswith('METADATA_')]
@@ -66,10 +68,9 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
         'lookDirection': reference['lookDirection'],
     }
     response = requests.post(_SEARCH_API, params=params)
-    response.raise_for_status()
+    raise_for_search_status(response)
     neighbors = sorted(response.json()['results'], key=lambda x: x['startTime'], reverse=True)
     return neighbors[1:max_neighbors+1]
-
 
 def _get_polarization(input_polarization: str):
     if input_polarization in ('VV', 'VV+VH'):
