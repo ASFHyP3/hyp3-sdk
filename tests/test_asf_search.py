@@ -37,7 +37,7 @@ def test_get_nearest_neighbor():
 
     reference_query = f'{asf_search._SEARCH_API}' \
                       '?output=json' \
-                      f'&platform=S1' \
+                      '&platform=S1' \
                       f'&granule_list={reference}'
     reference_response = [[
         {
@@ -96,6 +96,14 @@ def test_get_nearest_neighbor():
 @responses.activate
 def test_get_nearest_neighbors_no_reference():
     responses.add(responses.POST, asf_search._SEARCH_API, json=[[]])
+    with pytest.raises(ASFSearchError) as e:
+        asf_search.get_nearest_neighbors('foo')
+    assert 'foo' in str(e)
+
+
+@responses.activate
+def test_get_nearest_neighbors_no_reference_only_metadata():
+    responses.add(responses.POST, asf_search._SEARCH_API, json=[[{'processingLevel': 'METADATA_SLC'}]])
     with pytest.raises(ASFSearchError) as e:
         asf_search.get_nearest_neighbors('foo')
     assert 'foo' in str(e)

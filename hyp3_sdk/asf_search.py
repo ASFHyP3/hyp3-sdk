@@ -54,9 +54,10 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
     }
     response = requests.post(_SEARCH_API, params=params)
     raise_for_search_status(response)
-    if not response.json()[0]:
+    references = [r for r in response.json()[0] if not r['processingLevel'].startswith('METADATA_')]
+    if not references:
         raise ASFSearchError(f'Reference Sentinel-1 granule {granule} could not be found')
-    reference = [r for r in response.json()[0] if not r['processingLevel'].startswith('METADATA_')][0]
+    reference = references[0]
 
     params = {
         'output': 'jsonlite',
