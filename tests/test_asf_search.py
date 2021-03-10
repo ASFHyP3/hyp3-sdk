@@ -1,6 +1,8 @@
+import pytest
 import responses
 
 from hyp3_sdk import asf_search
+from hyp3_sdk.exceptions import ASFSearchError
 
 
 @responses.activate
@@ -35,6 +37,7 @@ def test_get_nearest_neighbor():
 
     reference_query = f'{asf_search._SEARCH_API}' \
                       '?output=json' \
+                      f'&platform=S1' \
                       f'&granule_list={reference}'
     reference_response = [[
         {
@@ -90,13 +93,22 @@ def test_get_nearest_neighbor():
            [{'startTime': 4}, {'startTime': 3}, {'startTime': 2}]
 
 
-def test_get_polarization():
-    assert asf_search._get_polarization('VV') == 'VV,VV+VH'
-    assert asf_search._get_polarization('VV+VH') == 'VV,VV+VH'
-    assert asf_search._get_polarization('HH') == 'HH,HH+HV'
-    assert asf_search._get_polarization('HH+HV') == 'HH,HH+HV'
-    assert asf_search._get_polarization('HH') == 'HH,HH+HV'
-    assert asf_search._get_polarization('Dual VV') == 'Dual VV'
-    assert asf_search._get_polarization('Dual VH') == 'Dual VH'
-    assert asf_search._get_polarization('Dual HH') == 'Dual HH'
-    assert asf_search._get_polarization('Dual HV') == 'Dual HV'
+
+@responses.activate
+def test_get_nearest_neighbors_no_reference():
+    responses.add(responses.POST, asf_search._SEARCH_API, json=[[]])
+    with pytest.raises(ASFSearchError) as e:
+        asf_search.get_nearest_neighbors('foo')
+    assert 'foo' in str(e)
+
+
+def test_get_matching_polarizations():
+    assert asf_search._get_matching_polarizations('VV') == 'VV,VV+VH'
+    assert asf_search._get_matching_polarizations('VV+VH') == 'VV,VV+VH'
+    assert asf_search._get_matching_polarizations('HH') == 'HH,HH+HV'
+    assert asf_search._get_matching_polarizations('HH+HV') == 'HH,HH+HV'
+    assert asf_search._get_matching_polarizations('HH') == 'HH,HH+HV'
+    assert asf_search._get_matching_polarizations('Dual VV') == 'Dual VV'
+    assert asf_search._get_matching_polarizations('Dual VH') == 'Dual VH'
+    assert asf_search._get_matching_polarizations('Dual HH') == 'Dual HH'
+    assert asf_search._get_matching_polarizations('Dual HV') == 'Dual HV'

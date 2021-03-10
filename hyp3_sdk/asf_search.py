@@ -2,7 +2,7 @@ from typing import Iterable, List, Union
 
 import requests
 
-from hyp3_sdk.exceptions import raise_for_search_status
+from hyp3_sdk.exceptions import ASFSearchError, raise_for_search_status
 
 _SEARCH_API = 'https://api.daac.asf.alaska.edu/services/search/param'
 
@@ -49,10 +49,13 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
     """
     params = {
         'output': 'json',  # jsonlite doesn't include centerLat/centerLon
+        'platform': 'S1',
         'granule_list': granule,
     }
     response = requests.post(_SEARCH_API, params=params)
-    response.raise_for_status()
+    raise_for_search_status(response)
+    if not response.json()[0]:
+        raise ASFSearchError(f'Reference Sentinel-1 granule {granule} could not be found')
     reference = [r for r in response.json()[0] if not r['processingLevel'].startswith('METADATA_')][0]
 
     params = {
@@ -64,7 +67,7 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
         'flightDirection': reference['flightDirection'],
         'processingLevel': reference['processingLevel'],
         'relativeOrbit': reference['relativeOrbit'],
-        'polarization': _get_polarization(reference['polarization']),
+        'polarization': _get_matching_polarizations(reference['polarization']),
         'lookDirection': reference['lookDirection'],
     }
     response = requests.post(_SEARCH_API, params=params)
@@ -72,7 +75,8 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
     neighbors = sorted(response.json()['results'], key=lambda x: x['startTime'], reverse=True)
     return neighbors[1:max_neighbors+1]
 
-def _get_polarization(input_polarization: str):
+
+def _get_matching_polarizations(input_polarization: str):
     if input_polarization in ('VV', 'VV+VH'):
         return 'VV,VV+VH'
     if input_polarization in ('HH', 'HH+HV'):
