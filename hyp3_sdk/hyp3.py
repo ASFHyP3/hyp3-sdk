@@ -30,15 +30,15 @@ class HyP3:
                 Both username and password must be provided if either is provided.
             password: Password for authenticating to `urs.earthdata.nasa.gov`.
                 Both username and password must be provided if either is provided.
-            prompt: Get *unprovided* username and password for authenticating to
-                `urs.earthdata.nasa.gov` from user input
+            prompt: Prompt for username and/or password interactively when they
+                are not provided as keyword parameters
         """
         self.url = api_url
 
-        if prompt and username is None:
-            username = input('NASA Earthdata username: ')
-        if prompt and password is None:
-            password = getpass('NASA Earthdata password: ')
+        if username is None and prompt:
+            username = input('NASA Earthdata Login username: ')
+        if password is None and prompt:
+            password = getpass('NASA Earthdata Login password: ')
 
         self.session = get_authenticated_session(username, password)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
