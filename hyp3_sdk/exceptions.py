@@ -2,7 +2,11 @@
 
 
 class HyP3Error(Exception):
-    """Base Exception for Hyp3_sdk"""
+    """Base Exception for the HyP3 SDK"""
+
+
+class ASFSearchError(HyP3Error):
+    """Raise for errors when using the ASF Search module"""
 
 
 class AuthenticationError(HyP3Error):
