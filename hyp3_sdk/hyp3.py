@@ -290,12 +290,12 @@ class HyP3:
             A dictionary containing the prepared RTC job
         """
         job_parameters = locals().copy()
-        for key in ['kwargs', 'granule', 'name', 'cls']:
+        for key in ['granule', 'name', 'cls']:
             job_parameters.pop(key, None)
 
         job_dict = {
-            'job_parameters': {'granules': [granule], **{k: v for k, v in job_parameters.items() if v is not None}},
-            'job_type': 'RTC_GAMMA'
+            'job_parameters': {'granules': [granule], **job_parameters},
+            'job_type': 'RTC_GAMMA',
         }
 
         if name is not None:
