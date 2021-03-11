@@ -2,7 +2,7 @@ from typing import Iterable, List, Union
 
 import requests
 
-from hyp3_sdk.exceptions import ASFSearchError, raise_for_search_status
+from hyp3_sdk.exceptions import ASFSearchError, _raise_for_search_status
 
 _SEARCH_API = 'https://api.daac.asf.alaska.edu/services/search/param'
 
@@ -26,7 +26,7 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
         'granule_list': granule_list,
     }
     response = requests.post(_SEARCH_API, params=params)
-    raise_for_search_status(response)
+    _raise_for_search_status(response)
 
     metadata = [result for result in response.json()['results']
                 if not result['productType'].startswith('METADATA_')]
@@ -53,7 +53,7 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
         'granule_list': granule,
     }
     response = requests.post(_SEARCH_API, params=params)
-    raise_for_search_status(response)
+    _raise_for_search_status(response)
     references = [r for r in response.json()[0] if not r['processingLevel'].startswith('METADATA_')]
     if not references:
         raise ASFSearchError(f'Reference Sentinel-1 granule {granule} could not be found')
@@ -72,7 +72,7 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
         'lookDirection': reference['lookDirection'],
     }
     response = requests.post(_SEARCH_API, params=params)
-    raise_for_search_status(response)
+    _raise_for_search_status(response)
     neighbors = sorted(response.json()['results'], key=lambda x: x['startTime'], reverse=True)
     return neighbors[1:max_neighbors+1]
 
