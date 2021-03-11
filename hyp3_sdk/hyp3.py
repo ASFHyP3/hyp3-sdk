@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 from tqdm.auto import tqdm
 
 import hyp3_sdk
-from hyp3_sdk.exceptions import HyP3Error, raise_for_hyp3_status
+from hyp3_sdk.exceptions import HyP3Error, _raise_for_hyp3_status
 from hyp3_sdk.jobs import Batch, Job
 from hyp3_sdk.util import get_authenticated_session
 
@@ -71,7 +71,7 @@ class HyP3:
             params['status_code'] = status
 
         response = self.session.get(urljoin(self.url, '/jobs'), params=params)
-        raise_for_hyp3_status(response)
+        _raise_for_hyp3_status(response)
 
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
         if not jobs:
@@ -88,7 +88,7 @@ class HyP3:
             A Job object
         """
         response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
-        raise_for_hyp3_status(response)
+        _raise_for_hyp3_status(response)
 
         return Job.from_dict(response.json())
 
@@ -180,7 +180,7 @@ class HyP3:
             payload = {'jobs': prepared_jobs}
 
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
-        raise_for_hyp3_status(response)
+        _raise_for_hyp3_status(response)
 
         batch = Batch()
         for job in response.json()['jobs']:
@@ -370,7 +370,7 @@ class HyP3:
             Your user information
         """
         response = self.session.get(urljoin(self.url, '/user'))
-        raise_for_hyp3_status(response)
+        _raise_for_hyp3_status(response)
         return response.json()
 
     def check_quota(self) -> int:
