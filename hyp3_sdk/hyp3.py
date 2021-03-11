@@ -3,14 +3,14 @@ import time
 import warnings
 from datetime import datetime
 from functools import singledispatchmethod
-from typing import List, Optional, Union
+from getpass import getpass
+from typing import List, Literal, Optional, Union
 from urllib.parse import urljoin
 
-from requests.exceptions import HTTPError, RequestException
 from tqdm.auto import tqdm
 
 import hyp3_sdk
-from hyp3_sdk.exceptions import HyP3Error
+from hyp3_sdk.exceptions import HyP3Error, _raise_for_hyp3_status
 from hyp3_sdk.jobs import Batch, Job
 from hyp3_sdk.util import get_authenticated_session
 
@@ -21,16 +21,25 @@ HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 class HyP3:
     """A python wrapper around the HyP3 API"""
 
-    def __init__(self, api_url: str = HYP3_PROD, username: Optional = None, password: Optional = None):
+    def __init__(self, api_url: str = HYP3_PROD, username: Optional[str] = None, password: Optional[str] = None,
+                 prompt: bool = False):
         """
         Args:
             api_url: Address of the HyP3 API
-            username: Username for authenticating to urs.earthdata.nasa.gov.
+            username: Username for authenticating to `urs.earthdata.nasa.gov`.
                 Both username and password must be provided if either is provided.
-            password: Password for authenticating to urs.earthdata.nasa.gov.
-               Both username and password must be provided if either is provided.
+            password: Password for authenticating to `urs.earthdata.nasa.gov`.
+                Both username and password must be provided if either is provided.
+            prompt: Prompt for username and/or password interactively when they
+                are not provided as keyword parameters
         """
         self.url = api_url
+
+        if username is None and prompt:
+            username = input('NASA Earthdata Login username: ')
+        if password is None and prompt:
+            password = getpass('NASA Earthdata Login password: ')
+
         self.session = get_authenticated_session(username, password)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
@@ -62,10 +71,8 @@ class HyP3:
             params['status_code'] = status
 
         response = self.session.get(urljoin(self.url, '/jobs'), params=params)
-        try:
-            response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error(f'Error while trying to query {response.url}')
+        _raise_for_hyp3_status(response)
+
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
         if not jobs:
             warnings.warn('Found zero jobs', UserWarning)
@@ -80,11 +87,9 @@ class HyP3:
         Returns:
             A Job object
         """
-        try:
-            response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
-            response.raise_for_status()
-        except RequestException:
-            raise HyP3Error(f'Unable to get job by ID {job_id}')
+        response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
+        _raise_for_hyp3_status(response)
+
         return Job.from_dict(response.json())
 
     @singledispatchmethod
@@ -175,10 +180,7 @@ class HyP3:
             payload = {'jobs': prepared_jobs}
 
         response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
-        try:
-            response.raise_for_status()
-        except HTTPError as e:
-            raise HyP3Error(str(e))
+        _raise_for_hyp3_status(response)
 
         batch = Batch()
         for job in response.json()['jobs']:
@@ -219,70 +221,143 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_rtc_job(self, granule: str, name: Optional[str] = None, **kwargs) -> Batch:
+    def submit_rtc_job(self,
+                       granule: str,
+                       name: Optional[str] = None,
+                       dem_matching: bool = False,
+                       include_dem: bool = False,
+                       include_inc_map: bool = False,
+                       include_rgb: bool = False,
+                       include_scattering_area: bool = False,
+                       radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+                       resolution: Literal[30] = 30,
+                       scale: Literal['amplitude', 'power'] = 'power',
+                       speckle_filter: bool = False) -> Batch:
         """Submit an RTC job
 
         Args:
             granule: The granule (scene) to use
             name: A name for the job
-            **kwargs: Extra job parameters specifying custom processing options
+            dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
+            include_dem: Include the DEM file in the product package
+            include_inc_map: Include the incidence angle map in the product package
+            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules
+                (ignored for single-pol granules)
+            include_scattering_area: Include the scattering area in the product package
+            radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
+                projected into the look direction (gamma0)
+            resolution: Desired output pixel spacing in meters
+            scale: Scale of output image; either power or amplitude
+            speckle_filter: Apply an Enhanced Lee speckle filter
 
         Returns:
             A Batch object containing the RTC job
         """
-        job_dict = self.prepare_rtc_job(granule, name=name, **kwargs)
+        arguments = locals()
+        arguments.pop('self')
+        job_dict = self.prepare_rtc_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_rtc_job(cls, granule: str, name: Optional[str] = None, **kwargs) -> dict:
+    def prepare_rtc_job(cls,
+                        granule: str,
+                        name: Optional[str] = None,
+                        dem_matching: bool = False,
+                        include_dem: bool = False,
+                        include_inc_map: bool = False,
+                        include_rgb: bool = False,
+                        include_scattering_area: bool = False,
+                        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+                        resolution: Literal[30] = 30,
+                        scale: Literal['amplitude', 'power'] = 'power',
+                        speckle_filter: bool = False) -> dict:
         """Submit an RTC job
 
         Args:
             granule: The granule (scene) to use
             name: A name for the job
-            **kwargs: Extra job parameters specifying custom processing options
+            dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
+            include_dem: Include the DEM file in the product package
+            include_inc_map: Include the incidence angle map in the product package
+            include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules
+                (ignored for single-pol granules)
+            include_scattering_area: Include the scattering area in the product package
+            radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
+                projected into the look direction (gamma0)
+            resolution: Desired output pixel spacing in meters
+            scale: Scale of output image; either power or amplitude
+            speckle_filter: Apply an Enhanced Lee speckle filter
 
         Returns:
             A dictionary containing the prepared RTC job
         """
+        job_parameters = locals().copy()
+        for key in ['granule', 'name', 'cls']:
+            job_parameters.pop(key, None)
+
         job_dict = {
-            'job_parameters': {'granules': [granule], **kwargs},
+            'job_parameters': {'granules': [granule], **job_parameters},
             'job_type': 'RTC_GAMMA',
         }
+
         if name is not None:
             job_dict['name'] = name
         return job_dict
 
-    def submit_insar_job(self, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> Batch:
+    def submit_insar_job(self,
+                         granule1: str,
+                         granule2: str,
+                         name: Optional[str] = None,
+                         include_look_vectors: bool = False,
+                         include_los_displacement: bool = False,
+                         looks: Literal['20x4', '10x2'] = '20x4') -> Batch:
         """Submit an InSAR job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
             name: A name for the job
-            **kwargs: Extra job parameters specifying custom processing options
+            include_look_vectors: Include the look vector theta and phi files in the product package
+            include_los_displacement: Include a GeoTIFF in the product package containing displacement values
+                along the Line-Of-Sight (LOS)
+            looks: Number of looks to take in range and azimuth
 
         Returns:
             A Batch object containing the InSAR job
         """
-        job_dict = self.prepare_insar_job(granule1, granule2, name=name, **kwargs)
+        arguments = locals().copy()
+        arguments.pop('self')
+        job_dict = self.prepare_insar_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_insar_job(cls, granule1: str, granule2: str, name: Optional[str] = None, **kwargs) -> dict:
+    def prepare_insar_job(cls,
+                          granule1: str,
+                          granule2: str,
+                          name: Optional[str] = None,
+                          include_look_vectors: bool = False,
+                          include_los_displacement: bool = False,
+                          looks: Literal['20x4', '10x2'] = '20x4') -> dict:
         """Submit an InSAR job
 
         Args:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
             name: A name for the job
-            **kwargs: Extra job parameters specifying custom processing options
+            include_look_vectors: Include the look vector theta and phi files in the product package
+            include_los_displacement: Include a GeoTIFF in the product package containing displacement values
+                along the Line-Of-Sight (LOS)
+            looks: Number of looks to take in range and azimuth
 
         Returns:
             A dictionary containing the prepared InSAR job
         """
+        job_parameters = locals().copy()
+        for key in ['cls', 'granule1', 'granule2', 'name']:
+            job_parameters.pop(key)
+
         job_dict = {
-            'job_parameters': {'granules': [granule1, granule2], **kwargs},
+            'job_parameters': {'granules': [granule1, granule2], **job_parameters},
             'job_type': 'INSAR_GAMMA',
         }
         if name is not None:
@@ -294,11 +369,8 @@ class HyP3:
         Returns:
             Your user information
         """
-        try:
-            response = self.session.get(urljoin(self.url, '/user'))
-            response.raise_for_status()
-        except HTTPError:
-            raise HyP3Error('Unable to get user information from API')
+        response = self.session.get(urljoin(self.url, '/user'))
+        _raise_for_hyp3_status(response)
         return response.json()
 
     def check_quota(self) -> int:

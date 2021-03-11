@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.5.0...v0.6.0)
+
+### Added
+- `asf_search` module will now raise an `exceptions.ASFSearchError` when it encounters problems and
+  will include the Search API response details
+- `HyP3.__init__` now accepts a `prompt=True` (default `False`) keyword argument
+  which will prompt users for their username or password if not provided
+
+### Changed
+- HyP3 prepare and submit methods now include processing options as named parameters
+- Exceptions raised for HyP3 errors will include the HyP3 API response details
+- `asf_search.get_nearest_neighbors` is no longer dependent on state vector information in CMR
+  - now limited to Sentinel-1 granules
+  - now raises `ASFSearchError` when the reference granule cannot be found
+  - results no longer include `perpendicularBaseline` or `temporalBaseline` fields
+
+### Fixed
+- `get_authenticated_session` now correctly throws `AuthenticationError` when no `.netrc` file
+  exists and no credentials are provided
+
+
 ## [0.5.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.4.0...v0.5.0)
 
 ### Added

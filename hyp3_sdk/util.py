@@ -11,28 +11,29 @@ import hyp3_sdk
 from hyp3_sdk.exceptions import AuthenticationError
 
 AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
-           '&redirect_uri=https://auth.asf.alaska.edu/login'
+           '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
 
 
 def get_authenticated_session(username: str, password: str) -> requests.Session:
-    """logs into hyp3 using credentials for urs.earthdata.nasa.gov from provided credentails or a .netrc file.
+    """Log into HyP3 using credentials for `urs.earthdata.nasa.gov` from either the provided
+     credentials or a `.netrc` file.
 
     Returns:
-        An authenticated Session object from the requests library
+        An authenticated HyP3 Session
     """
     s = requests.Session()
     if hyp3_sdk.TESTING:
         return s
-    if (username and password) is not None:
+    if username is not None and password is not None:
+        response = s.get(AUTH_URL, auth=(username, password))
         try:
-            response = s.get(AUTH_URL, auth=(username, password))
             response.raise_for_status()
         except requests.HTTPError:
             raise AuthenticationError('Was not able to authenticate with credentials provided\n'
                                       'This could be due to invalid credentials or a connection error.')
     else:
+        response = s.get(AUTH_URL)
         try:
-            response = s.get(AUTH_URL)
             response.raise_for_status()
         except requests.HTTPError:
             raise AuthenticationError('Was not able to authenticate with .netrc file and no credentials provided\n'
