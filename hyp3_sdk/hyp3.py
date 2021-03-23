@@ -75,7 +75,7 @@ class HyP3:
 
         while 'next' in response.json():
             next_url = response.json()['next']
-            response = self.session.get(urljoin(self.url, '/jobs'), params={'next': next_url, **params})
+            response = self.session.get(next_url)
             _raise_for_hyp3_status(response)
             jobs.extend([Job.from_dict(job) for job in response.json()['jobs']])
 

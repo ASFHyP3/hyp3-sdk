@@ -63,8 +63,8 @@ def test_find_jobs_paging(get_mock_job):
         ]
     }
 
-    responses.add(responses.GET, urljoin(api.url, '/jobs'), json=api_response_mock_1)
-    responses.add(responses.GET, urljoin(api.url, '/jobs'),  json=api_response_mock_2)
+    responses.add(responses.GET, urljoin(api.url, '/jobs'), json=api_response_mock_1, match_querystring=True)
+    responses.add(responses.GET, urljoin(api.url, '/jobs?next=foobar'),  json=api_response_mock_2)
 
     batch = api.find_jobs()
     assert len(batch) == 3
