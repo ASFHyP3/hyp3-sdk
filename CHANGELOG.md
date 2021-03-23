@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.6.0...v1.0.0)
+
+### Added
+- `HyP3.find_jobs` now supports filtering by `job_type`
+- `HyP3.find_jobs` now pages through truncated responses to get all requested jobs
+
+### Changed
+- `HyP3.find_jobs` argument `status` renamed to `status_code` to be consistent with api-spec
+
 ## [0.6.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.5.0...v0.6.0)
 
 ### Added
