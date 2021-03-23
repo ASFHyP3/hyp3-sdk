@@ -72,8 +72,12 @@ class HyP3:
 
         response = self.session.get(urljoin(self.url, '/jobs'), params=params)
         _raise_for_hyp3_status(response)
-
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
+        while 'next' in response.json():
+            next_url = response.json()['next']
+            response = self.session.get(urljoin(self.url, '/jobs'), params={'next': next_url, **params})
+            jobs.extend([Job.from_dict(job) for job in response.json()['jobs']])
+
         if not jobs:
             warnings.warn('Found zero jobs', UserWarning)
         return Batch(jobs)

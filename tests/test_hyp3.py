@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote
 
 import pytest
 import responses
@@ -45,6 +45,31 @@ def test_find_jobs(get_mock_job):
     with pytest.warns(UserWarning):
         batch = api.find_jobs()
     assert len(batch) == 0
+
+
+@responses.activate
+def test_find_jobs_paging(get_mock_job):
+    api = HyP3()
+    api_response_mock_1 = {
+        'jobs': [
+            get_mock_job(name='job1').to_dict(),
+            get_mock_job(name='job2').to_dict(),
+        ],
+        'next': urljoin(api.url, '/jobs?next=foobar')
+    }
+    api_response_mock_2 = {
+        'jobs': [
+            get_mock_job(name='job3').to_dict()
+        ]
+    }
+
+    responses.add(responses.GET, urljoin(api.url, '/jobs'), json=api_response_mock_1)
+    responses.add(responses.GET, urljoin(api.url, '/jobs'),  json=api_response_mock_2)
+
+    batch = api.find_jobs()
+    assert len(batch) == 3
+    assert 'next' not in responses.calls[0].request.params
+    assert 'next' in responses.calls[1].request.params
 
 
 @responses.activate
