@@ -1,7 +1,7 @@
 import math
 import time
 import warnings
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
 from typing import List, Literal, Optional, Union
@@ -44,38 +44,38 @@ class HyP3:
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
     def find_jobs(self, start: Optional[datetime] = None, end: Optional[datetime] = None,
-                  status: Optional[str] = None, name: Optional[str] = None) -> Batch:
+                  status_code: Optional[str] = None, name: Optional[str] = None,
+                  job_type: Optional[str] = None) -> Batch:
         """Gets a Batch of jobs from HyP3 matching the provided search criteria
 
         Args:
             start: only jobs submitted after given time
             end: only jobs submitted before given time
-            status: only jobs matching this status (SUCCEEDED, FAILED, RUNNING, PENDING)
+            status_code: only jobs matching this status (SUCCEEDED, FAILED, RUNNING, PENDING)
             name: only jobs with this name
 
         Returns:
             A Batch object containing the found jobs
         """
         params = {}
-        if name is not None:
-            params['name'] = name
-        if start is not None:
-            params['start'] = start.isoformat(timespec='seconds')
-            if start.tzinfo is None:
-                params['start'] += 'Z'
-        if end is not None:
-            params['end'] = end.isoformat(timespec='seconds')
-            if end.tzinfo is None:
-                params['end'] += 'Z'
-        if status is not None:
-            params['status_code'] = status
+        for param_name in ('start', 'end', 'status', 'name', 'job_type'):
+            param_value = locals().get(param_name)
+            if param_value is not None:
+                if isinstance(param_value, datetime):
+                    if param_value.tzinfo is None:
+                        param_value.replace(tzinfo=timezone.utc)
+                    param_value = param_value.isoformat(timespec='seconds')
+
+                params[param_name] = param_value
 
         response = self.session.get(urljoin(self.url, '/jobs'), params=params)
         _raise_for_hyp3_status(response)
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
+
         while 'next' in response.json():
             next_url = response.json()['next']
             response = self.session.get(urljoin(self.url, '/jobs'), params={'next': next_url, **params})
+            _raise_for_hyp3_status(response)
             jobs.extend([Job.from_dict(job) for job in response.json()['jobs']])
 
         if not jobs:
