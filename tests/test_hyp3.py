@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from urllib.parse import urljoin, quote
+from urllib.parse import urljoin
 
 import pytest
 import responses

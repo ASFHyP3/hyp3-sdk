@@ -53,6 +53,7 @@ class HyP3:
             end: only jobs submitted before given time
             status_code: only jobs matching this status (SUCCEEDED, FAILED, RUNNING, PENDING)
             name: only jobs with this name
+            job_type: only jobst with this job_type
 
         Returns:
             A Batch object containing the found jobs
