@@ -53,7 +53,7 @@ class HyP3:
             end: only jobs submitted before given time
             status_code: only jobs matching this status (SUCCEEDED, FAILED, RUNNING, PENDING)
             name: only jobs with this name
-            job_type: only jobst with this job_type
+            job_type: only jobs with this job_type
 
         Returns:
             A Batch object containing the found jobs
@@ -98,7 +98,8 @@ class HyP3:
         return Job.from_dict(response.json())
 
     @singledispatchmethod
-    def watch(self, job_or_batch: Union[Batch, Job], timeout: int = 10800, interval: Union[int, float] = 60):
+    def watch(self, job_or_batch: Union[Batch, Job], timeout: int = 10800,
+              interval: Union[int, float] = 60) -> Union[Batch, Job]:
         """Watch jobs until they complete
 
         Args:
@@ -112,7 +113,7 @@ class HyP3:
         raise NotImplementedError(f'Cannot watch {type(job_or_batch)} type object')
 
     @watch.register
-    def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60):
+    def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60) -> Batch:
         iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
@@ -133,7 +134,7 @@ class HyP3:
         raise HyP3Error(f'Timeout occurred while waiting for {batch}')
 
     @watch.register
-    def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60):
+    def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60) -> Job:
         iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=1, bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
