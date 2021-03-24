@@ -10,14 +10,14 @@ def test_raise_for_hyp3_status():
     response.status_code = 400
     response._content = b'{ "detail" : "foo" }'
 
-    with pytest.raises(exceptions.HyP3SDKError) as e:
+    with pytest.raises(exceptions.HyP3Error) as e:
         exceptions._raise_for_hyp3_status(response)
     assert 'foo' in str(e)
 
     response = Response()
     response.status_code = 500
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(exceptions.ServerError):
         exceptions._raise_for_hyp3_status(response)
 
     response = Response()
@@ -37,7 +37,7 @@ def test_raise_for_search_status():
     response = Response()
     response.status_code = 500
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(exceptions.ServerError):
         exceptions._raise_for_search_status(response)
 
     response = Response()

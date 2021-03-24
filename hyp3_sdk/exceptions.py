@@ -38,5 +38,5 @@ def _raise_for_search_status(response: Response):
         response.raise_for_status()
     except HTTPError:
         if 400 <= response.status_code < 500:
-            raise HyP3Error(f'{response} {response.json()["error"]["report"]}')
+            raise ASFSearchError(f'{response} {response.json()["error"]["report"]}')
         raise ServerError
