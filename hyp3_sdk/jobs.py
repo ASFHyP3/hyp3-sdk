@@ -8,7 +8,7 @@ from dateutil.parser import parse as parse_date
 from requests import HTTPError
 from tqdm.auto import tqdm
 
-from hyp3_sdk.exceptions import HyP3Error
+from hyp3_sdk.exceptions import HyP3SDKError
 from hyp3_sdk.util import download_file
 
 
@@ -104,7 +104,7 @@ class Job:
         try:
             return datetime.now(tz.UTC) >= self.expiration_time
         except TypeError:
-            raise HyP3Error('Only SUCCEEDED jobs have an expiration time')
+            raise HyP3SDKError('Only SUCCEEDED jobs have an expiration time')
 
     def download_files(self, location: Union[Path, str] = '.', create: bool = True) -> List[Path]:
         """
@@ -117,9 +117,9 @@ class Job:
         location = Path(location)
 
         if not self.succeeded():
-            raise HyP3Error(f'Only succeeded jobs can be downloaded; job is {self.status_code}.')
+            raise HyP3SDKError(f'Only succeeded jobs can be downloaded; job is {self.status_code}.')
         if self.expired():
-            raise HyP3Error(f'Expired jobs cannot be downloaded; '
+            raise HyP3SDKError(f'Expired jobs cannot be downloaded; '
                             f'job expired {self.expiration_time.isoformat(timespec="seconds")}.')
 
         if create:
@@ -134,7 +134,7 @@ class Job:
             try:
                 downloaded_files.append(download_file(download_url, filename, chunk_size=10485760))
             except HTTPError:
-                raise HyP3Error(f'Unable to download file: {download_url}')
+                raise HyP3SDKError(f'Unable to download file: {download_url}')
         return downloaded_files
 
 
@@ -203,7 +203,7 @@ class Batch:
         for job in tqdm(self.jobs):
             try:
                 downloaded_files.extend(job.download_files(location, create))
-            except HyP3Error as e:
+            except HyP3SDKError as e:
                 print(f'Warning: {e}. Skipping download for {job}.')
         return downloaded_files
 
@@ -213,7 +213,7 @@ class Batch:
             try:
                 if job.expired():
                     return True
-            except HyP3Error:
+            except HyP3SDKError:
                 continue
         return False
 

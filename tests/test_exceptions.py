@@ -10,7 +10,7 @@ def test_raise_for_hyp3_status():
     response.status_code = 400
     response._content = b'{ "detail" : "foo" }'
 
-    with pytest.raises(exceptions.HyP3Error) as e:
+    with pytest.raises(exceptions.HyP3SDKError) as e:
         exceptions._raise_for_hyp3_status(response)
     assert 'foo' in str(e)
 
