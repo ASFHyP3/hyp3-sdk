@@ -8,6 +8,8 @@ on:
 jobs:
   distribute:
     runs-on: ubuntu-latest
+    outputs:
+      SDIST_VERSION: ${{ steps.build.outputs.version }}
     steps:
       - uses: actions/checkout@v2
 
