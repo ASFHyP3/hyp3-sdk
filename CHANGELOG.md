@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.6.0...v1.0.0)
+
+### Added
+- `HyP3.find_jobs` now supports filtering by `job_type`
+- `HyP3.find_jobs` now pages through truncated responses to get all requested jobs
+- `hyp3_sdk.exceptions` now includes `ServerError` for exceptions that are a result of 
+  system errors.
+
+### Changed
+- `hyp3_sdk.exceptions` now has `HyP3SDKError` as a module base exception, and `HyP3Error` is now specific
+  errors in the `hyp3` submodule
+- `HyP3.find_jobs` argument `status` renamed to `status_code` to be consistent with api-spec
+
 ## [0.6.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.5.0...v0.6.0)
 
 ### Added

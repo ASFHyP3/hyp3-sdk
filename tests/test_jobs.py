@@ -5,7 +5,7 @@ import pytest
 import responses
 from dateutil import tz
 
-from hyp3_sdk.exceptions import HyP3Error
+from hyp3_sdk.exceptions import HyP3SDKError
 from hyp3_sdk.jobs import Batch, Job
 
 SUCCEEDED_JOB = {
@@ -83,7 +83,7 @@ def test_job_expired():
     job.expiration_time = datetime.now(tz.UTC) - timedelta(days=7)
     assert job.expired()
 
-    with pytest.raises(HyP3Error) as execinfo:
+    with pytest.raises(HyP3SDKError) as execinfo:
         job = Job.from_dict(FAILED_JOB)
         job.expired()
         assert 'Only SUCCEEDED jobs have an expiration time' in str(execinfo.value)
@@ -133,7 +133,7 @@ def test_job_download_files_expired(tmp_path, get_mock_job):
     job = get_mock_job(status_code='SUCCEEDED', expiration_time=expired_time,
                        files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
 
-    with pytest.raises(HyP3Error):
+    with pytest.raises(HyP3SDKError):
         job.download_files(tmp_path)
 
 
