@@ -1,6 +1,5 @@
 import pytest
 from requests import Response
-from requests.exceptions import HTTPError
 
 from hyp3_sdk import exceptions
 
@@ -17,7 +16,7 @@ def test_raise_for_hyp3_status():
     response = Response()
     response.status_code = 500
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(exceptions.ServerError):
         exceptions._raise_for_hyp3_status(response)
 
     response = Response()
@@ -37,7 +36,7 @@ def test_raise_for_search_status():
     response = Response()
     response.status_code = 500
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(exceptions.ServerError):
         exceptions._raise_for_search_status(response)
 
     response = Response()
