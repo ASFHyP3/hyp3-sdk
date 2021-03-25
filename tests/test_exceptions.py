@@ -1,6 +1,5 @@
 import pytest
 from requests import Response
-from requests.exceptions import HTTPError
 
 from hyp3_sdk import exceptions
 

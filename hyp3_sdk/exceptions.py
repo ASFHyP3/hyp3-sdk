@@ -9,7 +9,7 @@ class HyP3SDKError(Exception):
 
 
 class HyP3Error(HyP3SDKError):
-    """Raise when the HyP3 SDK encounters a server error"""
+    """Raise for errors when using the HyP3 module"""
 
 
 class ASFSearchError(HyP3SDKError):

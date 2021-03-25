@@ -120,7 +120,7 @@ class Job:
             raise HyP3SDKError(f'Only succeeded jobs can be downloaded; job is {self.status_code}.')
         if self.expired():
             raise HyP3SDKError(f'Expired jobs cannot be downloaded; '
-                            f'job expired {self.expiration_time.isoformat(timespec="seconds")}.')
+                               f'job expired {self.expiration_time.isoformat(timespec="seconds")}.')
 
         if create:
             location.mkdir(parents=True, exist_ok=True)
