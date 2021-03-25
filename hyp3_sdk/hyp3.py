@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 from tqdm.auto import tqdm
 
 import hyp3_sdk
-from hyp3_sdk.exceptions import HyP3SDKError, _raise_for_hyp3_status
+from hyp3_sdk.exceptions import HyP3Error, _raise_for_hyp3_status
 from hyp3_sdk.jobs import Batch, Job
 from hyp3_sdk.util import get_authenticated_session
 
@@ -131,7 +131,7 @@ class HyP3:
                 if batch.complete():
                     return batch
                 time.sleep(interval)
-        raise HyP3SDKError(f'Timeout occurred while waiting for {batch}')
+        raise HyP3Error(f'Timeout occurred while waiting for {batch}')
 
     @watch.register
     def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60) -> Job:
@@ -146,7 +146,7 @@ class HyP3:
                 if job.complete():
                     return job
                 time.sleep(interval)
-        raise HyP3SDKError(f'Timeout occurred while waiting for {job}')
+        raise HyP3Error(f'Timeout occurred while waiting for {job}')
 
     @singledispatchmethod
     def refresh(self, job_or_batch: Union[Batch, Job]) -> Union[Batch, Job]:
