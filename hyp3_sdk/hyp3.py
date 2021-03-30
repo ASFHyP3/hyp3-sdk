@@ -238,7 +238,8 @@ class HyP3:
                        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
                        resolution: Literal[30] = 30,
                        scale: Literal['amplitude', 'power'] = 'power',
-                       speckle_filter: bool = False) -> Batch:
+                       speckle_filter: bool = False,
+                       dem_name: Literal['copernicus', 'legacy'] = 'copernicus') -> Batch:
         """Submit an RTC job
 
         Args:
@@ -255,6 +256,7 @@ class HyP3:
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
+            dem_name: Name of DEM dataset to use for processing
 
         Returns:
             A Batch object containing the RTC job
@@ -276,7 +278,8 @@ class HyP3:
                         radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
                         resolution: Literal[30] = 30,
                         scale: Literal['amplitude', 'power'] = 'power',
-                        speckle_filter: bool = False) -> dict:
+                        speckle_filter: bool = False,
+                        dem_name: Literal['copernicus', 'legacy'] = 'copernicus') -> dict:
         """Submit an RTC job
 
         Args:
@@ -293,6 +296,7 @@ class HyP3:
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
+            dem_name: Name of DEM dataset to use for processing
 
         Returns:
             A dictionary containing the prepared RTC job

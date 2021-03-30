@@ -158,6 +158,7 @@ def test_prepare_rtc_job():
             'resolution': 30,
             'scale': 'power',
             'speckle_filter': False,
+            'dem_name': 'copernicus',
         }
     }
     assert HyP3.prepare_rtc_job(granule='my_granule', name='my_name') == {
@@ -174,6 +175,7 @@ def test_prepare_rtc_job():
             'resolution': 30,
             'scale': 'power',
             'speckle_filter': False,
+            'dem_name': 'copernicus',
         },
     }
 
