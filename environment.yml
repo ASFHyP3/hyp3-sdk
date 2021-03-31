@@ -22,5 +22,4 @@ dependencies:
   - requests
   - tqdm
   - urllib3
-  - pip:
-    - -e .[develop]
+

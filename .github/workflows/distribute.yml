@@ -42,11 +42,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: conda-incubator/setup-miniconda@v2.0.1
+      - uses: conda-incubator/setup-miniconda@v2
         with:
           mamba-version: "*"
-          channels: conda-forge,nodefaults
-          channel-priority: true
           python-version: 3.8
           activate-environment: hyp3-sdk
           environment-file: environment.yml
