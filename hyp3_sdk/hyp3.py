@@ -256,7 +256,8 @@ class HyP3:
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
-            dem_name: Name of DEM dataset to use for processing
+            dem_name: Name of DEM to use for processing.  `copernicus` will use the Copernicus GLO-30 Public DEM, while
+                `legacy` will use the DEM with the best coverage from ASF's legacy SRTM/NED datasets.
 
         Returns:
             A Batch object containing the RTC job
@@ -296,7 +297,8 @@ class HyP3:
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; either power or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
-            dem_name: Name of DEM dataset to use for processing
+            dem_name: Name of DEM to use for processing.  `copernicus` will use the Copernicus GLO-30 Public DEM, while
+                `legacy` will use the DEM with the best coverage from ASF's legacy SRTM/NED datasets.
 
         Returns:
             A dictionary containing the prepared RTC job
