@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.0.0...v1.1.0)
+
+### Added
+- A `dem_name` parameter has been added to `HyP3.submit_rtc_job` and `HyP3.prepare_rtc_job` to control which DEM data
+  set is used for RTC processing
+  - `dem_name='copernicus'` will use the [Copernicus GLO-30 Public DEM](https://registry.opendata.aws/copernicus-dem/)
+  - `dem_name='legacy'` will use the DEM with the best coverage from ASF's legacy SRTM/NED data sets
+
 ## [1.0.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.6.0...v1.0.0)
 
 ### Added
