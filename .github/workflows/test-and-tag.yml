@@ -23,8 +23,6 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           mamba-version: "*"
-          channels: conda-forge,nodefaults
-          channel-priority: true
           python-version: ${{ matrix.python-version }}
           activate-environment: hyp3-sdk
           environment-file: environment.yml
@@ -32,6 +30,7 @@ jobs:
       - name: Pytest in conda environment
         shell: bash -l {0}
         run: |
+          python -m pip install .[develop]
           pytest --cov=hyp3_sdk
 
   tag:

@@ -8,6 +8,8 @@ on:
 jobs:
   distribute:
     runs-on: ubuntu-latest
+    outputs:
+      SDIST_VERSION: ${{ steps.build.outputs.version }}
     steps:
       - uses: actions/checkout@v2
 
@@ -43,8 +45,6 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           mamba-version: "*"
-          channels: conda-forge,nodefaults
-          channel-priority: true
           python-version: 3.8
           activate-environment: hyp3-sdk
           environment-file: environment.yml
