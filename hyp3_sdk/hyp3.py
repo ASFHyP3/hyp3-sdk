@@ -322,6 +322,7 @@ class HyP3:
                          name: Optional[str] = None,
                          include_look_vectors: bool = False,
                          include_los_displacement: bool = False,
+                         include_inc_map: bool = False,
                          looks: Literal['20x4', '10x2'] = '20x4') -> Batch:
         """Submit an InSAR job
 
@@ -332,6 +333,7 @@ class HyP3:
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
                 along the Line-Of-Sight (LOS)
+            include_inc_map: Include the incidence angle map in the product package
             looks: Number of looks to take in range and azimuth
 
         Returns:
@@ -349,6 +351,7 @@ class HyP3:
                           name: Optional[str] = None,
                           include_look_vectors: bool = False,
                           include_los_displacement: bool = False,
+                          include_inc_map: bool = False,
                           looks: Literal['20x4', '10x2'] = '20x4') -> dict:
         """Submit an InSAR job
 
@@ -359,6 +362,7 @@ class HyP3:
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
                 along the Line-Of-Sight (LOS)
+            include_inc_map: Include the incidence angle map in the product package
             looks: Number of looks to take in range and azimuth
 
         Returns:
