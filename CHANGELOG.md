@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.0...v1.1.1)
+
+### Added
+- Exposed new `include_inc_map` parameter for InSAR jobs in `HyP3.submit_insar_job()` and `HyP3.prepare_insar_job()`
+
 ## [1.1.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.0.0...v1.1.0)
 
 ### Added
