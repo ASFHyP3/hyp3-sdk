@@ -323,7 +323,8 @@ class HyP3:
                          include_look_vectors: bool = False,
                          include_los_displacement: bool = False,
                          include_inc_map: bool = False,
-                         looks: Literal['20x4', '10x2'] = '20x4') -> Batch:
+                         looks: Literal['20x4', '10x2'] = '20x4',
+                         include_dem: bool = False) -> Batch:
         """Submit an InSAR job
 
         Args:
@@ -335,6 +336,7 @@ class HyP3:
                 along the Line-Of-Sight (LOS)
             include_inc_map: Include the incidence angle map in the product package
             looks: Number of looks to take in range and azimuth
+            include_dem: Include the digital elevation model GeoTIFF in the product package
 
         Returns:
             A Batch object containing the InSAR job
@@ -352,7 +354,8 @@ class HyP3:
                           include_look_vectors: bool = False,
                           include_los_displacement: bool = False,
                           include_inc_map: bool = False,
-                          looks: Literal['20x4', '10x2'] = '20x4') -> dict:
+                          looks: Literal['20x4', '10x2'] = '20x4',
+                          include_dem: bool = False) -> dict:
         """Submit an InSAR job
 
         Args:
@@ -364,6 +367,7 @@ class HyP3:
                 along the Line-Of-Sight (LOS)
             include_inc_map: Include the incidence angle map in the product package
             looks: Number of looks to take in range and azimuth
+            include_dem: Include the digital elevation model GeoTIFF in the product package
 
         Returns:
             A dictionary containing the prepared InSAR job
