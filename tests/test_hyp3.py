@@ -189,10 +189,12 @@ def test_prepare_insar_job():
             'include_los_displacement': False,
             'include_inc_map': False,
             'looks': '20x4',
+            'include_dem': False,
         }
     }
     assert HyP3.prepare_insar_job(granule1='my_granule1',  granule2='my_granule2', name='my_name', looks='10x2',
-                                  include_los_displacement=True, include_look_vectors=True, include_inc_map=True) == {
+                                  include_los_displacement=True, include_look_vectors=True, include_inc_map=True,
+                                  include_dem=True) == {
         'job_type': 'INSAR_GAMMA',
         'name': 'my_name',
         'job_parameters': {
@@ -201,6 +203,7 @@ def test_prepare_insar_job():
             'include_los_displacement': True,
             'include_inc_map': True,
             'looks': '10x2',
+            'include_dem': True,
         },
     }
 
