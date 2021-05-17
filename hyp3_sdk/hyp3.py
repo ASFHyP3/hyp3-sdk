@@ -324,7 +324,8 @@ class HyP3:
                          include_los_displacement: bool = False,
                          include_inc_map: bool = False,
                          looks: Literal['20x4', '10x2'] = '20x4',
-                         include_dem: bool = False) -> Batch:
+                         include_dem: bool = False,
+                         include_wrapped_phase: bool = False) -> Batch:
         """Submit an InSAR job
 
         Args:
@@ -337,6 +338,7 @@ class HyP3:
             include_inc_map: Include the incidence angle map in the product package
             looks: Number of looks to take in range and azimuth
             include_dem: Include the digital elevation model GeoTIFF in the product package
+            include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
 
         Returns:
             A Batch object containing the InSAR job
@@ -355,7 +357,8 @@ class HyP3:
                           include_los_displacement: bool = False,
                           include_inc_map: bool = False,
                           looks: Literal['20x4', '10x2'] = '20x4',
-                          include_dem: bool = False) -> dict:
+                          include_dem: bool = False,
+                          include_wrapped_phase: bool = False) -> dict:
         """Submit an InSAR job
 
         Args:
@@ -368,6 +371,7 @@ class HyP3:
             include_inc_map: Include the incidence angle map in the product package
             looks: Number of looks to take in range and azimuth
             include_dem: Include the digital elevation model GeoTIFF in the product package
+            include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
 
         Returns:
             A dictionary containing the prepared InSAR job
