@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] (https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.3...v1.1.4)
+
+### Added
+- Modify the hyp3-sdk to reflect the add the decibel for the scale option
+
 ## [1.1.3](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.2...v1.1.3)
 
 ### Added
