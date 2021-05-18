@@ -237,7 +237,7 @@ class HyP3:
                        include_scattering_area: bool = False,
                        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
                        resolution: Literal[30] = 30,
-                       scale: Literal['amplitude', 'power'] = 'power',
+                       scale: Literal['amplitude', 'decibel', 'power'] = 'power',
                        speckle_filter: bool = False,
                        dem_name: Literal['copernicus', 'legacy'] = 'copernicus') -> Batch:
         """Submit an RTC job
@@ -254,7 +254,7 @@ class HyP3:
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
                 projected into the look direction (gamma0)
             resolution: Desired output pixel spacing in meters
-            scale: Scale of output image; either power or amplitude
+            scale: Scale of output image; power, decibel or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
             dem_name: Name of the DEM to use for processing.  `copernicus` will use the Copernicus GLO-30 Public DEM,
                 while `legacy` will use the DEM with the best coverage from ASF's legacy SRTM/NED datasets.
@@ -278,7 +278,7 @@ class HyP3:
                         include_scattering_area: bool = False,
                         radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
                         resolution: Literal[30] = 30,
-                        scale: Literal['amplitude', 'power'] = 'power',
+                        scale: Literal['amplitude', 'decibel', 'power'] = 'power',
                         speckle_filter: bool = False,
                         dem_name: Literal['copernicus', 'legacy'] = 'copernicus') -> dict:
         """Submit an RTC job
@@ -295,7 +295,7 @@ class HyP3:
             radiometry: Backscatter coefficient normalization, either by ground area (sigma0) or illuminated area
                 projected into the look direction (gamma0)
             resolution: Desired output pixel spacing in meters
-            scale: Scale of output image; either power or amplitude
+            scale: Scale of output image; power, decibel, or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
             dem_name: Name of the DEM to use for processing.  `copernicus` will use the Copernicus GLO-30 Public DEM,
                 while `legacy` will use the DEM with the best coverage from ASF's legacy SRTM/NED datasets.
