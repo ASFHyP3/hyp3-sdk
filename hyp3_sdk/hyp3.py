@@ -79,8 +79,6 @@ class HyP3:
             _raise_for_hyp3_status(response)
             jobs.extend([Job.from_dict(job) for job in response.json()['jobs']])
 
-        if not jobs:
-            warnings.warn('Found zero jobs', UserWarning)
         return Batch(jobs)
 
     def get_job_by_id(self, job_id: str) -> Job:
