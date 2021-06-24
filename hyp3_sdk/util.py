@@ -4,7 +4,6 @@ from typing import Union
 
 import requests
 from requests.adapters import HTTPAdapter
-from tqdm.auto import tqdm
 from urllib3.util.retry import Retry
 
 import hyp3_sdk
@@ -12,6 +11,16 @@ from hyp3_sdk.exceptions import AuthenticationError
 
 AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
            '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
+
+
+def get_tqdm_progress_bar():
+    try:
+        # https://github.com/ASFHyP3/hyp3-sdk/issues/92
+        import ipywidgets  # noqa: F401
+        from tqdm.auto import tqdm
+    except ImportError:
+        from tqdm.std import tqdm
+    return tqdm
 
 
 def get_authenticated_session(username: str, password: str) -> requests.Session:
@@ -65,6 +74,7 @@ def download_file(url: str, filepath: Union[Path, str], chunk_size=None, retries
 
     with session.get(url, stream=True) as s:
         s.raise_for_status()
+        tqdm = get_tqdm_progress_bar()
         with tqdm.wrapattr(open(filepath, "wb"), 'write', miniters=1, desc=filepath.name,
                            total=int(s.headers.get('content-length', 0))) as f:
             for chunk in s.iter_content(chunk_size=chunk_size):
