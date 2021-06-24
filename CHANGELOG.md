@@ -14,6 +14,10 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - jobs can be searched for in batches:`job in batch`
   - jobs can be deleted from batches: `del batch[0]`
   - batches can be reversed now using the `reversed()` function
+- `find_jobs()` now accepts datetimes with no timezone info and defaults to UTC.
+
+### Removed
+- `FoundZeroJobs` warning from `find_jobs()`
   
 ## [1.1.3](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.2...v1.1.3)
 

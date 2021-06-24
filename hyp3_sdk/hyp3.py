@@ -1,6 +1,5 @@
 import math
 import time
-import warnings
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
@@ -64,7 +63,7 @@ class HyP3:
             if param_value is not None:
                 if isinstance(param_value, datetime):
                     if param_value.tzinfo is None:
-                        param_value.replace(tzinfo=timezone.utc)
+                        param_value = param_value.replace(tzinfo=timezone.utc)
                     param_value = param_value.isoformat(timespec='seconds')
 
                 params[param_name] = param_value
@@ -79,8 +78,6 @@ class HyP3:
             _raise_for_hyp3_status(response)
             jobs.extend([Job.from_dict(job) for job in response.json()['jobs']])
 
-        if not jobs:
-            warnings.warn('Found zero jobs', UserWarning)
         return Batch(jobs)
 
     def get_job_by_id(self, job_id: str) -> Job:
