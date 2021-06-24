@@ -159,6 +159,7 @@ class Batch:
             self.jobs += [other]
         else:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
+        return self
 
     def __iter__(self):
         return iter(self.jobs)
@@ -171,12 +172,14 @@ class Batch:
     
     def __delitem__(self, job: Job):
         self.jobs.remove(job)
+        return self
 
     def __getitem__(self, index: int):
         return self.jobs[index]
 
     def __setitem__(self, index: int, job: Job):
         self.jobs[index] = job
+        return self
 
     def __reverse__(self):
         for job in self.jobs[::-1]:
@@ -270,4 +273,3 @@ class Batch:
                 filtered_jobs.append(job)
 
         return Batch(filtered_jobs)
-        
