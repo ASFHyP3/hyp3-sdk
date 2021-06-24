@@ -247,6 +247,22 @@ def test_setitem(get_mock_job):
     assert batch[1] == j3
 
 
+def test_reverse(get_mock_job):
+    unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
+    j1 = Job.from_dict(SUCCEEDED_JOB)
+    j2 = Job.from_dict(FAILED_JOB)
+    j3 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    
+    batch = Batch([j1, j2, j3])
+
+    batch_reversed = list(reversed(batch))
+    
+    assert batch_reversed[0] == j3
+    assert batch_reversed[1] == j2
+    assert batch_reversed[2] == j1
+
+
 def test_batch_complete_succeeded():
     batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(SUCCEEDED_JOB)])
     assert batch.complete()
