@@ -1,6 +1,5 @@
 import math
 import time
-import warnings
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
