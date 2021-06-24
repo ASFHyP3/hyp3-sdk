@@ -152,11 +152,38 @@ class Batch:
         else:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
 
+    def __iadd__(self, other: Union[Job, 'Batch']):
+        if isinstance(other, Batch):
+            self.jobs += other.jobs
+        elif isinstance(other, Job):
+            self.jobs += [other]
+        else:
+            raise TypeError(f"unsupported operand type(s) for +=: '{type(self)}' and '{type(other)}'")
+        return self
+
     def __iter__(self):
         return iter(self.jobs)
 
     def __len__(self):
         return len(self.jobs)
+
+    def __contains__(self, job: Job):
+        return job in self.jobs
+
+    def __delitem__(self, job: Job):
+        self.jobs.pop(job)
+        return self
+
+    def __getitem__(self, index: int):
+        return self.jobs[index]
+
+    def __setitem__(self, index: int, job: Job):
+        self.jobs[index] = job
+        return self
+
+    def __reverse__(self):
+        for job in self.jobs[::-1]:
+            yield job
 
     def __repr__(self):
         reprs = ", ".join([job.__repr__() for job in self.jobs])
