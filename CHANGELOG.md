@@ -10,9 +10,9 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   
 ### Added
 - Added missing [container methods](https://docs.python.org/3/reference/datamodel.html#emulating-container-types) 
-  - batches are now subscriptable like `batch[0]`
-  - jobs can be searched for in batches like`job in batch`
-  - jobs can be deleted from batches e.g. `del batch[0]`
+  - batches are now subscriptable: `batch[0]`
+  - jobs can be searched for in batches:`job in batch`
+  - jobs can be deleted from batches: `del batch[0]`
   - batches can be reversed now using the `reversed()` function
   
 ## [1.1.3](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.2...v1.1.3)
