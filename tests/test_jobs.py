@@ -192,6 +192,20 @@ def test_batch_len():
     assert len(batch) == 2
 
 
+def test_contains(get_mock_job):
+    unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
+    j1 = Job.from_dict(SUCCEEDED_JOB)
+    j2 = Job.from_dict(FAILED_JOB)
+    j3 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+
+    a = Batch([j1, j2])
+    
+    assert j1 in a
+    assert j2 in a
+    assert j3 not in a
+
+
 def test_batch_complete_succeeded():
     batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(SUCCEEDED_JOB)])
     assert batch.complete()
