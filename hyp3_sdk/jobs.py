@@ -158,7 +158,7 @@ class Batch:
         elif isinstance(other, Job):
             self.jobs += [other]
         else:
-            raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
+            raise TypeError(f"unsupported operand type(s) for +=: '{type(self)}' and '{type(other)}'")
         return self
 
     def __iter__(self):
