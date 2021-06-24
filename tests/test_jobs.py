@@ -226,6 +226,15 @@ def test_delitem():
     assert j2 in batch
 
 
+def test_getitem():
+    j1 = Job.from_dict(SUCCEEDED_JOB)
+    j2 = Job.from_dict(FAILED_JOB)
+    batch = Batch([j1, j2])
+
+    assert j1 == batch[0]
+    assert j2 == batch[1]
+
+
 def test_batch_complete_succeeded():
     batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(SUCCEEDED_JOB)])
     assert batch.complete()
