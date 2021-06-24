@@ -42,8 +42,7 @@ def test_find_jobs(get_mock_job):
     batch = api.find_jobs()
     assert len(batch) == 3
 
-    with pytest.warns(UserWarning):
-        batch = api.find_jobs()
+    batch = api.find_jobs()
     assert len(batch) == 0
 
 
