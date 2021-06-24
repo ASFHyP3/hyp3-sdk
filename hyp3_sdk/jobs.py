@@ -6,10 +6,9 @@ from typing import List, Optional, Union
 from dateutil import tz
 from dateutil.parser import parse as parse_date
 from requests import HTTPError
-from tqdm.auto import tqdm
 
 from hyp3_sdk.exceptions import HyP3SDKError
-from hyp3_sdk.util import download_file
+from hyp3_sdk.util import download_file, get_tqdm_progress_bar
 
 
 # TODO: actually looks like a good candidate for a dataclass (python 3.7+)
@@ -227,6 +226,7 @@ class Batch:
         Returns: list of Path objects to downloaded files
         """
         downloaded_files = []
+        tqdm = get_tqdm_progress_bar()
         for job in tqdm(self.jobs):
             try:
                 downloaded_files.extend(job.download_files(location, create))
