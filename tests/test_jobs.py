@@ -206,6 +206,26 @@ def test_contains(get_mock_job):
     assert j3 not in a
 
 
+def test_delitem():
+    j1 = Job.from_dict(SUCCEEDED_JOB)
+    j2 = Job.from_dict(FAILED_JOB)
+    batch = Batch([j1, j2])
+
+    assert j1 in batch
+    assert j2 in batch
+
+    del batch[1]
+
+    assert j1 in batch
+    assert j2 not in batch
+
+    batch += j2
+    del batch[0]
+
+    assert j1 not in batch
+    assert j2 in batch
+
+
 def test_batch_complete_succeeded():
     batch = Batch([Job.from_dict(SUCCEEDED_JOB), Job.from_dict(SUCCEEDED_JOB)])
     assert batch.complete()
