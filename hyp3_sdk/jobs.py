@@ -169,7 +169,7 @@ class Batch:
 
     def __contains__(self, job: Job):
         return job in self.jobs
-    
+
     def __delitem__(self, job: Job):
         self.jobs.pop(job)
         return self

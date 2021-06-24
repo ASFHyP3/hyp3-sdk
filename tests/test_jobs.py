@@ -196,10 +196,10 @@ def test_contains(get_mock_job):
     j1 = Job.from_dict(SUCCEEDED_JOB)
     j2 = Job.from_dict(FAILED_JOB)
     j3 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+                      files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
 
     a = Batch([j1, j2])
-    
+
     assert j1 in a
     assert j2 in a
     assert j3 not in a
@@ -239,7 +239,7 @@ def test_setitem(get_mock_job):
     j1 = Job.from_dict(SUCCEEDED_JOB)
     j2 = Job.from_dict(FAILED_JOB)
     j3 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+                      files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
     batch = Batch([j1, j2])
 
     batch[1] = j3
@@ -251,12 +251,12 @@ def test_reverse(get_mock_job):
     j1 = Job.from_dict(SUCCEEDED_JOB)
     j2 = Job.from_dict(FAILED_JOB)
     j3 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
-    
+                      files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+
     batch = Batch([j1, j2, j3])
 
     batch_reversed = list(reversed(batch))
-    
+
     assert batch_reversed[0] == j3
     assert batch_reversed[1] == j2
     assert batch_reversed[2] == j1
