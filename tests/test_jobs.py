@@ -156,7 +156,6 @@ def test_batch_add():
 
 
 def test_batch_iadd():
-    print("Testing iAdd")
     a = Batch([Job.from_dict(SUCCEEDED_JOB)])
     b = Batch([Job.from_dict(FAILED_JOB)])
     j = Job.from_dict(SUCCEEDED_JOB)
