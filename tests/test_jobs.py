@@ -155,6 +155,25 @@ def test_batch_add():
     assert d.jobs[2].running()
 
 
+def test_batch_iadd():
+    print("Testing iAdd")
+    a = Batch([Job.from_dict(SUCCEEDED_JOB)])
+    b = Batch([Job.from_dict(FAILED_JOB)])
+    j = Job.from_dict(SUCCEEDED_JOB)
+    j.status_code = 'RUNNING'
+
+    a += b
+    assert len(a) == 2
+    assert a.jobs[0].succeeded()
+    assert a.jobs[1].failed()
+
+    a += j
+    assert len(a) == 3
+    assert a.jobs[0].succeeded()
+    assert a.jobs[1].failed()
+    assert a.jobs[2].running()
+
+
 def test_batch_iter():
     defined_jobs = [Job.from_dict(SUCCEEDED_JOB), Job.from_dict(FAILED_JOB)]
     batch = Batch(defined_jobs)
