@@ -171,7 +171,7 @@ class Batch:
         return job in self.jobs
     
     def __delitem__(self, job: Job):
-        self.jobs.remove(job)
+        self.jobs.pop(job)
         return self
 
     def __getitem__(self, index: int):
