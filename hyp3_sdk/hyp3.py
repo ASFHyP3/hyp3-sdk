@@ -64,7 +64,7 @@ class HyP3:
             if param_value is not None:
                 if isinstance(param_value, datetime):
                     if param_value.tzinfo is None:
-                        param_value.replace(tzinfo=timezone.utc)
+                        param_value = param_value.replace(tzinfo=timezone.utc)
                     param_value = param_value.isoformat(timespec='seconds')
 
                 params[param_name] = param_value
