@@ -71,24 +71,19 @@ class Job:
             expiration_time=expiration_time
         )
 
-    def _attribute_value(self, attribute_name):
-        value = self.__getattribute__(attribute_name)
-        if isinstance(value, datetime):
-            return value.isoformat(timespec='seconds')
-        else:
-            return value
-
     def to_dict(self, for_resubmit: bool = False):
         job_dict = {}
         if for_resubmit:
-            for key in Job._attributes_for_resubmit:
-                value = self._attribute_value(key)
-                if value is not None:
-                    job_dict[key] = value
+            keys_to_process = Job._attributes_for_resubmit
         else:
-            for key in vars(self).keys():
-                value = self._attribute_value(key)
-                if value is not None:
+            keys_to_process = vars(self).keys()
+
+        for key in keys_to_process:
+            value = self.__getattribute__(key)
+            if value is not None:
+                if isinstance(value, datetime):
+                    job_dict[key] = value.isoformat(timespec='seconds')
+                else:
                     job_dict[key] = value
 
         return job_dict
