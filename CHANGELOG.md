@@ -9,6 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [1.2.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.3...v1.2.0)
   
 ### Added
+- `Job` class now has a `logs` attribute containing links to job log files
 - Added missing [container methods](https://docs.python.org/3/reference/datamodel.html#emulating-container-types) 
   - batches are now subscriptable: `batch[0]`
   - jobs can be searched for in batches:`job in batch`
@@ -22,7 +23,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - [#92](https://github.com/ASFHyP3/hyp3-sdk/issues/92) -- `ImportError` being
   raised when showing a progress bar because `ipywidgets` may not always be
-  installed when running in a Jupyter kernel 
+  installed when running in a Jupyter kernel
   
 ## [1.1.3](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.2...v1.1.3)
 

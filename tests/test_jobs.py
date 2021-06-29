@@ -12,6 +12,7 @@ SUCCEEDED_JOB = {
     "browse_images": ["https://PAIR_PROCESS.png"],
     "expiration_time": "2020-10-08T00:00:00+00:00",
     "files": [{"filename": "PAIR_PROCESS.nc", "size": 5949932, "url": "https://PAIR_PROCESS.nc"}],
+    "logs": ["https://d1c05104-b455-4f35-a95a-84155d63f855.log"],
     "job_id": "d1c05104-b455-4f35-a95a-84155d63f855",
     "job_parameters": {"granules": [
         "S1A_IW_SLC__1SDH_20180511T204719_20180511T204746_021862_025C12_6F77",
@@ -26,6 +27,7 @@ SUCCEEDED_JOB = {
 }
 
 FAILED_JOB = {
+    "logs": ["https://281b2087-9e7d-4d17-a9b3-aebeb2ad23c6.log"],
     "job_id": "281b2087-9e7d-4d17-a9b3-aebeb2ad23c6",
     "job_parameters": {
         "granules": [
@@ -41,12 +43,32 @@ FAILED_JOB = {
 }
 
 
+def test_job_attributes():
+    job = Job.from_dict(SUCCEEDED_JOB)
+    for key in SUCCEEDED_JOB.keys():
+        assert job.__getattribute__(key)
+
+    job = Job.from_dict(FAILED_JOB)
+    for key in FAILED_JOB.keys():
+        assert job.__getattribute__(key)
+
+    unprovided_attributes = set(vars(job).keys()) - set(FAILED_JOB.keys())
+    for key in unprovided_attributes:
+        assert job.__getattribute__(key) is None
+
+
 def test_job_dict_transforms():
     job = Job.from_dict(SUCCEEDED_JOB)
     assert job.to_dict() == SUCCEEDED_JOB
 
+    retry = job.to_dict(for_resubmit=True)
+    assert retry.keys() == Job._attributes_for_resubmit
+
     job = Job.from_dict(FAILED_JOB)
     assert job.to_dict() == FAILED_JOB
+
+    retry = job.to_dict(for_resubmit=True)
+    assert retry.keys() == Job._attributes_for_resubmit
 
 
 def test_job_complete_succeeded_failed_running():
