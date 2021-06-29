@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin
 
 import responses
@@ -68,6 +68,32 @@ def test_find_jobs_paging(get_mock_job):
     assert len(batch) == 3
     assert 'next' not in responses.calls[0].request.params
     assert 'next' in responses.calls[1].request.params
+
+
+@responses.activate
+def test_find_jobs_start():
+    api = HyP3()
+    responses.add(responses.GET, urljoin(api.url, '/jobs?start=2021-01-01T00%3A00%3A00%2B00%3A00'),
+                  json={'jobs': []}, match_querystring=True)
+
+    batch = api.find_jobs(start=datetime(2021, 1, 1))
+    assert len(batch) == 0
+
+    batch = api.find_jobs(start=datetime(2021, 1, 1, tzinfo=timezone.utc))
+    assert len(batch) == 0
+
+
+@responses.activate
+def test_find_jobs_end():
+    api = HyP3()
+    responses.add(responses.GET, urljoin(api.url, '/jobs?end=2021-01-02T00%3A00%3A00%2B00%3A00'),
+                  json={'jobs': []}, match_querystring=True)
+
+    batch = api.find_jobs(end=datetime(2021, 1, 2))
+    assert len(batch) == 0
+
+    batch = api.find_jobs(end=datetime(2021, 1, 2, tzinfo=timezone.utc))
+    assert len(batch) == 0
 
 
 @responses.activate
