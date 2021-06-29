@@ -23,7 +23,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - [#92](https://github.com/ASFHyP3/hyp3-sdk/issues/92) -- `ImportError` being
   raised when showing a progress bar because `ipywidgets` may not always be
-  installed when running in a Jupyter kernel 
+  installed when running in a Jupyter kernel
   
 ## [1.1.3](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.2...v1.1.3)
 

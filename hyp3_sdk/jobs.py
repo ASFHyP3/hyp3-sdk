@@ -14,8 +14,7 @@ from hyp3_sdk.util import download_file, get_tqdm_progress_bar
 # TODO: actually looks like a good candidate for a dataclass (python 3.7+)
 #       https://docs.python.org/3/library/dataclasses.html
 class Job:
-    _finished_job_keys = {'job_id', 'logs',  'request_time', 'status_code', 'user_id'}
-    _successful_job_keys = _finished_job_keys.union({'browse_images', 'expiration_time', 'files', 'thumbnail_images'})
+    _attributes_for_resubmit = {'name', 'job_parameters', 'job_type'}
 
     def __init__(
             self,
@@ -73,17 +72,14 @@ class Job:
         )
 
     def to_dict(self, for_resubmit: bool = False):
-        job_dict = {
-            'job_type': self.job_type,
-        }
-
-        for key in ['name', 'job_parameters']:
+        job_dict = {}
+        for key in Job._attributes_for_resubmit:
             value = self.__getattribute__(key)
             if value is not None:
                 job_dict[key] = value
 
         if not for_resubmit:
-            for key in self._successful_job_keys:
+            for key in set(vars(self).keys()) - Job._attributes_for_resubmit:
                 value = self.__getattribute__(key)
                 if value is not None:
                     if isinstance(value, datetime):
