@@ -71,7 +71,7 @@ def test_find_jobs_paging(get_mock_job):
 
 
 @responses.activate
-def test_find_jobs_start(get_mock_job):
+def test_find_jobs_start():
     api = HyP3()
     responses.add(responses.GET, urljoin(api.url, '/jobs?start=2021-01-01T00%3A00%3A00%2B00%3A00'),
                   json={'jobs': []}, match_querystring=True)
@@ -84,7 +84,7 @@ def test_find_jobs_start(get_mock_job):
 
 
 @responses.activate
-def test_find_jobs_end(get_mock_job):
+def test_find_jobs_end():
     api = HyP3()
     responses.add(responses.GET, urljoin(api.url, '/jobs?end=2021-01-02T00%3A00%3A00%2B00%3A00'),
                   json={'jobs': []}, match_querystring=True)
