@@ -52,8 +52,8 @@ def test_job_attributes():
     for key in FAILED_JOB.keys():
         assert job.__getattribute__(key)
 
-    job = Job.from_dict(FAILED_JOB)
-    for key in set(vars(job).keys()) - set(FAILED_JOB.keys()):
+    unprovided_attributes = set(vars(job).keys()) - set(FAILED_JOB.keys())
+    for key in unprovided_attributes:
         assert job.__getattribute__(key) is None
 
 
@@ -61,16 +61,14 @@ def test_job_dict_transforms():
     job = Job.from_dict(SUCCEEDED_JOB)
     assert job.to_dict() == SUCCEEDED_JOB
 
-    job = Job.from_dict(FAILED_JOB)
-    assert job.to_dict() == FAILED_JOB
-
-    job = Job.from_dict(SUCCEEDED_JOB)
     retry = job.to_dict(for_resubmit=True)
     for key in set(SUCCEEDED_JOB.keys()) - Job._attributes_for_resubmit:
         assert job.__getattribute__(key)
         assert not retry.get(key, False)
 
     job = Job.from_dict(FAILED_JOB)
+    assert job.to_dict() == FAILED_JOB
+
     retry = job.to_dict(for_resubmit=True)
     for key in set(FAILED_JOB.keys()) - Job._attributes_for_resubmit:
         assert job.__getattribute__(key)
