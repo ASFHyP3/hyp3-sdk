@@ -24,6 +24,7 @@ class Job:
             name: Optional[str] = None,
             job_parameters: Optional[dict] = None,
             files: Optional[List] = None,
+            logs: Optional[List] = None,
             browse_images: Optional[List] = None,
             thumbnail_images: Optional[List] = None,
             expiration_time: Optional[datetime] = None
@@ -36,6 +37,7 @@ class Job:
         self.name = name
         self.job_parameters = job_parameters
         self.files = files
+        self.logs = logs
         self.browse_images = browse_images
         self.thumbnail_images = thumbnail_images
         self.expiration_time = expiration_time
@@ -61,6 +63,7 @@ class Job:
             name=input_dict.get('name'),
             job_parameters=input_dict.get('job_parameters'),
             files=input_dict.get('files'),
+            logs=input_dict.get('logs'),
             browse_images=input_dict.get('browse_images'),
             thumbnail_images=input_dict.get('thumbnail_images'),
             expiration_time=expiration_time
@@ -77,7 +80,7 @@ class Job:
                 job_dict[key] = value
 
         if not for_resubmit:
-            for key in ['files', 'browse_images', 'thumbnail_images', 'job_id', 'status_code', 'user_id',
+            for key in ['files', 'logs', 'browse_images', 'thumbnail_images', 'job_id', 'status_code', 'user_id',
                         'expiration_time', 'request_time']:
                 value = self.__getattribute__(key)
                 if value is not None:
