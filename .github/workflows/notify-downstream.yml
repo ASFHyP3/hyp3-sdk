@@ -1,0 +1,28 @@
+name: Notify Downstream of New Release
+
+on:
+  release:
+    types:
+      - released
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bump SDK version in HyP3 docs
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Update HyP3 SDK version
+          token: ${{ secrets.TOOLS_BOT_PAK }}
+          repo: ASFHyP3/hyp3-docs
+          ref: main
+          inputs: '{"sdk_version": "${{ github.event.release.tag_name }}"}'
+
+      - name: Tweet release notes
+        uses: benc-uk/workflow-dispatch@v1.1
+        with:
+          workflow: Propose Tweet
+          token: ${{ secrets.TOOLS_BOT_PAK }}
+          repo: ASFHyP3/hyp3-docs
+          ref: develop
+          inputs: '{"message": "## ${{ github.event.release.name }}\n${{ github.event.release.body }}"}'

@@ -6,15 +6,16 @@ from typing import List, Optional, Union
 from dateutil import tz
 from dateutil.parser import parse as parse_date
 from requests import HTTPError
-from tqdm.auto import tqdm
 
 from hyp3_sdk.exceptions import HyP3SDKError
-from hyp3_sdk.util import download_file
+from hyp3_sdk.util import download_file, get_tqdm_progress_bar
 
 
 # TODO: actually looks like a good candidate for a dataclass (python 3.7+)
 #       https://docs.python.org/3/library/dataclasses.html
 class Job:
+    _attributes_for_resubmit = {'name', 'job_parameters', 'job_type'}
+
     def __init__(
             self,
             job_type: str,
@@ -25,6 +26,7 @@ class Job:
             name: Optional[str] = None,
             job_parameters: Optional[dict] = None,
             files: Optional[List] = None,
+            logs: Optional[List] = None,
             browse_images: Optional[List] = None,
             thumbnail_images: Optional[List] = None,
             expiration_time: Optional[datetime] = None
@@ -37,6 +39,7 @@ class Job:
         self.name = name
         self.job_parameters = job_parameters
         self.files = files
+        self.logs = logs
         self.browse_images = browse_images
         self.thumbnail_images = thumbnail_images
         self.expiration_time = expiration_time
@@ -62,30 +65,27 @@ class Job:
             name=input_dict.get('name'),
             job_parameters=input_dict.get('job_parameters'),
             files=input_dict.get('files'),
+            logs=input_dict.get('logs'),
             browse_images=input_dict.get('browse_images'),
             thumbnail_images=input_dict.get('thumbnail_images'),
             expiration_time=expiration_time
         )
 
     def to_dict(self, for_resubmit: bool = False):
-        job_dict = {
-            'job_type': self.job_type,
-        }
+        job_dict = {}
+        if for_resubmit:
+            keys_to_process = Job._attributes_for_resubmit
+        else:
+            keys_to_process = vars(self).keys()
 
-        for key in ['name', 'job_parameters']:
+        for key in keys_to_process:
             value = self.__getattribute__(key)
             if value is not None:
-                job_dict[key] = value
+                if isinstance(value, datetime):
+                    job_dict[key] = value.isoformat(timespec='seconds')
+                else:
+                    job_dict[key] = value
 
-        if not for_resubmit:
-            for key in ['files', 'browse_images', 'thumbnail_images', 'job_id', 'status_code', 'user_id',
-                        'expiration_time', 'request_time']:
-                value = self.__getattribute__(key)
-                if value is not None:
-                    if isinstance(value, datetime):
-                        job_dict[key] = value.isoformat(timespec='seconds')
-                    else:
-                        job_dict[key] = value
         return job_dict
 
     def succeeded(self) -> bool:
@@ -152,11 +152,38 @@ class Batch:
         else:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
 
+    def __iadd__(self, other: Union[Job, 'Batch']):
+        if isinstance(other, Batch):
+            self.jobs += other.jobs
+        elif isinstance(other, Job):
+            self.jobs += [other]
+        else:
+            raise TypeError(f"unsupported operand type(s) for +=: '{type(self)}' and '{type(other)}'")
+        return self
+
     def __iter__(self):
         return iter(self.jobs)
 
     def __len__(self):
         return len(self.jobs)
+
+    def __contains__(self, job: Job):
+        return job in self.jobs
+
+    def __delitem__(self, job: Job):
+        self.jobs.pop(job)
+        return self
+
+    def __getitem__(self, index: int):
+        return self.jobs[index]
+
+    def __setitem__(self, index: int, job: Job):
+        self.jobs[index] = job
+        return self
+
+    def __reverse__(self):
+        for job in self.jobs[::-1]:
+            yield job
 
     def __repr__(self):
         reprs = ", ".join([job.__repr__() for job in self.jobs])
@@ -200,6 +227,7 @@ class Batch:
         Returns: list of Path objects to downloaded files
         """
         downloaded_files = []
+        tqdm = get_tqdm_progress_bar()
         for job in tqdm(self.jobs):
             try:
                 downloaded_files.extend(job.download_files(location, create))

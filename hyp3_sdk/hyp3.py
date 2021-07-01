@@ -1,18 +1,15 @@
 import math
 import time
-import warnings
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
 from typing import List, Literal, Optional, Union
 from urllib.parse import urljoin
 
-from tqdm.auto import tqdm
-
 import hyp3_sdk
 from hyp3_sdk.exceptions import HyP3Error, _raise_for_hyp3_status
 from hyp3_sdk.jobs import Batch, Job
-from hyp3_sdk.util import get_authenticated_session
+from hyp3_sdk.util import get_authenticated_session, get_tqdm_progress_bar
 
 HYP3_PROD = 'https://hyp3-api.asf.alaska.edu'
 HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
@@ -64,7 +61,7 @@ class HyP3:
             if param_value is not None:
                 if isinstance(param_value, datetime):
                     if param_value.tzinfo is None:
-                        param_value.replace(tzinfo=timezone.utc)
+                        param_value = param_value.replace(tzinfo=timezone.utc)
                     param_value = param_value.isoformat(timespec='seconds')
 
                 params[param_name] = param_value
@@ -79,8 +76,6 @@ class HyP3:
             _raise_for_hyp3_status(response)
             jobs.extend([Job.from_dict(job) for job in response.json()['jobs']])
 
-        if not jobs:
-            warnings.warn('Found zero jobs', UserWarning)
         return Batch(jobs)
 
     def get_job_by_id(self, job_id: str) -> Job:
@@ -114,6 +109,7 @@ class HyP3:
 
     @watch.register
     def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60) -> Batch:
+        tqdm = get_tqdm_progress_bar()
         iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
@@ -135,6 +131,7 @@ class HyP3:
 
     @watch.register
     def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60) -> Job:
+        tqdm = get_tqdm_progress_bar()
         iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=1, bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
