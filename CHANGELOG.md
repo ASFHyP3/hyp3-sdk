@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.3.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.2.0...v1.3.0)
+
+### Added
+- `extract_zipped_product` function to `util` which will extract zipped HyP3 products
+- `chunk` function to `util` which will split a sequence into small chunks and
+  is particularly useful for submitting large batches
+
 ## [1.2.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.3...v1.2.0)
   
 ### Added

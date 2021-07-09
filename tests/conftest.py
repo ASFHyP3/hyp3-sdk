@@ -54,6 +54,7 @@ def test_data_dir():
     data_dir = Path(__file__).resolve().parent / 'data'
     return data_dir
 
+
 @pytest.fixture
 def product_zip(tmp_path_factory, test_data_dir):
     tmp_dir = tmp_path_factory.mktemp('data')

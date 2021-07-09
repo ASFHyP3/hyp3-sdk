@@ -1,6 +1,6 @@
 """Extra utilities for working with HyP3"""
 from pathlib import Path
-from typing import Any, Generator, Optional, Sequence, Union
+from typing import Any, Generator, Sequence, Union
 from zipfile import ZipFile
 
 import requests
@@ -38,7 +38,7 @@ def extract_zipped_product(zip_file: Union[str, Path], delete: bool = True) -> P
 
 
 def chunk(itr: Sequence[Any], n=200) -> Generator[Sequence[Any], None, None]:
-    """Split an sequence into small chunks
+    """Split a sequence into small chunks
 
     Args:
         itr: A sequence object to chunk
