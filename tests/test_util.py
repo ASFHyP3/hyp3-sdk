@@ -37,6 +37,10 @@ def test_chunk():
     assert len(chunks) == 1
     assert len(chunks[0]) == 1234
 
+    chunks = list(util.chunk(items, n=5678))
+    assert len(chunks) == 1
+    assert len(chunks[0]) == 1234
+
     with pytest.raises(ValueError):
         chunks = list(util.chunk(items, n=0))
 
