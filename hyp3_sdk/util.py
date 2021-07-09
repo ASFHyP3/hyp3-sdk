@@ -44,7 +44,7 @@ def chunk(itr: Sequence[Any], n: int = 200) -> Generator[Sequence[Any], None, No
         itr: A sequence object to chunk
         n: Size of the chunks to return
     """
-    if n < 1 or not isinstance(n, int):
+    if not isinstance(n, int) or n < 1:
         raise ValueError(f'n must be a positive integer: {n}')
 
     for i in range(0, len(itr), n):
