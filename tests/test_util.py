@@ -1,6 +1,7 @@
 import shutil
 from pathlib import Path
 
+import pytest
 import responses
 
 from hyp3_sdk import util
@@ -26,6 +27,24 @@ def test_chunk():
     assert len(chunks) == 7
     assert len(chunks[0]) == 200
     assert len(chunks[-1]) == 34
+
+    chunks = list(util.chunk(items, n=56))
+    assert len(chunks) == 23
+    assert len(chunks[0]) == 56
+    assert len(chunks[-1]) == 2
+
+    chunks = list(util.chunk(items, n=1234))
+    assert len(chunks) == 1
+    assert len(chunks[0]) == 1234
+
+    with pytest.raises(ValueError):
+        chunks = list(util.chunk(items, n=0))
+
+    with pytest.raises(ValueError):
+        chunks = list(util.chunk(items, n=-2))
+
+    with pytest.raises(ValueError):
+        chunks = list(util.chunk(items, n=10.0))
 
 
 def test_extract_zipped_product(product_zip):

@@ -37,13 +37,16 @@ def extract_zipped_product(zip_file: Union[str, Path], delete: bool = True) -> P
     return zip_file.parent / zip_file.stem
 
 
-def chunk(itr: Sequence[Any], n=200) -> Generator[Sequence[Any], None, None]:
+def chunk(itr: Sequence[Any], n: int = 200) -> Generator[Sequence[Any], None, None]:
     """Split a sequence into small chunks
 
     Args:
         itr: A sequence object to chunk
         n: Size of the chunks to return
     """
+    if n < 1 or not isinstance(n, int):
+        raise ValueError(f'n must be a positive integer: {n}')
+
     for i in range(0, len(itr), n):
         yield itr[i:i + n]
 
