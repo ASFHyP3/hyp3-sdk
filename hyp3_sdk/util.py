@@ -1,6 +1,7 @@
 """Extra utilities for working with HyP3"""
 from pathlib import Path
-from typing import Union
+from typing import Any, Generator, Optional, Sequence, Union
+from zipfile import ZipFile
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -11,6 +12,40 @@ from hyp3_sdk.exceptions import AuthenticationError
 
 AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
            '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
+
+
+def extract_zipped_product(zip_file: Union[str, Path], delete: bool = True) -> Path:
+    """Extract a zipped HyP3 product
+
+    Extract a zipped HyP3 product to the same directory as the zipped HyP3 product, optionally
+    deleting `zip file` afterward.
+
+    Args:
+        zip_file: Zipped HyP3 product to extract
+        delete: Delete `zip_file` after it has been extracted
+
+    Returns:
+        Path to the HyP3 product folder containing the product files
+    """
+    zip_file = Path(zip_file)
+    with ZipFile(zip_file) as z:
+        z.extractall(path=zip_file.parent)
+
+    if delete:
+        zip_file.unlink()
+
+    return zip_file.parent / zip_file.stem
+
+
+def chunk(itr: Sequence[Any], n=200) -> Generator[Sequence[Any], None, None]:
+    """Split an sequence into small chunks
+
+    Args:
+        itr: A sequence object to chunk
+        n: Size of the chunks to return
+    """
+    for i in range(0, len(itr), n):
+        yield itr[i:i + n]
 
 
 def get_tqdm_progress_bar():

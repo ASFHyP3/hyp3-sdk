@@ -1,4 +1,6 @@
+import shutil
 from datetime import datetime
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -45,3 +47,18 @@ def get_mock_job():
 
         return Job.from_dict(job_dict)
     return default_job
+
+
+@pytest.fixture
+def test_data_dir():
+    data_dir = Path(__file__).resolve().parent / 'data'
+    return data_dir
+
+@pytest.fixture
+def product_zip(tmp_path_factory, test_data_dir):
+    tmp_dir = tmp_path_factory.mktemp('data')
+
+    product_file = tmp_dir / 'product.zip'
+    shutil.copy(test_data_dir / 'product.zip', product_file)
+
+    return product_file
