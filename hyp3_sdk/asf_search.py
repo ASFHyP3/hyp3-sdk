@@ -1,6 +1,7 @@
 from typing import Iterable, List, Union
 
 import requests
+from shapely.geometry import shape
 
 from hyp3_sdk.exceptions import ASFSearchError, _raise_for_search_status
 
@@ -11,10 +12,10 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
     """Get the metadata for a granule or list of granules
 
     Args:
-        granules: granule(s) to lookup metadata for
+        granules: granule(s) to lookup
 
     Returns:
-        metadata: metadata for the granule(s)
+        metadata: GeoJSON Feature or FeatureCollection of the requested granule(s)
     """
     if isinstance(granules, str):
         granule_list = granules
@@ -22,22 +23,21 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
         granule_list = ','.join(granules)
 
     params = {
-        'output': 'jsonlite',
+        'output': 'geojson',  # preferred by DISCOVERY-asf_search
         'granule_list': granule_list,
     }
     response = requests.post(_SEARCH_API, params=params)
     _raise_for_search_status(response)
 
-    metadata = [result for result in response.json()['results']
-                if not result['productType'].startswith('METADATA_')]
-
+    scenes = [result for result in response.json()['features']
+              if not result['properties']['processingLevel'].startswith('METADATA_')]
     if isinstance(granules, str):
-        return metadata[0]
+        return scenes[0]
 
-    return metadata
+    return {'features': scenes, 'type': 'FeatureCollection'}
 
 
-def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
+def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> dict:
     """Get a Sentinel-1 granule's nearest neighbors from a temporal stack (backwards in time)
 
     Args:
@@ -45,36 +45,50 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> List[dict]:
         max_neighbors: maximum number of neighbors to return
 
     Returns:
-        neighbors: a list of neighbors sorted by time
+        neighbors: GeoJSON FeatureCollection with a list of features for each neighbor, sorted by time
     """
     params = {
-        'output': 'json',  # jsonlite doesn't include centerLat/centerLon
+        'output': 'geojson',  # preferred by DISCOVERY-asf_search
         'platform': 'S1',
         'granule_list': granule,
     }
     response = requests.post(_SEARCH_API, params=params)
     _raise_for_search_status(response)
-    references = [r for r in response.json()[0] if not r['processingLevel'].startswith('METADATA_')]
+    references = [r for r in response.json()['features']
+                  if not r['properties']['processingLevel'].startswith('METADATA_')]
     if not references:
         raise ASFSearchError(f'Reference Sentinel-1 granule {granule} could not be found')
     reference = references[0]
+    reference_center_wkt = shape(reference['geometry']).centroid.wkt
+
+    from pprint import pprint as pp
+    pp(reference)
+    pp(reference_center_wkt)
 
     params = {
-        'output': 'jsonlite',
+        'output': 'geojson',  # preferred by DISCOVERY-asf_search
         'platform': 'S1',
-        'intersectsWith': f'POINT ({reference["centerLon"]} {reference["centerLat"]})',
-        'end': reference['startTime'],  # includes reference scene
-        'beamMode': reference['beamMode'],
-        'flightDirection': reference['flightDirection'],
-        'processingLevel': reference['processingLevel'],
-        'relativeOrbit': reference['relativeOrbit'],
-        'polarization': _get_matching_polarizations(reference['polarization']),
-        'lookDirection': reference['lookDirection'],
+        'intersectsWith': reference_center_wkt,
+        'end': reference['properties']['startTime'],  # includes reference scene
+        'beamMode': reference['properties']['beamModeType'],
+        'flightDirection': reference['properties']['flightDirection'],
+        'processingLevel': reference['properties']['processingLevel'],
+        'relativeOrbit': reference['properties']['pathNumber'],
+        'polarization': _get_matching_polarizations(reference['properties']['polarization']),
     }
+
+    pp(params)
+
     response = requests.post(_SEARCH_API, params=params)
     _raise_for_search_status(response)
-    neighbors = sorted(response.json()['results'], key=lambda x: x['startTime'], reverse=True)
-    return neighbors[1:max_neighbors+1]
+    pp(response.json()['features'])
+
+    neighbors = sorted(response.json()['features'], key=lambda x: x['properties']['startTime'], reverse=True)
+
+    pp(len(neighbors))
+
+    search_results = {'features': neighbors[1:max_neighbors+1], 'type': 'FeatureCollection'}
+    return search_results
 
 
 def _get_matching_polarizations(input_polarization: str):
