@@ -7,6 +7,15 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.0...v1.4.0)
+
+### Changed
+- `hyp3_sdk.asf_search` is **depreciated** and will be removed in future releases.
+  Functionality is being moved to the [`asf_search`](https://github.com/asfadmin/Discovery-asf_search)
+  Python package, which provides a more comprehensive ASF search experience and is available on conda-forge and PyPI.
+- The `get_metadata` and `get_nearest_neighbors` functions in `hyp3_sdk.asf_search` now return GeoJSON formatted
+  results to be in line with results provided by the `asf_search` package.
+
 ## [1.3.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.2.0...v1.3.0)
 
 ### Added
