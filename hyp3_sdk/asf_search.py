@@ -1,9 +1,14 @@
+import warnings
 from typing import Iterable, List, Union
 
 import requests
 from shapely.geometry import shape
 
 from hyp3_sdk.exceptions import ASFSearchError, _raise_for_search_status
+
+warnings.warn('\nhyp3_sdk.asf_search is depreciated and functionality is '
+              'being moved to the asf_search Package available on conda-forge and PyPI. '
+              'See: https://github.com/asfadmin/Discovery-asf_search', FutureWarning)
 
 _SEARCH_API = 'https://api.daac.asf.alaska.edu/services/search/param'
 
@@ -17,6 +22,9 @@ def get_metadata(granules: Union[str, Iterable[str]]) -> Union[dict, List[dict]]
     Returns:
         metadata: GeoJSON Feature or FeatureCollection of the requested granule(s)
     """
+    warnings.warn('hyp3_sdk.asf_search.get_metadata is depreciated. We recommend using asf_search.granule_search '
+                  'instead. See: https://github.com/asfadmin/Discovery-asf_search#usage', FutureWarning)
+
     if isinstance(granules, str):
         granule_list = granules
     else:
