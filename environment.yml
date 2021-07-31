@@ -20,6 +20,7 @@ dependencies:
   # For running
   - python-dateutil
   - requests
+  - shapely
   - tqdm
   - urllib3
 

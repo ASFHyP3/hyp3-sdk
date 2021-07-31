@@ -35,8 +35,9 @@ setup(
     install_requires=[
         'python-dateutil',
         'requests',
-        'urllib3',
+        'shapely',
         'tqdm',
+        'urllib3',
     ],
 
     extras_require={
