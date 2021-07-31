@@ -46,16 +46,16 @@ def test_get_nearest_neighbor():
         {
             'geometry': {
                 'coordinates': [[[80.848305, 25.82291], [81.164093, 27.446077], [83.678406, 27.034683],
-                             [83.32576, 25.408642], [80.848305, 25.82291]]],
+                                 [83.32576, 25.408642], [80.848305, 25.82291]]],
                 'type': 'Polygon'
             },
             'properties': {'beamModeType': 'IW',
-                       'flightDirection': 'DESCENDING',
-                       'pathNumber': '92',
-                       'polarization': 'VV+VH',
-                       'processingLevel': 'SLC',
-                       'startTime': '2016-11-06T00:27:50.000000',
-                       },
+                           'flightDirection': 'DESCENDING',
+                           'pathNumber': '92',
+                           'polarization': 'VV+VH',
+                           'processingLevel': 'SLC',
+                           'startTime': '2016-11-06T00:27:50.000000',
+                           },
             'type': 'Feature'
         }
     ], 'type': 'FeatureCollection'}
