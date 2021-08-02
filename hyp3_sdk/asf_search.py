@@ -69,10 +69,6 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> dict:
     reference = references[0]
     reference_center_wkt = shape(reference['geometry']).centroid.wkt
 
-    from pprint import pprint as pp
-    pp(reference)
-    pp(reference_center_wkt)
-
     params = {
         'output': 'geojson',  # preferred by DISCOVERY-asf_search
         'platform': 'S1',
@@ -85,16 +81,10 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> dict:
         'polarization': _get_matching_polarizations(reference['properties']['polarization']),
     }
 
-    pp(params)
-
     response = requests.post(_SEARCH_API, params=params)
     _raise_for_search_status(response)
-    pp(response.json()['features'])
 
     neighbors = sorted(response.json()['features'], key=lambda x: x['properties']['startTime'], reverse=True)
-
-    pp(len(neighbors))
-
     search_results = {'features': neighbors[1:max_neighbors+1], 'type': 'FeatureCollection'}
     return search_results
 
