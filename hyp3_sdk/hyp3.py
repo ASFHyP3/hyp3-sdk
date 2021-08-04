@@ -11,14 +11,14 @@ from hyp3_sdk.exceptions import HyP3Error, _raise_for_hyp3_status
 from hyp3_sdk.jobs import Batch, Job
 from hyp3_sdk.util import get_authenticated_session, get_tqdm_progress_bar
 
-HYP3_PROD = 'https://hyp3-api.asf.alaska.edu'
-HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
+PROD_API = 'https://hyp3-api.asf.alaska.edu'
+TEST_API = 'https://hyp3-test-api.asf.alaska.edu'
 
 
 class HyP3:
     """A python wrapper around the HyP3 API"""
 
-    def __init__(self, api_url: str = HYP3_PROD, username: Optional[str] = None, password: Optional[str] = None,
+    def __init__(self, api_url: str = PROD_API, username: Optional[str] = None, password: Optional[str] = None,
                  prompt: bool = False):
         """
         Args:

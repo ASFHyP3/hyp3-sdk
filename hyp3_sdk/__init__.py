@@ -3,7 +3,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 from .config import TESTING  # noqa
-from .hyp3 import HYP3_PROD, HYP3_TEST, HyP3
+from .hyp3 import HyP3, PROD_API, TEST_API
 from .jobs import Batch, Job
 
 try:
@@ -18,8 +18,8 @@ except PackageNotFoundError:
 __all__ = [
     'Batch',
     'HyP3',
-    'HYP3_PROD',
-    'HYP3_TEST',
+    'PROD_API',
+    'TEST_API',
     'Job',
     '__version__',
 ]

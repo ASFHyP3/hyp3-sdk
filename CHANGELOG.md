@@ -10,9 +10,14 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [1.3.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.2.0...v1.3.0)
 
 ### Added
-- `extract_zipped_product` function to `util` which will extract zipped HyP3 products
-- `chunk` function to `util` which will split a sequence into small chunks and
+- `extract_zipped_product` function to `hyp3_sdk.util` which will extract zipped HyP3 products
+- `chunk` function to `hyp3_sdk.util` which will split a sequence into small chunks and
   is particularly useful for submitting large batches
+
+### Changed
+- HyP3 API URL constants have been renamed to be more descriptive
+  - `hyp3_sdk.HyP3_PROD` is now `hyp3_sdk.PROD_API`
+  - `hyp3_sdk.HyP3_TEST` is now `hyp3_sdk.TEST_API`
 
 ## [1.2.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.3...v1.2.0)
   
