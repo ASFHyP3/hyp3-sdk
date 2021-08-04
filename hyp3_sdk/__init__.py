@@ -3,7 +3,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 from .config import TESTING  # noqa
-from .hyp3 import PROD_API, TEST_API, HyP3
+from .hyp3 import HyP3, PROD_API, TEST_API
 from .jobs import Batch, Job
 
 try:
