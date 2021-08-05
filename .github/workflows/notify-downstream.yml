@@ -25,4 +25,5 @@ jobs:
           token: ${{ secrets.TOOLS_BOT_PAK }}
           repo: ASFHyP3/hyp3-docs
           ref: develop
-          inputs: '{"message": "## ${{ github.event.release.name }}\n${{ github.event.release.body }}"}'
+          inputs: >
+            {"message": ${{ toJSON(format('{0}{1}', github.event.release.name, github.event.release.body)) }} }

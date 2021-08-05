@@ -11,14 +11,14 @@ from hyp3_sdk.exceptions import HyP3Error, _raise_for_hyp3_status
 from hyp3_sdk.jobs import Batch, Job
 from hyp3_sdk.util import get_authenticated_session, get_tqdm_progress_bar
 
-HYP3_PROD = 'https://hyp3-api.asf.alaska.edu'
-HYP3_TEST = 'https://hyp3-test-api.asf.alaska.edu'
+PROD_API = 'https://hyp3-api.asf.alaska.edu'
+TEST_API = 'https://hyp3-test-api.asf.alaska.edu'
 
 
 class HyP3:
     """A python wrapper around the HyP3 API"""
 
-    def __init__(self, api_url: str = HYP3_PROD, username: Optional[str] = None, password: Optional[str] = None,
+    def __init__(self, api_url: str = PROD_API, username: Optional[str] = None, password: Optional[str] = None,
                  prompt: bool = False):
         """
         Args:
@@ -244,7 +244,7 @@ class HyP3:
             name: A name for the job
             dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
             include_dem: Include the DEM file in the product package
-            include_inc_map: Include the incidence angle map in the product package
+            include_inc_map: Include the local incidence angle map in the product package
             include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules
                 (ignored for single-pol granules)
             include_scattering_area: Include the scattering area in the product package
@@ -285,7 +285,7 @@ class HyP3:
             name: A name for the job
             dem_matching: Coregisters SAR data to the DEM, rather than using dead reckoning based on orbit files
             include_dem: Include the DEM file in the product package
-            include_inc_map: Include the incidence angle map in the product package
+            include_inc_map: Include the local incidence angle map in the product package
             include_rgb: Include a false-color RGB decomposition in the product package for dual-pol granules
                 (ignored for single-pol granules)
             include_scattering_area: Include the scattering area in the product package
@@ -332,7 +332,7 @@ class HyP3:
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
                 along the Line-Of-Sight (LOS)
-            include_inc_map: Include the incidence angle map in the product package
+            include_inc_map: Include the local and ellipsoidal incidence angle maps in the product package
             looks: Number of looks to take in range and azimuth
             include_dem: Include the digital elevation model GeoTIFF in the product package
             include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
@@ -365,7 +365,7 @@ class HyP3:
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
                 along the Line-Of-Sight (LOS)
-            include_inc_map: Include the incidence angle map in the product package
+            include_inc_map: Include the local and ellipsoidal incidence angle maps in the product package
             looks: Number of looks to take in range and azimuth
             include_dem: Include the digital elevation model GeoTIFF in the product package
             include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
