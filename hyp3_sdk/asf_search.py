@@ -71,7 +71,7 @@ def get_nearest_neighbors(granule: str, max_neighbors: int = 2,) -> dict:
 
     params = {
         'output': 'geojson',  # preferred by DISCOVERY-asf_search
-        'platform': 'S1',
+        'platform': 'Sentinel-1',
         'intersectsWith': reference_center_wkt,
         'end': reference['properties']['startTime'],  # includes reference scene
         'beamMode': reference['properties']['beamModeType'],
