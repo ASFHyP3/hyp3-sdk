@@ -39,7 +39,7 @@ def test_get_nearest_neighbor():
 
     reference_query = f'{asf_search._SEARCH_API}' \
                       '?output=geojson' \
-                      '&platform=S1' \
+                      '&platform=Sentinel-1' \
                       f'&granule_list={reference}'
 
     reference_response = {'features': [
@@ -64,7 +64,7 @@ def test_get_nearest_neighbor():
 
     stack_query = f'{asf_search._SEARCH_API}' \
                   '?output=geojson' \
-                  '&platform=S1' \
+                  '&platform=Sentinel-1' \
                   '&intersectsWith=POINT+%2882.2556430369368+26.42979676529672%29' \
                   '&end=2016-11-06T00:27:50.000000' \
                   '&beamMode=IW' \
