@@ -56,7 +56,7 @@ class HyP3:
             A Batch object containing the found jobs
         """
         params = {}
-        for param_name in ('start', 'end', 'status', 'name', 'job_type'):
+        for param_name in ('start', 'end', 'status_code', 'name', 'job_type'):
             param_value = locals().get(param_name)
             if param_value is not None:
                 if isinstance(param_value, datetime):
