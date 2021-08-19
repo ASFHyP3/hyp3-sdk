@@ -7,6 +7,11 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.0...v1.3.1)
+
+###Fixed
+- Resolved an issue where `HyP3.find_jobs()` did not correctly filter results when using the `status_code` parameter
+
 ## [1.3.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.2.0...v1.3.0)
 
 ### Added

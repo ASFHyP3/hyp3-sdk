@@ -97,6 +97,21 @@ def test_find_jobs_end():
 
 
 @responses.activate
+def test_find_jobs_status_code():
+    api = HyP3()
+
+    responses.add(responses.GET, urljoin(api.url, '/jobs?status_code=RUNNING'),
+                  json={'jobs': []}, match_querystring=True)
+    batch = api.find_jobs(status_code='RUNNING')
+    assert len(batch) == 0
+
+    responses.add(responses.GET, urljoin(api.url, '/jobs?status_code=FAILED'),
+                  json={'jobs': []}, match_querystring=True)
+    batch = api.find_jobs(status_code='FAILED')
+    assert len(batch) == 0
+
+
+@responses.activate
 def test_get_job_by_id(get_mock_job):
     job = get_mock_job()
     api = HyP3()
