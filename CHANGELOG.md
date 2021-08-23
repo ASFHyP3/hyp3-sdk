@@ -7,6 +7,13 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.2](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.1...v1.3.2)
+
+### Added
+- Exposed new `apply_water_mask` parameter for InSAR jobs in `HyP3.submit_insar_job()` and
+  `HyP3.prepare_insar_job()`, which sets pixels over coastal waters and large inland waterbodies
+                as invalid for phase unwrapping
+
 ## [1.3.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.0...v1.3.1)
 
 ### Fixed

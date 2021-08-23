@@ -230,11 +230,12 @@ def test_prepare_insar_job():
             'looks': '20x4',
             'include_dem': False,
             'include_wrapped_phase': False,
+            'apply_water_mask': False,
         }
     }
     assert HyP3.prepare_insar_job(granule1='my_granule1',  granule2='my_granule2', name='my_name', looks='10x2',
                                   include_los_displacement=True, include_look_vectors=True, include_inc_map=True,
-                                  include_dem=True, include_wrapped_phase=True) == {
+                                  include_dem=True, include_wrapped_phase=True, apply_water_mask=True) == {
         'job_type': 'INSAR_GAMMA',
         'name': 'my_name',
         'job_parameters': {
@@ -245,6 +246,7 @@ def test_prepare_insar_job():
             'looks': '10x2',
             'include_dem': True,
             'include_wrapped_phase': True,
+            'apply_water_mask': True,
         },
     }
 

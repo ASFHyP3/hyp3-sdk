@@ -322,7 +322,8 @@ class HyP3:
                          include_inc_map: bool = False,
                          looks: Literal['20x4', '10x2'] = '20x4',
                          include_dem: bool = False,
-                         include_wrapped_phase: bool = False) -> Batch:
+                         include_wrapped_phase: bool = False,
+                         apply_water_mask: bool = False) -> Batch:
         """Submit an InSAR job
 
         Args:
@@ -336,6 +337,8 @@ class HyP3:
             looks: Number of looks to take in range and azimuth
             include_dem: Include the digital elevation model GeoTIFF in the product package
             include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
+            apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
+                as invalid for phase unwrapping
 
         Returns:
             A Batch object containing the InSAR job
@@ -355,7 +358,8 @@ class HyP3:
                           include_inc_map: bool = False,
                           looks: Literal['20x4', '10x2'] = '20x4',
                           include_dem: bool = False,
-                          include_wrapped_phase: bool = False) -> dict:
+                          include_wrapped_phase: bool = False,
+                          apply_water_mask: bool = False) -> dict:
         """Submit an InSAR job
 
         Args:
@@ -369,7 +373,8 @@ class HyP3:
             looks: Number of looks to take in range and azimuth
             include_dem: Include the digital elevation model GeoTIFF in the product package
             include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
-
+            apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
+                as invalid for phase unwrapping
         Returns:
             A dictionary containing the prepared InSAR job
         """
