@@ -285,10 +285,9 @@ def test_reverse(get_mock_job):
     batch = Batch([j0, j1, j2])
 
     batch_reversed = reversed(batch)
-    assert isinstance(batch_reversed, Batch)
-    assert batch_reversed[0] == j2
-    assert batch_reversed[1] == j1
-    assert batch_reversed[2] == j0
+    assert next(batch_reversed) == j2
+    assert next(batch_reversed) == j1
+    assert next(batch_reversed) == j0
 
 
 def test_batch_complete_succeeded():

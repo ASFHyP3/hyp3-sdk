@@ -187,7 +187,8 @@ class Batch:
         return self
 
     def __reversed__(self):
-        return Batch(self.jobs[::-1])
+        for job in self.jobs[::-1]:
+            yield job
 
     def __repr__(self):
         reprs = ", ".join([job.__repr__() for job in self.jobs])
