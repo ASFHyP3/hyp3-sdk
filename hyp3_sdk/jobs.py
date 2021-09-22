@@ -170,20 +170,24 @@ class Batch:
     def __contains__(self, job: Job):
         return job in self.jobs
 
-    def __delitem__(self, job: Job):
+    def __eq__(self, other: 'Batch'):
+        return self.jobs == other.jobs
+
+    def __delitem__(self, job: int):
         self.jobs.pop(job)
         return self
 
     def __getitem__(self, index: int):
+        if isinstance(index, slice):
+            return Batch(self.jobs[index])
         return self.jobs[index]
 
     def __setitem__(self, index: int, job: Job):
         self.jobs[index] = job
         return self
 
-    def __reverse__(self):
-        for job in self.jobs[::-1]:
-            yield job
+    def __reversed__(self):
+        return Batch(self.jobs[::-1])
 
     def __repr__(self):
         reprs = ", ".join([job.__repr__() for job in self.jobs])
