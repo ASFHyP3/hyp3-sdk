@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.0...v1.4.0)
+
+### Changed
+- `hyp3_sdk.asf_search` is **depreciated** and will be removed in future releases.
+  Functionality has been superseded by the [`asf_search`](https://github.com/asfadmin/Discovery-asf_search)
+  Python package, which provides a more comprehensive ASF search experience and is available on conda-forge and PyPI.
+  - instead of `hyp3_sdk.asf_search.get_metadata`, try `asf_search.granule_search` or `asf_search.product_search`
+  - instead of `hyp3_sdk.asf_search.get_nearest_neighbors`, try `asf_search.baseline_search.stack_from_product` or `asf_search.baseline_search.stack_from_id`
 
 ## [1.3.2](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.1...v1.3.2)
 
