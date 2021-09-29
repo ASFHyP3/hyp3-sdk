@@ -340,8 +340,7 @@ class HyP3:
             include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
-            include_displacement_maps: Include GeoTIFFs containing displacement values along the Line-Of-Sight (LOS) and
-                vertical directions
+            include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
 
         Returns:
             A Batch object containing the InSAR job
@@ -379,8 +378,7 @@ class HyP3:
             include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
-            include_displacement_maps: Include GeoTIFFs containing displacement values along the Line-Of-Sight (LOS) and
-                vertical directions
+            include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
         Returns:
             A dictionary containing the prepared InSAR job
         """
