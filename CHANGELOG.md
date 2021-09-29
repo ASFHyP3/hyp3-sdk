@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0](https://github.com/ASFHyP3/hyp3/compare/v1.4.0...v1.5.0)
+### Added
+- Exposed new `include_displacement_maps` parameter for `HyP3.prepare_insar_job` and `HyP3.submit_insar_job`, which will
+  cause both a line-of-sight displacement and a vertical displacement GeoTIFF to be included in the product.
+
+### Depreciated
+- The `include_los_displacement` parameter of `HyP3.prepare_insar_job` and `HyP3.submit_insar_job` has been
+  depreciated in favor of the `include_displacement_maps` parameter, and will be removed in the future.
+
 ## [1.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.0...v1.4.0)
 
 ### Changed
