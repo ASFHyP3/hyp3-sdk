@@ -1,5 +1,6 @@
 import math
 import time
+import warnings
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
@@ -323,7 +324,8 @@ class HyP3:
                          looks: Literal['20x4', '10x2'] = '20x4',
                          include_dem: bool = False,
                          include_wrapped_phase: bool = False,
-                         apply_water_mask: bool = False) -> Batch:
+                         apply_water_mask: bool = False,
+                         include_displacement_maps: bool = False) -> Batch:
         """Submit an InSAR job
 
         Args:
@@ -332,13 +334,15 @@ class HyP3:
             name: A name for the job
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
-                along the Line-Of-Sight (LOS)
+                along the Line-Of-Sight (LOS). This parameter has been deprecated in favor of
+                `include_displacement_maps`, and will be removed in a future release.
             include_inc_map: Include the local and ellipsoidal incidence angle maps in the product package
             looks: Number of looks to take in range and azimuth
             include_dem: Include the digital elevation model GeoTIFF in the product package
             include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
+            include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
 
         Returns:
             A Batch object containing the InSAR job
@@ -359,7 +363,8 @@ class HyP3:
                           looks: Literal['20x4', '10x2'] = '20x4',
                           include_dem: bool = False,
                           include_wrapped_phase: bool = False,
-                          apply_water_mask: bool = False) -> dict:
+                          apply_water_mask: bool = False,
+                          include_displacement_maps: bool = False) -> dict:
         """Submit an InSAR job
 
         Args:
@@ -368,16 +373,22 @@ class HyP3:
             name: A name for the job
             include_look_vectors: Include the look vector theta and phi files in the product package
             include_los_displacement: Include a GeoTIFF in the product package containing displacement values
-                along the Line-Of-Sight (LOS)
+                along the Line-Of-Sight (LOS). This parameter has been deprecated in favor of
+                `include_displacement_maps`, and will be removed in a future release.
             include_inc_map: Include the local and ellipsoidal incidence angle maps in the product package
             looks: Number of looks to take in range and azimuth
             include_dem: Include the digital elevation model GeoTIFF in the product package
             include_wrapped_phase: Include the wrapped phase GeoTIFF in the product package
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
+            include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
         Returns:
             A dictionary containing the prepared InSAR job
         """
+        if include_los_displacement:
+            warnings.warn('The include_los_displacement parameter has been deprecated in favor of '
+                          'include_displacement_maps, and will be removed in a future release.', UserWarning)
+
         job_parameters = locals().copy()
         for key in ['cls', 'granule1', 'granule2', 'name']:
             job_parameters.pop(key)
