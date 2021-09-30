@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.0](https://github.com/ASFHyP3/hyp3/compare/v1.4.0...v1.5.0)
+
+## [1.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.2...v1.4.0)
 ### Added
 - Exposed new `include_displacement_maps` parameter for `HyP3.prepare_insar_job` and `HyP3.submit_insar_job`, which will
   cause both a line-of-sight displacement and a vertical displacement GeoTIFF to be included in the product.
@@ -14,11 +15,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Deprecated
 - The `include_los_displacement` parameter of `HyP3.prepare_insar_job` and `HyP3.submit_insar_job` has been
   deprecated in favor of the `include_displacement_maps` parameter, and will be removed in the future.
-
-## [1.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.0...v1.4.0)
-
-### Changed
-- `hyp3_sdk.asf_search` is **depreciated** and will be removed in future releases.
+- `hyp3_sdk.asf_search` is deprecated and will be removed in future releases.
   Functionality has been superseded by the [`asf_search`](https://github.com/asfadmin/Discovery-asf_search)
   Python package, which provides a more comprehensive ASF search experience and is available on conda-forge and PyPI.
   - instead of `hyp3_sdk.asf_search.get_metadata`, try `asf_search.granule_search` or `asf_search.product_search`

@@ -387,7 +387,7 @@ class HyP3:
         """
         if include_los_displacement:
             warnings.warn('The include_los_displacement parameter has been deprecated in favor of '
-                          'include_displacement_maps, and will be removed in a future release.', UserWarning)
+                          'include_displacement_maps, and will be removed in a future release.', FutureWarning)
 
         job_parameters = locals().copy()
         for key in ['cls', 'granule1', 'granule2', 'name']:

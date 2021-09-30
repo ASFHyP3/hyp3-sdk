@@ -5,7 +5,7 @@ import requests
 
 from hyp3_sdk.exceptions import ASFSearchError, _raise_for_search_status
 
-warnings.warn('\nhyp3_sdk.asf_search is depreciated and functionality has been '
+warnings.warn('\nhyp3_sdk.asf_search is deprecated and functionality has been '
               'superseded by the `asf_search` package available on conda-forge and PyPI. '
               'See: https://github.com/asfadmin/Discovery-asf_search', FutureWarning)
 
