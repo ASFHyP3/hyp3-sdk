@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin
 
@@ -252,6 +253,18 @@ def test_prepare_insar_job():
             'include_displacement_maps': True,
         },
     }
+
+
+def test_deprecated_warning():
+    with warnings.catch_warnings(record=True) as w:
+        HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2', include_los_displacement=False)
+        assert len(w) == 0
+
+    with warnings.catch_warnings(record=True) as w:
+        HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2', include_los_displacement=True)
+        assert len(w) == 1
+        assert issubclass(w[0].category, UserWarning)
+        assert 'deprecated' in str(w[0].message)
 
 
 @responses.activate
