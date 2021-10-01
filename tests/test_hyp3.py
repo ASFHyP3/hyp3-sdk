@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin
 
@@ -231,11 +232,13 @@ def test_prepare_insar_job():
             'include_dem': False,
             'include_wrapped_phase': False,
             'apply_water_mask': False,
+            'include_displacement_maps': False,
         }
     }
     assert HyP3.prepare_insar_job(granule1='my_granule1',  granule2='my_granule2', name='my_name', looks='10x2',
                                   include_los_displacement=True, include_look_vectors=True, include_inc_map=True,
-                                  include_dem=True, include_wrapped_phase=True, apply_water_mask=True) == {
+                                  include_dem=True, include_wrapped_phase=True, apply_water_mask=True,
+                                  include_displacement_maps=True) == {
         'job_type': 'INSAR_GAMMA',
         'name': 'my_name',
         'job_parameters': {
@@ -247,8 +250,21 @@ def test_prepare_insar_job():
             'include_dem': True,
             'include_wrapped_phase': True,
             'apply_water_mask': True,
+            'include_displacement_maps': True,
         },
     }
+
+
+def test_deprecated_warning():
+    with warnings.catch_warnings(record=True) as w:
+        HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2', include_los_displacement=False)
+        assert len(w) == 0
+
+    with warnings.catch_warnings(record=True) as w:
+        HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2', include_los_displacement=True)
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert 'deprecated' in str(w[0].message)
 
 
 @responses.activate
