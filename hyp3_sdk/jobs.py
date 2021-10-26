@@ -186,10 +186,6 @@ class Batch:
         self.jobs[index] = job
         return self
 
-    def __reversed__(self):
-        for job in self.jobs[::-1]:
-            yield job
-
     def __repr__(self):
         reprs = ", ".join([job.__repr__() for job in self.jobs])
         return f'Batch([{reprs}])'
