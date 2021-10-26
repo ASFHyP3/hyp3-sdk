@@ -228,60 +228,66 @@ def test_contains(get_mock_job):
 
 
 def test_delitem():
-    j1 = Job.from_dict(SUCCEEDED_JOB)
-    j2 = Job.from_dict(FAILED_JOB)
-    batch = Batch([j1, j2])
+    j0 = Job.from_dict(SUCCEEDED_JOB)
+    j1 = Job.from_dict(FAILED_JOB)
+    batch = Batch([j0, j1])
 
+    assert j0 in batch
     assert j1 in batch
-    assert j2 in batch
 
     del batch[1]
 
-    assert j1 in batch
-    assert j2 not in batch
+    assert j0 in batch
+    assert j1 not in batch
 
-    batch += j2
+    batch += j1
     del batch[0]
 
-    assert j1 not in batch
-    assert j2 in batch
+    assert j0 not in batch
+    assert j1 in batch
 
 
-def test_getitem():
-    j1 = Job.from_dict(SUCCEEDED_JOB)
-    j2 = Job.from_dict(FAILED_JOB)
-    batch = Batch([j1, j2])
+def test_getitem(get_mock_job):
+    unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
+    j0 = Job.from_dict(SUCCEEDED_JOB)
+    j1 = Job.from_dict(FAILED_JOB)
+    j2 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+                      files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    batch = Batch([j0, j1, j2])
 
-    assert j1 == batch[0]
-    assert j2 == batch[1]
+    assert j0 == batch[0]
+    assert j1 == batch[1]
+    assert j2 == batch[2]
+
+    assert Batch([j1, j2]) == batch[1:]
 
 
 def test_setitem(get_mock_job):
     unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
-    j1 = Job.from_dict(SUCCEEDED_JOB)
-    j2 = Job.from_dict(FAILED_JOB)
-    j3 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+    j0 = Job.from_dict(SUCCEEDED_JOB)
+    j1 = Job.from_dict(FAILED_JOB)
+    j2 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
-    batch = Batch([j1, j2])
+    batch = Batch([j0, j1])
 
-    batch[1] = j3
-    assert batch[1] == j3
+    assert batch[1] == j1
+    batch[1] = j2
+    assert batch[1] == j2
 
 
 def test_reverse(get_mock_job):
     unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
-    j1 = Job.from_dict(SUCCEEDED_JOB)
-    j2 = Job.from_dict(FAILED_JOB)
-    j3 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
+    j0 = Job.from_dict(SUCCEEDED_JOB)
+    j1 = Job.from_dict(FAILED_JOB)
+    j2 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
 
-    batch = Batch([j1, j2, j3])
+    batch = Batch([j0, j1, j2])
 
-    batch_reversed = list(reversed(batch))
-
-    assert batch_reversed[0] == j3
-    assert batch_reversed[1] == j2
-    assert batch_reversed[2] == j1
+    batch_reversed = reversed(batch)
+    assert next(batch_reversed) == j2
+    assert next(batch_reversed) == j1
+    assert next(batch_reversed) == j0
 
 
 def test_batch_complete_succeeded():
