@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Any, Generator, Sequence, Union
 from zipfile import ZipFile
 
-import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
