@@ -16,7 +16,7 @@ dependencies:
   - wheel
   - pytest
   - pytest-cov
-  - responses==0.14.0
+  - responses
   # For running
   - python-dateutil
   - requests

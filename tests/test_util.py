@@ -2,9 +2,11 @@ import shutil
 from pathlib import Path
 
 import pytest
+import requests
 import responses
 
 from hyp3_sdk import util
+from hyp3_sdk.util import get_tqdm_progress_bar
 
 
 @responses.activate
@@ -19,6 +21,11 @@ def test_download_file(tmp_path):
     assert result_path == (tmp_path / 'file')
     assert result_path.read_text() == 'foobar'
     assert isinstance(result_path, Path)
+
+    responses.add(responses.GET, 'https://foo.com/file2', body='foobar2')
+    result_path = util.download_file('https://foo.com/file', str(tmp_path / 'file'), chunk_size=3)
+    assert result_path == (tmp_path / 'file')
+    assert result_path.read_text() == 'foobar'
 
 
 def test_chunk():

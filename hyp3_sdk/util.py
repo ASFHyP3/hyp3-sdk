@@ -109,8 +109,8 @@ def download_file(url: str, filepath: Union[Path, str], chunk_size=None, retries
 
     session.mount('https://', HTTPAdapter(max_retries=retry_strategy))
     session.mount('http://', HTTPAdapter(max_retries=retry_strategy))
-
-    with session.get(url, stream=True) as s:
+    stream = False if chunk_size is None else True
+    with session.get(url, stream=stream) as s:
         s.raise_for_status()
         tqdm = get_tqdm_progress_bar()
         with tqdm.wrapattr(open(filepath, "wb"), 'write', miniters=1, desc=filepath.name,
