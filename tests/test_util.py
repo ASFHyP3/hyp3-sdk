@@ -2,11 +2,9 @@ import shutil
 from pathlib import Path
 
 import pytest
-import requests
 import responses
 
 from hyp3_sdk import util
-from hyp3_sdk.util import get_tqdm_progress_bar
 
 
 @responses.activate
