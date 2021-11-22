@@ -15,15 +15,15 @@ def test_download_file(tmp_path):
     assert result_path.read_text() == 'foobar'
 
     responses.add(responses.GET, 'https://foo.com/file2', body='foobar2')
-    result_path = util.download_file('https://foo.com/file', str(tmp_path / 'file'))
+    result_path = util.download_file('https://foo.com/file2', str(tmp_path / 'file'))
     assert result_path == (tmp_path / 'file')
-    assert result_path.read_text() == 'foobar'
+    assert result_path.read_text() == 'foobar2'
     assert isinstance(result_path, Path)
 
-    responses.add(responses.GET, 'https://foo.com/file2', body='foobar2')
-    result_path = util.download_file('https://foo.com/file', str(tmp_path / 'file'), chunk_size=3)
+    responses.add(responses.GET, 'https://foo.com/file3', body='foobar3')
+    result_path = util.download_file('https://foo.com/file3', str(tmp_path / 'file'), chunk_size=3)
     assert result_path == (tmp_path / 'file')
-    assert result_path.read_text() == 'foobar'
+    assert result_path.read_text() == 'foobar3'
 
 
 def test_chunk():
