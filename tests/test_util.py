@@ -21,7 +21,7 @@ def test_download_file(tmp_path):
     assert isinstance(result_path, Path)
 
     responses.add(responses.GET, 'https://foo.com/file3', body='foobar3')
-    result_path = util.download_file('https://foo.com/file3', str(tmp_path / 'file'), chunk_size=3)
+    result_path = util.download_file('https://foo.com/file3', tmp_path / 'file', chunk_size=3)
     assert result_path == (tmp_path / 'file3')
     assert result_path.read_text() == 'foobar3'
 
