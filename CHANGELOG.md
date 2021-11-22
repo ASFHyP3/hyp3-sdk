@@ -7,7 +7,14 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.4.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.4.1...v1.4.1)
+
+### Fixed
+- Slicing a `Batch` object will now return a new `Batch` instead of `list` of jobs
+- `Batch` equality now compares the contained jobs and not object identity
+
 ## [1.4.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.3.2...v1.4.0)
+
 ### Added
 - Exposed new `include_displacement_maps` parameter for `HyP3.prepare_insar_job` and `HyP3.submit_insar_job`, which will
   cause both a line-of-sight displacement and a vertical displacement GeoTIFF to be included in the product.
