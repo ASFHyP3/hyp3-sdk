@@ -7,6 +7,13 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.5.0]
+
+### Removed
+- `hyp3_sdk.asf_search` has been removed and its functionality has been superseded by the
+  [`asf_search`](https://github.com/asfadmin/Discovery-asf_search) Python package, which provides a more comprehensive
+  ASF search experience and is available on conda-forge and PyPI.
+
 ## [1.4.1](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.4.1...v1.4.1)
 
 ### Fixed
