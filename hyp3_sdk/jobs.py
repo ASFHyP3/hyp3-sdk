@@ -29,7 +29,8 @@ class Job:
             logs: Optional[List] = None,
             browse_images: Optional[List] = None,
             thumbnail_images: Optional[List] = None,
-            expiration_time: Optional[datetime] = None
+            expiration_time: Optional[datetime] = None,
+            processing_time_in_seconds: Optional[int] = None,
     ):
         self.job_id = job_id
         self.job_type = job_type
@@ -43,6 +44,7 @@ class Job:
         self.browse_images = browse_images
         self.thumbnail_images = thumbnail_images
         self.expiration_time = expiration_time
+        self.processing_time_in_seconds = processing_time_in_seconds
 
     def __repr__(self):
         return f'Job.from_dict({self.to_dict()})'
@@ -68,7 +70,8 @@ class Job:
             logs=input_dict.get('logs'),
             browse_images=input_dict.get('browse_images'),
             thumbnail_images=input_dict.get('thumbnail_images'),
-            expiration_time=expiration_time
+            expiration_time=expiration_time,
+            processing_time_in_seconds=input_dict.get('processing_time_in_seconds'),
         )
 
     def to_dict(self, for_resubmit: bool = False):
@@ -97,6 +100,8 @@ class Job:
     def complete(self) -> bool:
         return self.succeeded() or self.failed()
 
+    # TODO may want to update this to check if status code is actually RUNNING, because currently this also returns
+    #  true if status is PENDING
     def running(self) -> bool:
         return not self.complete()
 
