@@ -6,12 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.1]
+## [1.5.0]
 ### Added
 - Added `processing_time_in_seconds` to `Job` class.
-
-## [1.5.0]
-
 ### Removed
 - `hyp3_sdk.asf_search` has been removed and its functionality has been superseded by the
   [`asf_search`](https://github.com/asfadmin/Discovery-asf_search) Python package, which provides a more comprehensive
