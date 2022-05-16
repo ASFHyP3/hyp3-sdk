@@ -410,10 +410,10 @@ class HyP3:
         _raise_for_hyp3_status(response)
         return response.json()
 
-    def check_quota(self) -> int:
+    def check_quota(self) -> Optional[int]:
         """
         Returns:
-            The number of jobs left in your quota
+            The number of jobs left in your quota, or None if you have no quota
         """
         info = self.my_info()
         return info['quota']['remaining']
