@@ -8,7 +8,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.5.1]
 ### Changed
-- Updated return type for `check_quota` to reflect the case where a user has no quota.
+- Updated return type for `HyP3.check_quota()` to reflect the case where a user has no quota.
 
 ## [1.5.0]
 ### Added
