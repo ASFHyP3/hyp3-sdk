@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1]
+### Changed
+- Updated return type for `HyP3.check_quota()` to reflect the case where a user has no quota.
+
 ## [1.5.0]
 ### Added
 - Added `processing_time_in_seconds` to `Job` class.
