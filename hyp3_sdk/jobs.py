@@ -106,10 +106,9 @@ class Job:
         return not self.complete()
 
     def expired(self) -> bool:
-        try:
-            return datetime.now(tz.UTC) >= self.expiration_time
-        except TypeError:
+        if self.expiration_time is None:
             raise HyP3SDKError('Only SUCCEEDED jobs have an expiration time')
+        return datetime.now(tz.UTC) >= self.expiration_time
 
     def download_files(self, location: Union[Path, str] = '.', create: bool = True) -> List[Path]:
         """
