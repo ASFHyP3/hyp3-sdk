@@ -105,10 +105,17 @@ def test_job_expired():
     job.expiration_time = datetime.now(tz.UTC) - timedelta(days=7)
     assert job.expired()
 
-    with pytest.raises(HyP3SDKError) as execinfo:
-        job = Job.from_dict(FAILED_JOB)
-        job.expired()
-        assert 'Only SUCCEEDED jobs have an expiration time' in str(execinfo.value)
+    assert 'expiration_time' not in FAILED_JOB
+    job = Job.from_dict(FAILED_JOB)
+    assert job.expiration_time is None
+    assert not job.expired()
+
+    failed_job_with_expiration_time = FAILED_JOB.copy()
+    failed_job_with_expiration_time['expiration_time'] = None
+
+    job = Job.from_dict(failed_job_with_expiration_time)
+    assert job.expiration_time is None
+    assert not job.expired()
 
 
 @responses.activate
