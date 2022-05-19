@@ -108,16 +108,14 @@ def test_job_expired():
     assert 'expiration_time' not in FAILED_JOB
     job = Job.from_dict(FAILED_JOB)
     assert job.expiration_time is None
-    with pytest.raises(HyP3SDKError, match=r"Only SUCCEEDED jobs have an expiration time"):
-        job.expired()
+    assert not job.expired()
 
     failed_job_with_expiration_time = FAILED_JOB.copy()
     failed_job_with_expiration_time['expiration_time'] = None
 
     job = Job.from_dict(failed_job_with_expiration_time)
     assert job.expiration_time is None
-    with pytest.raises(HyP3SDKError, match=r"Only SUCCEEDED jobs have an expiration time"):
-        job.expired()
+    assert not job.expired()
 
 
 @responses.activate
