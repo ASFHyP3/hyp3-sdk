@@ -23,6 +23,7 @@ class Job:
             request_time: datetime,
             status_code: str,
             user_id: str,
+            subscription_id: Optional[str] = None,
             name: Optional[str] = None,
             job_parameters: Optional[dict] = None,
             files: Optional[List] = None,
@@ -37,6 +38,7 @@ class Job:
         self.request_time = request_time
         self.status_code = status_code
         self.user_id = user_id
+        self.subscription_id = subscription_id
         self.name = name
         self.job_parameters = job_parameters
         self.files = files
@@ -64,6 +66,7 @@ class Job:
             request_time=parse_date(input_dict['request_time']),
             status_code=input_dict['status_code'],
             user_id=input_dict['user_id'],
+            subscription_id=input_dict.get('subscription_id'),
             name=input_dict.get('name'),
             job_parameters=input_dict.get('job_parameters'),
             files=input_dict.get('files'),
