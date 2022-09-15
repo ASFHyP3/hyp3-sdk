@@ -31,7 +31,7 @@ class Job:
             browse_images: Optional[List] = None,
             thumbnail_images: Optional[List] = None,
             expiration_time: Optional[datetime] = None,
-            processing_time_in_seconds: Optional[int] = None,
+            processing_times: Optional[List[float]] = None,
     ):
         self.job_id = job_id
         self.job_type = job_type
@@ -46,7 +46,7 @@ class Job:
         self.browse_images = browse_images
         self.thumbnail_images = thumbnail_images
         self.expiration_time = expiration_time
-        self.processing_time_in_seconds = processing_time_in_seconds
+        self.processing_times = processing_times
 
     def __repr__(self):
         return f'Job.from_dict({self.to_dict()})'
@@ -74,7 +74,7 @@ class Job:
             browse_images=input_dict.get('browse_images'),
             thumbnail_images=input_dict.get('thumbnail_images'),
             expiration_time=expiration_time,
-            processing_time_in_seconds=input_dict.get('processing_time_in_seconds'),
+            processing_times=input_dict.get('processing_times'),
         )
 
     def to_dict(self, for_resubmit: bool = False):
