@@ -23,7 +23,7 @@ A python wrapper around the HyP3 API
 ## Install
 
 In order to easily manage dependencies, we recommend using dedicated project environments
-via [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
+via [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) 
 or [Python virtual environments](https://docs.python.org/3/tutorial/venv.html). 
 
 The HyP3 SDK can be installed into a conda environment with
@@ -110,7 +110,7 @@ For the full SDK API Reference, see [the HyP3 documentation](https://hyp3-docs.a
 Want to talk about the HyP3 SDK? We would love to hear from you!
 
 Found a bug? Want to request a feature?
-[open an issue](https://github.com/ASFHyP3/hyp3-sdk/issues/new)
+[Open an issue](https://github.com/ASFHyP3/hyp3-sdk/issues/new)
 
 General questions? Suggestions? Or just want to talk to the team?
-[chat with us on gitter](https://gitter.im/ASFHyP3/community)
+[Chat with us on Gitter](https://gitter.im/ASFHyP3/community)
