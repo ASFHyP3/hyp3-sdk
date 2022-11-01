@@ -7,6 +7,10 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.7.1]
+### Changed
+* Updated SDK example notebook to only use the ESA S2 naming convention.
+
 ## [1.7.0]
 ### Added
 - Added a `processing_times` attribute to the `hyp3_sdk.Job` class to support jobs with multiple processing steps.
