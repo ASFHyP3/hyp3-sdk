@@ -9,7 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.7.1]
 ### Changed
-* Updated SDK example notebook to only use the ESA S2 naming convention.
+* Updated SDK example notebook to only use the ESA S2 naming convention for autoRIFT jobs.
 
 ## [1.7.0]
 ### Added
