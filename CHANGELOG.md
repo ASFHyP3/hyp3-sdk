@@ -7,6 +7,10 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.7.2]
+### Added
+* Add the decibel option to allow users to get the RTC product with decibel output.
+
 ## [1.7.1]
 ### Changed
 * Updated SDK example notebook to only use the ESA S2 naming convention for autoRIFT jobs.
