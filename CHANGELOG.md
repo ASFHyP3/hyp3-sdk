@@ -7,6 +7,10 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.7.2]
+### Added
+* In addition to `power` and `amplitude`, `decibel` can now be provided to the `scale` keyword argument of `hyp3.submit_rtc_job` and `hyp3.prepare_rtc_job`.
+
 ## [1.7.1]
 ### Changed
 * Updated SDK example notebook to only use the ESA S2 naming convention for autoRIFT jobs.
