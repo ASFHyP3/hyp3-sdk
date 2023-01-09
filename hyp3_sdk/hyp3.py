@@ -234,7 +234,7 @@ class HyP3:
                        include_rgb: bool = False,
                        include_scattering_area: bool = False,
                        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
-                       resolution: Literal[30] = 30,
+                       resolution: Literal[10, 30] = 30,
                        scale: Literal['amplitude', 'decibel', 'power'] = 'power',
                        speckle_filter: bool = False,
                        dem_name: Literal['copernicus', 'legacy'] = 'copernicus') -> Batch:
@@ -275,7 +275,7 @@ class HyP3:
                         include_rgb: bool = False,
                         include_scattering_area: bool = False,
                         radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
-                        resolution: Literal[30] = 30,
+                        resolution: Literal[10, 30] = 30,
                         scale: Literal['amplitude', 'decibel', 'power'] = 'power',
                         speckle_filter: bool = False,
                         dem_name: Literal['copernicus', 'legacy'] = 'copernicus') -> dict:
