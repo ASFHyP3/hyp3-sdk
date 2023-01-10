@@ -22,4 +22,3 @@ dependencies:
   - requests
   - tqdm
   - urllib3
-
