@@ -39,6 +39,7 @@ develop = [
     "pytest",
     "pytest-cov",
     "pytest-console-scripts",
+    "responses"
 ]
 
 [project.urls]
