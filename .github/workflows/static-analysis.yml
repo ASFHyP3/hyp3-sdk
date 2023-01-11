@@ -23,4 +23,4 @@ jobs:
               --application-import-names src/hyp3_sdk
 
   call-secrets-analysis-workflow:
-    uses: ASFHyP3/actions/.github/workflows/reusable-secrets-analysis.yml@0.6.0
+    uses: ASFHyP3/actions/.github/workflows/reusable-secrets-analysis.yml@v0.6.0
