@@ -238,7 +238,7 @@ class Batch:
             try:
                 downloaded_files.extend(job.download_files(location, create))
             except HyP3SDKError as e:
-                print(f'Warning: {e}. Skipping download for {job}.')
+                print(f'Warning: {e} Skipping download for {job}.')
         return downloaded_files
 
     def any_expired(self) -> bool:
