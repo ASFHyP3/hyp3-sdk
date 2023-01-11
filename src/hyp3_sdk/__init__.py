@@ -5,15 +5,17 @@ from importlib.metadata import version
 from .config import TESTING  # noqa
 from .hyp3 import HyP3, PROD_API, TEST_API
 from .jobs import Batch, Job
+from . import util
 
 
 __version__ = version(__name__)
 
 __all__ = [
+    '__version__',
     'Batch',
     'HyP3',
+    'Job',
     'PROD_API',
     'TEST_API',
-    'Job',
-    '__version__',
+    'util',
 ]
