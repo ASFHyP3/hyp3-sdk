@@ -10,19 +10,20 @@ jobs:
     uses: ASFHyP3/actions/.github/workflows/reusable-version-info.yml@v0.6.0
     with:
       conda_env_name: hyp3-sdk
+
   distribute:
     runs-on: ubuntu-latest
-   defaults:
+    defaults:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      with:
-        fetch-depth: 0
       - uses: mamba-org/provision-with-micromamba@v14
 
-      - name: Build distribuion
+      - name: Build distribution
         id: build
         run: |
           python -m build
@@ -43,6 +44,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v2
+
       - uses: mamba-org/provision-with-micromamba@v14
 
       - name: Ensure hyp3_sdk v${{ needs.call-version-info-workflow.outputs.version }}} is pip installable
