@@ -1,2 +1,50 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hyp3_sdk"
+requires-python = ">=3.8"
+authors = [
+    {name="ASF APD/Tools Team", email="uaf-asf-apd@alaska.edu"},
+]
+description = "A python wrapper around the HyP3 API"
+readme = "src/hyp3_sdk/README.md"
+license = {text = "BSD-3-Clause"}
+classifiers=[
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "python-dateutil",
+    "requests",
+    "urllib3",
+    "tqdm",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+develop = [
+    "pytest",
+    "pytest-cov",
+    "responses"
+]
+
+[project.urls]
+Homepage = "https://github.com/ASFHyP3/hyp3-sdk"
+"Bug Tracker" = "https://github.com/ASFHyP3/hyp3-sdk/issues"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
