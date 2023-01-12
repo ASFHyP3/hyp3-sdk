@@ -9,7 +9,7 @@ authors = [
     {name="ASF APD/Tools Team", email="uaf-asf-apd@alaska.edu"},
 ]
 description = "A python wrapper around the HyP3 API"
-readme = "src/hyp3_sdk/README.md"
+readme = "README.md"
 license = {text = "BSD-3-Clause"}
 classifiers=[
     "Intended Audience :: Science/Research",

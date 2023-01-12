@@ -7,6 +7,10 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.7.5]
+### Fixed
+* Path to `README.md` in `pyproject.toml` so that there is a package description on PyPI
+
 ## [1.7.4]
 ### Changed
 * `hyp3-sdk` now uses a `src` layout per this [recommendation](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/).
