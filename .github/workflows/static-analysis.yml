@@ -20,7 +20,7 @@ jobs:
       - name: Lint with flake8
         run: |
           flake8 --max-line-length=120 --import-order-style=pycharm --statistics \
-              --application-import-names src/hyp3_sdk
+              --application-import-names hyp3_sdk
 
   call-secrets-analysis-workflow:
-    uses: ASFHyP3/actions/.github/workflows/reusable-secrets-analysis.yml@0.6.0
+    uses: ASFHyP3/actions/.github/workflows/reusable-secrets-analysis.yml@v0.6.0
