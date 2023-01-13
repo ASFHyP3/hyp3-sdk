@@ -1,4 +1,4 @@
-name: Test version
+name: Test with pytest
 
 on:
   push:
