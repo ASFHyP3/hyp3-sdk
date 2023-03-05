@@ -78,10 +78,10 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
         # https://github.com/ASFHyP3/hyp3-sdk/issues/170
         parsed_url = urlparse(response.url)
         query_params = parse_qs(parsed_url.query)
-        err_msg_param = query_params.get("error_msg")
+        err_msg_param = query_params.get('error_msg')
         eula_url_param = query_params.get('resolution_url')
         if err_msg_param is not None and eula_url_param is not None:
-            raise AuthenticationError(f"{err_msg_param[0]}: {eula_url_param[0]}")
+            raise AuthenticationError(f'{err_msg_param[0]}: {eula_url_param[0]}')
         elif err_msg_param is not None:
             raise AuthenticationError(f'{err_msg_param[0]}: {PROFILE_URL}')
         try:
