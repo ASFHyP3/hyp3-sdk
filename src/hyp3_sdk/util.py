@@ -4,8 +4,8 @@ from typing import Any, Generator, Sequence, Union
 from zipfile import ZipFile
 
 import requests
+import urllib.parse
 from requests.adapters import HTTPAdapter
-from urllib.parse import parse_qs, urlparse
 from urllib3.util.retry import Retry
 
 import hyp3_sdk
@@ -15,6 +15,7 @@ AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&cl
            '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
 
 PROFILE_URL = 'https://urs.earthdata.nasa.gov/profile'
+
 
 def extract_zipped_product(zip_file: Union[str, Path], delete: bool = True) -> Path:
     """Extract a zipped HyP3 product
@@ -75,15 +76,14 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
         return s
     if username is not None and password is not None:
         response = s.get(AUTH_URL, auth=(username, password))
-        # https://github.com/ASFHyP3/hyp3-sdk/issues/170
-        parsed_url = urlparse(response.url)
-        query_params = parse_qs(parsed_url.query)
-        err_msg_param = query_params.get('error_msg')
-        eula_url_param = query_params.get('resolution_url')
-        if err_msg_param is not None and eula_url_param is not None:
-            raise AuthenticationError(f'{err_msg_param[0]}: {eula_url_param[0]}')
-        elif err_msg_param is not None:
-            raise AuthenticationError(f'{err_msg_param[0]}: {PROFILE_URL}')
+        parsed_url = urllib.parse.urlparse(response.url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        error_msg = query_params.get('error_msg')
+        resolution_url = query_params.get('resolution_url')
+        if error_msg is not None and resolution_url is not None:
+            raise AuthenticationError(f'{error_msg[0]}: {resolution_url[0]}')
+        elif error_msg is not None and 'Please update your profile' in error_msg[0]:
+            raise AuthenticationError(f'{error_msg[0]}: {PROFILE_URL}')
         try:
             response.raise_for_status()
         except requests.HTTPError:
