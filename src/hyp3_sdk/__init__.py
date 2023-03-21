@@ -3,7 +3,6 @@
 from importlib.metadata import version
 
 from . import util
-from .config import TESTING  # noqa
 from .hyp3 import HyP3, PROD_API, TEST_API
 from .jobs import Batch, Job
 

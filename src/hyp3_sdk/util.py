@@ -72,8 +72,6 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
         An authenticated HyP3 Session
     """
     s = requests.Session()
-    if hyp3_sdk.TESTING:
-        return s
     if username is not None and password is not None:
         response = s.get(AUTH_URL, auth=(username, password))
         parsed_url = urllib.parse.urlparse(response.url)

@@ -10,8 +10,6 @@ from hyp3_sdk.exceptions import AuthenticationError
 
 @responses.activate
 def test_get_authenticated_session():
-    # FIXME does not raise the expected exception
-    assert False
     study_area_url = (
         'https://auth.asf.alaska.edu/login?error=access_denied&error_msg=Please%20update%20your%20profile%20for'
         '%20application%20required%20attributes%20Study%20Area'
