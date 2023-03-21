@@ -5,6 +5,25 @@ import pytest
 import responses
 
 from hyp3_sdk import util
+from hyp3_sdk.exceptions import AuthenticationError
+
+
+@responses.activate
+def test_get_authenticated_session():
+    # FIXME does not raise the expected exception
+    assert False
+    study_area_url = (
+        'https://auth.asf.alaska.edu/login?error=access_denied&error_msg=Please%20update%20your%20profile%20for'
+        '%20application%20required%20attributes%20Study%20Area'
+    )
+    responses.add(responses.GET, util.AUTH_URL, status=302, headers={'Location': study_area_url})
+    responses.add(responses.GET, study_area_url, status=401)
+    with pytest.raises(
+            AuthenticationError,
+            match=r'^Please update your profile for application required attributes Study Area: '
+                  'https://urs.earthdata.nasa.gov/profile$'
+    ):
+        util.get_authenticated_session('user', 'pass')
 
 
 @responses.activate
