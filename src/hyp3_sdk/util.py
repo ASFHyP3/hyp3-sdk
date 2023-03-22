@@ -1,10 +1,11 @@
 """Extra utilities for working with HyP3"""
+
+import urllib.parse
 from pathlib import Path
 from typing import Any, Generator, Sequence, Union
 from zipfile import ZipFile
 
 import requests
-import urllib.parse
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
