@@ -8,7 +8,6 @@ import urllib.parse
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-import hyp3_sdk
 from hyp3_sdk.exceptions import AuthenticationError
 
 AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
