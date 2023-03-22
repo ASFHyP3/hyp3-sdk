@@ -7,6 +7,10 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.8.0]
+### Changed
+* Improved error messages when Earthdata user must select Study Area or accept EULA.
+
 ## [1.7.5]
 ### Fixed
 * Path to `README.md` in `pyproject.toml` so that there is a package description on PyPI
