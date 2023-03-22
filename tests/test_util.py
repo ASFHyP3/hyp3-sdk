@@ -28,7 +28,7 @@ def test_get_authenticated_session_eula():
     with pytest.raises(
             AuthenticationError,
             match=r'^Pre authorization required for this application, please authorize by visiting '
-                  'the resolution url: https://urs\.earthdata\.nasa\.gov/approve_app\?client_id=foo$'
+                  r'the resolution url: https://urs\.earthdata\.nasa\.gov/approve_app\?client_id=foo$'
     ):
         util.get_authenticated_session('user', 'pass')
 
@@ -44,7 +44,7 @@ def test_get_authenticated_session_study_area():
     with pytest.raises(
             AuthenticationError,
             match=r'^Please update your profile for application required attributes Study Area: '
-                  'https://urs\.earthdata\.nasa\.gov/profile$'
+                  r'https://urs\.earthdata\.nasa\.gov/profile$'
     ):
         util.get_authenticated_session('user', 'pass')
 
