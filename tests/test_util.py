@@ -9,13 +9,30 @@ from hyp3_sdk.exceptions import AuthenticationError
 
 
 @responses.activate
-def test_get_authenticated_session():
-    study_area_url = (
+def test_get_authenticated_session_eula():
+    redirect_url = (
+        'https://auth.asf.alaska.edu/login?error=access_denied&error_msg=Pre%20authorization%20required%20for'
+        '%20this%20application,%20please%20authorize%20by%20visiting%20the%20resolution%20url'
+        '&resolution_url=https://urs.earthdata.nasa.gov/approve_app?client_id=foo'
+    )
+    responses.add(responses.GET, util.AUTH_URL, status=302, headers={'Location': redirect_url})
+    responses.add(responses.GET, redirect_url, status=401)
+    with pytest.raises(
+            AuthenticationError,
+            match=r'^Pre authorization required for this application, please authorize by visiting '
+                  'the resolution url: https://urs.earthdata.nasa.gov/approve_app\?client_id=foo$'
+    ):
+        util.get_authenticated_session('user', 'pass')
+
+
+@responses.activate
+def test_get_authenticated_session_study_area():
+    redirect_url = (
         'https://auth.asf.alaska.edu/login?error=access_denied&error_msg=Please%20update%20your%20profile%20for'
         '%20application%20required%20attributes%20Study%20Area'
     )
-    responses.add(responses.GET, util.AUTH_URL, status=302, headers={'Location': study_area_url})
-    responses.add(responses.GET, study_area_url, status=401)
+    responses.add(responses.GET, util.AUTH_URL, status=302, headers={'Location': redirect_url})
+    responses.add(responses.GET, redirect_url, status=401)
     with pytest.raises(
             AuthenticationError,
             match=r'^Please update your profile for application required attributes Study Area: '
