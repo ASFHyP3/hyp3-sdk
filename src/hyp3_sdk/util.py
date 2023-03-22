@@ -73,14 +73,18 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
     s = requests.Session()
     if username is not None and password is not None:
         response = s.get(AUTH_URL, auth=(username, password))
+
         parsed_url = urllib.parse.urlparse(response.url)
         query_params = urllib.parse.parse_qs(parsed_url.query)
         error_msg = query_params.get('error_msg')
         resolution_url = query_params.get('resolution_url')
+
         if error_msg is not None and resolution_url is not None:
             raise AuthenticationError(f'{error_msg[0]}: {resolution_url[0]}')
-        elif error_msg is not None and 'Please update your profile' in error_msg[0]:
+
+        if error_msg is not None and 'Please update your profile' in error_msg[0]:
             raise AuthenticationError(f'{error_msg[0]}: {PROFILE_URL}')
+
         try:
             response.raise_for_status()
         except requests.HTTPError:
