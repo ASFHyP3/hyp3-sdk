@@ -10,18 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Bump SDK version in HyP3 docs
-        uses: benc-uk/workflow-dispatch@v1.1
+        uses: benc-uk/workflow-dispatch@v1.2
         with:
-          workflow: Update HyP3 SDK version
+          workflow: update_sdk_version.yml
           token: ${{ secrets.TOOLS_BOT_PAK }}
           repo: ASFHyP3/hyp3-docs
           ref: main
           inputs: '{"sdk_version": "${{ github.event.release.tag_name }}"}'
 
       - name: Tweet release notes
-        uses: benc-uk/workflow-dispatch@v1.1
+        uses: benc-uk/workflow-dispatch@v1.2
         with:
-          workflow: Propose Tweet
+          workflow: propose-tweet.yml
           token: ${{ secrets.TOOLS_BOT_PAK }}
           repo: ASFHyP3/hyp3-docs
           ref: develop

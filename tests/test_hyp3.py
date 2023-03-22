@@ -1,18 +1,24 @@
 import warnings
 from datetime import datetime, timedelta, timezone
+from unittest.mock import patch
 from urllib.parse import urljoin
 
+import requests
 import responses
 
 import hyp3_sdk
 from hyp3_sdk import HyP3, Job
 
-hyp3_sdk.TESTING = True
+
+def mock_get_authenticated_session(username, password):
+    return requests.Session()
 
 
 @responses.activate
 def test_session_headers():
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+
     responses.add(responses.GET, urljoin(api.url, '/user'), json={'foo': 'bar'})
 
     api.session.get(urljoin(api.url, '/user'))
@@ -35,7 +41,9 @@ def test_find_jobs(get_mock_job):
         ]
     }
 
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+
     responses.add(responses.GET, urljoin(api.url, '/jobs'), json=api_response_mock)
     responses.add(responses.GET, urljoin(api.url, '/jobs'), json={'jobs': []})
 
@@ -48,7 +56,9 @@ def test_find_jobs(get_mock_job):
 
 @responses.activate
 def test_find_jobs_paging(get_mock_job):
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+
     api_response_mock_1 = {
         'jobs': [
             get_mock_job(name='job1').to_dict(),
@@ -73,7 +83,9 @@ def test_find_jobs_paging(get_mock_job):
 
 @responses.activate
 def test_find_jobs_start():
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+
     responses.add(responses.GET, urljoin(api.url, '/jobs?start=2021-01-01T00%3A00%3A00%2B00%3A00'),
                   json={'jobs': []}, match_querystring=True)
 
@@ -86,7 +98,9 @@ def test_find_jobs_start():
 
 @responses.activate
 def test_find_jobs_end():
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+
     responses.add(responses.GET, urljoin(api.url, '/jobs?end=2021-01-02T00%3A00%3A00%2B00%3A00'),
                   json={'jobs': []}, match_querystring=True)
 
@@ -99,7 +113,8 @@ def test_find_jobs_end():
 
 @responses.activate
 def test_find_jobs_status_code():
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
 
     responses.add(responses.GET, urljoin(api.url, '/jobs?status_code=RUNNING'),
                   json={'jobs': []}, match_querystring=True)
@@ -115,7 +130,8 @@ def test_find_jobs_status_code():
 @responses.activate
 def test_get_job_by_id(get_mock_job):
     job = get_mock_job()
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
     responses.add(responses.GET, urljoin(api.url, f'/jobs/{job.job_id}'), json=job.to_dict())
     response = api.get_job_by_id(job.job_id)
     assert response == job
@@ -126,7 +142,8 @@ def test_watch(get_mock_job):
     incomplete_job = get_mock_job()
     complete_job = Job.from_dict(incomplete_job.to_dict())
     complete_job.status_code = 'SUCCEEDED'
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
     for ii in range(3):
         responses.add(responses.GET, urljoin(api.url, f'/jobs/{incomplete_job.job_id}'),
                       json=incomplete_job.to_dict())
@@ -143,7 +160,9 @@ def test_refresh(get_mock_job):
     new_job = Job.from_dict(job.to_dict())
     new_job.status_code = 'SUCCEEDED'
 
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+
     responses.add(responses.GET, urljoin(api.url, f'/jobs/{job.job_id}'), json=new_job.to_dict())
     response = api.refresh(job)
     assert response == new_job
@@ -160,7 +179,9 @@ def test_submit_prepared_jobs(get_mock_job):
         ]
     }
 
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
 
     batch = api.submit_prepared_jobs(
@@ -275,7 +296,8 @@ def test_submit_autorift_job(get_mock_job):
             job.to_dict()
         ]
     }
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
     batch = api.submit_autorift_job('g1', 'g2')
     assert batch.jobs[0] == job
@@ -289,7 +311,8 @@ def test_submit_rtc_job(get_mock_job):
             job.to_dict()
         ]
     }
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
     batch = api.submit_rtc_job('g1')
     assert batch.jobs[0] == job
@@ -303,7 +326,8 @@ def test_submit_insar_job(get_mock_job):
             job.to_dict()
         ]
     }
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
     batch = api.submit_insar_job('g1', 'g2')
     assert batch.jobs[0] == job
@@ -317,7 +341,8 @@ def test_resubmit_previous_job(get_mock_job):
             job.to_dict()
         ]
     }
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
     batch = api.submit_prepared_jobs(job.to_dict(for_resubmit=True))
     assert batch.jobs[0] == job
@@ -336,7 +361,8 @@ def test_my_info():
         },
         'user_id': 'someUser'
     }
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
     responses.add(responses.GET, urljoin(api.url, '/user'), json=api_response)
     response = api.my_info()
     assert response == api_response
@@ -355,7 +381,8 @@ def test_check_quota():
         },
         'user_id': 'someUser'
     }
-    api = HyP3()
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
     responses.add(responses.GET, urljoin(api.url, '/user'), json=api_response)
     response = api.check_quota()
     assert response == api_response['quota']['remaining']

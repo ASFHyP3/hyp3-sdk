@@ -1,0 +1,17 @@
+name: Test with pytest
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  call-pytest-workflow:
+    uses: ASFHyP3/actions/.github/workflows/reusable-pytest.yml@v0.7.1
+    with:
+      local_package_name: hyp3_sdk

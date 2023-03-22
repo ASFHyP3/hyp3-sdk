@@ -1,4 +1,6 @@
 """Extra utilities for working with HyP3"""
+
+import urllib.parse
 from pathlib import Path
 from typing import Any, Generator, Sequence, Union
 from zipfile import ZipFile
@@ -7,11 +9,12 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-import hyp3_sdk
 from hyp3_sdk.exceptions import AuthenticationError
 
 AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
            '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
+
+PROFILE_URL = 'https://urs.earthdata.nasa.gov/profile'
 
 
 def extract_zipped_product(zip_file: Union[str, Path], delete: bool = True) -> Path:
@@ -69,10 +72,20 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
         An authenticated HyP3 Session
     """
     s = requests.Session()
-    if hyp3_sdk.TESTING:
-        return s
     if username is not None and password is not None:
         response = s.get(AUTH_URL, auth=(username, password))
+
+        parsed_url = urllib.parse.urlparse(response.url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        error_msg = query_params.get('error_msg')
+        resolution_url = query_params.get('resolution_url')
+
+        if error_msg is not None and resolution_url is not None:
+            raise AuthenticationError(f'{error_msg[0]}: {resolution_url[0]}')
+
+        if error_msg is not None and 'Please update your profile' in error_msg[0]:
+            raise AuthenticationError(f'{error_msg[0]}: {PROFILE_URL}')
+
         try:
             response.raise_for_status()
         except requests.HTTPError:
