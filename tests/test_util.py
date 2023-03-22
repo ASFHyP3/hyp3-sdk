@@ -2,10 +2,18 @@ import shutil
 from pathlib import Path
 
 import pytest
+import requests
 import responses
 
 from hyp3_sdk import util
 from hyp3_sdk.exceptions import AuthenticationError
+
+
+@responses.activate
+def test_get_authenticated_session():
+    responses.add(responses.GET, util.AUTH_URL, status=200)
+    assert isinstance(util.get_authenticated_session('user', 'pass'), requests.Session)
+    assert isinstance(util.get_authenticated_session(None, None), requests.Session)
 
 
 @responses.activate
