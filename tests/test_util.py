@@ -42,6 +42,16 @@ def test_get_authenticated_session_study_area():
 
 
 @responses.activate
+def test_get_authenticated_session_http_error():
+    responses.add(responses.GET, util.AUTH_URL, status=401)
+    with pytest.raises(
+        AuthenticationError,
+        match=r'^Was not able to authenticate with credentials provided.*'
+    ):
+        util.get_authenticated_session('user', 'pass')
+
+
+@responses.activate
 def test_download_file(tmp_path):
     responses.add(responses.GET, 'https://foo.com/file', body='foobar')
     result_path = util.download_file('https://foo.com/file', tmp_path / 'file')
