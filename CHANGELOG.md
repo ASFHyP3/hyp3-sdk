@@ -7,6 +7,12 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.0]
+### Changed
+* Improved error messages when Earthdata user must select Study Area or accept EULA.
+### Removed
+* The `hyp3_sdk.TESTING` constant has been removed in favor of mocking objects in unit tests.
+
 ## [1.7.5]
 ### Fixed
 * Path to `README.md` in `pyproject.toml` so that there is a package description on PyPI
