@@ -25,12 +25,16 @@ def test_get_authenticated_session_eula():
     )
     responses.add(responses.GET, util.AUTH_URL, status=302, headers={'Location': redirect_url})
     responses.add(responses.GET, redirect_url, status=401)
-    with pytest.raises(
-            AuthenticationError,
-            match=r'^Pre authorization required for this application, please authorize by visiting '
-                  r'the resolution url: https://urs\.earthdata\.nasa\.gov/approve_app\?client_id=foo$'
-    ):
+
+    match = (
+        r'^Pre authorization required for this application, please authorize by visiting '
+        r'the resolution url: https://urs\.earthdata\.nasa\.gov/approve_app\?client_id=foo$'
+    )
+    with pytest.raises(AuthenticationError, match=match):
         util.get_authenticated_session('user', 'pass')
+
+    with pytest.raises(AuthenticationError, match=match):
+        util.get_authenticated_session(None, None)
 
 
 @responses.activate
@@ -41,12 +45,16 @@ def test_get_authenticated_session_study_area():
     )
     responses.add(responses.GET, util.AUTH_URL, status=302, headers={'Location': redirect_url})
     responses.add(responses.GET, redirect_url, status=401)
-    with pytest.raises(
-            AuthenticationError,
-            match=r'^Please update your profile for application required attributes Study Area: '
-                  r'https://urs\.earthdata\.nasa\.gov/profile$'
-    ):
+
+    match = (
+        r'^Please update your profile for application required attributes Study Area: '
+        r'https://urs\.earthdata\.nasa\.gov/profile$'
+    )
+    with pytest.raises(AuthenticationError, match=match):
         util.get_authenticated_session('user', 'pass')
+
+    with pytest.raises(AuthenticationError, match=match):
+        util.get_authenticated_session(None, None)
 
 
 @responses.activate
