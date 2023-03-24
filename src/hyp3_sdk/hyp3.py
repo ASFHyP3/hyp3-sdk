@@ -21,7 +21,8 @@ class HyP3:
 
     def __init__(self, api_url: str = PROD_API, username: Optional[str] = None, password: Optional[str] = None,
                  prompt: bool = False):
-        """
+        """If username and password are not provided, attempts to use credentials from a `.netrc` file.
+
         Args:
             api_url: Address of the HyP3 API
             username: Username for authenticating to `urs.earthdata.nasa.gov`.
