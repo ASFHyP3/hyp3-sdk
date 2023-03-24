@@ -72,32 +72,36 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
         An authenticated HyP3 Session
     """
     s = requests.Session()
+
     if username is not None and password is not None:
         response = s.get(AUTH_URL, auth=(username, password))
-
-        parsed_url = urllib.parse.urlparse(response.url)
-        query_params = urllib.parse.parse_qs(parsed_url.query)
-        error_msg = query_params.get('error_msg')
-        resolution_url = query_params.get('resolution_url')
-
-        if error_msg is not None and resolution_url is not None:
-            raise AuthenticationError(f'{error_msg[0]}: {resolution_url[0]}')
-
-        if error_msg is not None and 'Please update your profile' in error_msg[0]:
-            raise AuthenticationError(f'{error_msg[0]}: {PROFILE_URL}')
-
-        try:
-            response.raise_for_status()
-        except requests.HTTPError:
-            raise AuthenticationError('Was not able to authenticate with credentials provided\n'
-                                      'This could be due to invalid credentials or a connection error.')
+        auth_error_message = (
+            'Was not able to authenticate with credentials provided\n'
+            'This could be due to invalid credentials or a connection error.'
+        )
     else:
         response = s.get(AUTH_URL)
-        try:
-            response.raise_for_status()
-        except requests.HTTPError:
-            raise AuthenticationError('Was not able to authenticate with .netrc file and no credentials provided\n'
-                                      'This could be due to invalid credentials in .netrc or a connection error.')
+        auth_error_message = (
+            'Was not able to authenticate with .netrc file and no credentials provided\n'
+            'This could be due to invalid credentials in .netrc or a connection error.'
+        )
+
+    parsed_url = urllib.parse.urlparse(response.url)
+    query_params = urllib.parse.parse_qs(parsed_url.query)
+    error_msg = query_params.get('error_msg')
+    resolution_url = query_params.get('resolution_url')
+
+    if error_msg is not None and resolution_url is not None:
+        raise AuthenticationError(f'{error_msg[0]}: {resolution_url[0]}')
+
+    if error_msg is not None and 'Please update your profile' in error_msg[0]:
+        raise AuthenticationError(f'{error_msg[0]}: {PROFILE_URL}')
+
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        raise AuthenticationError(auth_error_message)
+
     return s
 
 
