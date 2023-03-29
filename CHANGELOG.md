@@ -13,7 +13,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.0.0]
 ### Changed
-* Improved error messages when Earthdata user must select Study Area or accept EULA.
+* Improved error messages when Earthdata user must select Study Area or accept EULA, thanks to @kevinxmorales in #170 
 ### Removed
 * The `hyp3_sdk.TESTING` constant has been removed in favor of mocking objects in unit tests.
 
