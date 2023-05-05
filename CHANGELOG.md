@@ -7,6 +7,10 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.0.2]
+### Added
+* 20 m can now be provided to the `resolution` keyword argument of `hyp3.submit_rtc_job` and `hyp3.prepare_rtc_job`.
+
 ## [2.0.1]
 ### Fixed
 * Display the improved error messages regardless of whether the Earthdata credentials were provided by a `.netrc` file.
