@@ -52,7 +52,7 @@ class HyP3:
         """Gets a Batch of jobs from HyP3 matching the provided search criteria
 
         Args:
-            user_id: only jobs submitted by this user
+            user_id: only jobs submitted by this user (defaults to the current user)
             start: only jobs submitted after given time
             end: only jobs submitted before given time
             status_code: only jobs matching this status (SUCCEEDED, FAILED, RUNNING, PENDING)
