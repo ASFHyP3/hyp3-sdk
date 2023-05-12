@@ -16,6 +16,7 @@ PROD_API = 'https://hyp3-api.asf.alaska.edu'
 TEST_API = 'https://hyp3-test-api.asf.alaska.edu'
 
 
+# TODO in the docstr, link to job public visibility section of hyp3-docs
 class HyP3:
     """A python wrapper around the HyP3 API"""
 
