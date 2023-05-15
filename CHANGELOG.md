@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0]
+### Added
+* The `HyP3.find_jobs` method now includes a `user_id` parameter that allows retrieving jobs for a given user.
+  If not provided, jobs are retrieved for the current user.
 
 ## [2.0.2]
 ### Added

@@ -82,6 +82,24 @@ def test_find_jobs_paging(get_mock_job):
 
 
 @responses.activate
+def test_find_jobs_user_id(get_mock_job):
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+
+    responses.add(responses.GET, urljoin(api.url, '/jobs?user_id=foo'),
+                  json={'jobs': []}, match_querystring=True)
+
+    responses.add(responses.GET, urljoin(api.url, '/jobs?user_id=bar'),
+                  json={'jobs': [get_mock_job(name='job1').to_dict()]}, match_querystring=True)
+
+    batch = api.find_jobs(user_id='foo')
+    assert len(batch) == 0
+
+    batch = api.find_jobs(user_id='bar')
+    assert len(batch) == 1
+
+
+@responses.activate
 def test_find_jobs_start():
     with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
         api = HyP3()
