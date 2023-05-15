@@ -18,7 +18,11 @@ TEST_API = 'https://hyp3-test-api.asf.alaska.edu'
 
 # TODO in the docstr, link to job public visibility section of hyp3-docs
 class HyP3:
-    """A python wrapper around the HyP3 API"""
+    """A python wrapper around the HyP3 API.
+
+    Warning: All jobs submitted to HyP3 are publicly visible. For more information, see
+    https://hyp3-docs.asf.alaska.edu/#public-visibility-of-jobs
+    """
 
     def __init__(self, api_url: str = PROD_API, username: Optional[str] = None, password: Optional[str] = None,
                  prompt: bool = False):
