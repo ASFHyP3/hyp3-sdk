@@ -47,27 +47,27 @@ class HyP3:
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
     def find_jobs(self,
-                  user_id: Optional[str] = None,
                   start: Optional[datetime] = None,
                   end: Optional[datetime] = None,
                   status_code: Optional[str] = None,
                   name: Optional[str] = None,
-                  job_type: Optional[str] = None) -> Batch:
+                  job_type: Optional[str] = None,
+                  user_id: Optional[str] = None) -> Batch:
         """Gets a Batch of jobs from HyP3 matching the provided search criteria
 
         Args:
-            user_id: only jobs submitted by this user (defaults to the current user)
             start: only jobs submitted after given time
             end: only jobs submitted before given time
             status_code: only jobs matching this status (SUCCEEDED, FAILED, RUNNING, PENDING)
             name: only jobs with this name
             job_type: only jobs with this job_type
+            user_id: only jobs submitted by this user (defaults to the current user)
 
         Returns:
             A Batch object containing the found jobs
         """
         params = {}
-        for param_name in ('user_id', 'start', 'end', 'status_code', 'name', 'job_type'):
+        for param_name in ('start', 'end', 'status_code', 'name', 'job_type', 'user_id'):
             param_value = locals().get(param_name)
             if param_value is not None:
                 if isinstance(param_value, datetime):
