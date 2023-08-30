@@ -411,6 +411,62 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
+    def submit_insar_isce_burst_job(self,
+                                    granule1: str,
+                                    granule2: str,
+                                    name: Optional[str] = None,
+                                    apply_water_mask: bool = False,
+                                    looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> Batch:
+        """Submit an InSAR ISCE burst job.
+
+        Args:
+            granule1: The first granule (scene) to use
+            granule2: The second granule (scene) to use
+            name: A name for the job
+            apply_water_mask: Set pixels over coastal and large inland water bodies to NoData
+                in wrapped and unwrapped phase GeoTIFFs (after unwrapping)
+            looks: Number of looks to take in range and azimuth
+
+        Returns:
+            A Batch object containing the InSAR ISCE burst job
+        """
+        arguments = locals().copy()
+        arguments.pop('self')
+        job_dict = self.prepare_insar_isce_burst_job(**arguments)
+        return self.submit_prepared_jobs(prepared_jobs=job_dict)
+
+    @classmethod
+    def prepare_insar_isce_burst_job(cls,
+                                     granule1: str,
+                                     granule2: str,
+                                     name: Optional[str] = None,
+                                     apply_water_mask: bool = False,
+                                     looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> dict:
+        """Submit an InSAR ISCE burst job.
+
+        Args:
+            granule1: The first granule (scene) to use
+            granule2: The second granule (scene) to use
+            name: A name for the job
+            apply_water_mask: Set pixels over coastal and large inland water bodies to NoData
+                in wrapped and unwrapped phase GeoTIFFs (after unwrapping)
+            looks: Number of looks to take in range and azimuth
+
+        Returns:
+            A dictionary containing the prepared InSAR ISCE burst job
+        """
+        job_parameters = locals().copy()
+        for key in ['cls', 'granule1', 'granule2', 'name']:
+            job_parameters.pop(key)
+
+        job_dict = {
+            'job_parameters': {'granules': [granule1, granule2], **job_parameters},
+            'job_type': 'INSAR_ISCE_BURST',
+        }
+        if name is not None:
+            job_dict['name'] = name
+        return job_dict
+
     def my_info(self) -> dict:
         """
         Returns:
