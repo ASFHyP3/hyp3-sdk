@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0]
+### Removed
+* Removed the `Job.subscription_id` attribute in response to the Subscriptions feature being removed from HyP3.
+
 ## [2.1.1]
 ### Fixed
 * The `user_id` parameter has been moved to the end of the `HyP3.find_jobs` parameter list, to avoid
