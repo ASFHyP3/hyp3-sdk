@@ -442,7 +442,7 @@ class HyP3:
                                      name: Optional[str] = None,
                                      apply_water_mask: bool = False,
                                      looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> dict:
-        """Submit an InSAR ISCE burst job.
+        """Prepare an InSAR ISCE burst job.
 
         Args:
             granule1: The first granule (scene) to use
