@@ -6,10 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.2.0]
+## [3.1.0]
 ### Added
 * Added `HyP3.submit_insar_isce_burst_job` and `HyP3.prepare_insar_isce_burst_job` methods for submitting
   InSAR ISCE burst jobs to HyP3.
+
+## [3.0.0]
+### Removed
+* Removed the `Job.subscription_id` attribute in response to the Subscriptions feature being removed from HyP3.
 
 ## [2.1.1]
 ### Fixed
