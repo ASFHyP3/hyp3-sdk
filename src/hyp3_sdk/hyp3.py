@@ -335,7 +335,8 @@ class HyP3:
                          include_dem: bool = False,
                          include_wrapped_phase: bool = False,
                          apply_water_mask: bool = False,
-                         include_displacement_maps: bool = False) -> Batch:
+                         include_displacement_maps: bool = False,
+                         phase_filter_parameter: float = 0.6) -> Batch:
         """Submit an InSAR job
 
         Args:
@@ -353,6 +354,9 @@ class HyP3:
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
             include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
+            phase_filter_parameter: Adaptive phase filter exponent (alpha).
+                Larger values result in more aggressive filtering. If zero, adaptive phase filter will be skipped.
+                We recommend against values less than 0.2, or values with more than two decimal places of precision.
 
         Returns:
             A Batch object containing the InSAR job
@@ -374,7 +378,8 @@ class HyP3:
                           include_dem: bool = False,
                           include_wrapped_phase: bool = False,
                           apply_water_mask: bool = False,
-                          include_displacement_maps: bool = False) -> dict:
+                          include_displacement_maps: bool = False,
+                          phase_filter_parameter: float = 0.6) -> dict:
         """Submit an InSAR job
 
         Args:
@@ -392,9 +397,17 @@ class HyP3:
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
             include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
+            phase_filter_parameter: Adaptive phase filter exponent (alpha).
+                Larger values result in more aggressive filtering. If zero, adaptive phase filter will be skipped.
+                We recommend against values less than 0.2, or values with more than two decimal places of precision.
+
         Returns:
             A dictionary containing the prepared InSAR job
         """
+        # TODO do we actually need this, or do we normally allow the API to validate values?
+        if phase_filter_parameter < 0.0 or phase_filter_parameter > 1.0:
+            raise ValueError(f'Expected phase_filter_parameter in range [0.0, 1.0] but got {phase_filter_parameter}')
+
         if include_los_displacement:
             warnings.warn('The include_los_displacement parameter has been deprecated in favor of '
                           'include_displacement_maps, and will be removed in a future release.', FutureWarning)

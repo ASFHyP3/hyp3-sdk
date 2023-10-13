@@ -259,6 +259,7 @@ def test_prepare_rtc_job():
     }
 
 
+# TODO add phase_filter_parameter, including test for ValueError
 def test_prepare_insar_job():
     assert HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2') == {
         'job_type': 'INSAR_GAMMA',
