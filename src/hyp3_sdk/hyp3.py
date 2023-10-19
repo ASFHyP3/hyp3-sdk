@@ -404,10 +404,6 @@ class HyP3:
         Returns:
             A dictionary containing the prepared InSAR job
         """
-        # TODO do we actually need this, or do we normally allow the API to validate values?
-        if phase_filter_parameter < 0.0 or phase_filter_parameter > 1.0:
-            raise ValueError(f'Expected phase_filter_parameter in range [0.0, 1.0] but got {phase_filter_parameter}')
-
         if include_los_displacement:
             warnings.warn('The include_los_displacement parameter has been deprecated in favor of '
                           'include_displacement_maps, and will be removed in a future release.', FutureWarning)
