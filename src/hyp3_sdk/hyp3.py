@@ -335,7 +335,8 @@ class HyP3:
                          include_dem: bool = False,
                          include_wrapped_phase: bool = False,
                          apply_water_mask: bool = False,
-                         include_displacement_maps: bool = False) -> Batch:
+                         include_displacement_maps: bool = False,
+                         phase_filter_parameter: float = 0.6) -> Batch:
         """Submit an InSAR job
 
         Args:
@@ -353,6 +354,10 @@ class HyP3:
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
             include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
+            phase_filter_parameter: Adaptive phase filter parameter.
+                Useful values fall in the range 0.2 to 1.
+                Larger values result in stronger filtering.
+                If zero, adaptive phase filter will be skipped.
 
         Returns:
             A Batch object containing the InSAR job
@@ -374,7 +379,8 @@ class HyP3:
                           include_dem: bool = False,
                           include_wrapped_phase: bool = False,
                           apply_water_mask: bool = False,
-                          include_displacement_maps: bool = False) -> dict:
+                          include_displacement_maps: bool = False,
+                          phase_filter_parameter: float = 0.6) -> dict:
         """Submit an InSAR job
 
         Args:
@@ -392,6 +398,11 @@ class HyP3:
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
             include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
+            phase_filter_parameter: Adaptive phase filter parameter.
+                Useful values fall in the range 0.2 to 1.
+                Larger values result in stronger filtering.
+                If zero, adaptive phase filter will be skipped.
+
         Returns:
             A dictionary containing the prepared InSAR job
         """
