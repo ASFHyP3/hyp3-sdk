@@ -354,9 +354,10 @@ class HyP3:
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
             include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
-            phase_filter_parameter: Adaptive phase filter exponent (alpha).
-                Larger values result in more aggressive filtering. If zero, adaptive phase filter will be skipped.
-                We recommend against values less than 0.2, or values with more than two decimal places of precision.
+            phase_filter_parameter: Adaptive phase filter parameter.
+                Useful values fall in the range 0.2 to 1.
+                Larger values result in stronger filtering.
+                If zero, adaptive phase filter will be skipped.
 
         Returns:
             A Batch object containing the InSAR job
@@ -397,9 +398,10 @@ class HyP3:
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
             include_displacement_maps: Include displacement maps (line-of-sight and vertical) in the product package
-            phase_filter_parameter: Adaptive phase filter exponent (alpha).
-                Larger values result in more aggressive filtering. If zero, adaptive phase filter will be skipped.
-                We recommend against values less than 0.2, or values with more than two decimal places of precision.
+            phase_filter_parameter: Adaptive phase filter parameter.
+                Useful values fall in the range 0.2 to 1.
+                Larger values result in stronger filtering.
+                If zero, adaptive phase filter will be skipped.
 
         Returns:
             A dictionary containing the prepared InSAR job
