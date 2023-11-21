@@ -262,8 +262,8 @@ class Batch:
 
         Args:
             succeeded: Include all succeeded jobs
-            running: Include all running jobs
             pending: Include all pending jobs
+            running: Include all running jobs
             failed: Include all failed jobs
             include_expired: Include expired jobs in the result
 
