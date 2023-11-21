@@ -64,6 +64,7 @@ An instance of the `HyP3` class will be needed to interact with the external HyP
 ```python
 rtc_job = hyp3.submit_rtc_job('granule_id', 'job_name')
 insar_job = hyp3.submit_insar_job('reference_granule_id', 'secondary_granule_id', 'job_name')
+insar_burst_job = hyp3.submit_insar_isce_burst_job('reference_granule_id', 'secondary_granule_id', 'job_name')
 autorift_job = hyp3.submit_autorift_job('reference_granule_id', 'secondary_granule_id', 'job_name')
 ```
 Each of these functions will return an instance of the `Job` class that represents a new HyP3 job request.
