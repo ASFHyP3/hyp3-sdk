@@ -250,9 +250,15 @@ class Batch:
         return False
 
     def filter_jobs(
-        self, succeeded: bool = True, running: bool = True, pending: bool = True, failed: bool = False, include_expired: bool = True,
+        self,
+        succeeded: bool = True,
+        running: bool = True,
+        pending: bool = True,
+        failed: bool = False,
+        include_expired: bool = True,
     ) -> 'Batch':
-        """Filter jobs by status. By default, only succeeded, pending, and still running jobs will be in the returned batch.
+        """Filter jobs by status. By default, only succeeded, pending,
+        and still running jobs will be in the returned batch.
 
         Args:
             succeeded: Include all succeeded jobs
