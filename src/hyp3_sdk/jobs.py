@@ -252,8 +252,8 @@ class Batch:
     def filter_jobs(
         self,
         succeeded: bool = True,
-        running: bool = True,
         pending: bool = True,
+        running: bool = True,
         failed: bool = False,
         include_expired: bool = True,
     ) -> 'Batch':
