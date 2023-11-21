@@ -88,7 +88,7 @@ def test_job_complete_succeeded_failed_running():
     assert not job.complete()
     assert not job.succeeded()
     assert not job.failed()
-    assert job.running()
+    assert job.pending()
 
     job.status_code = 'RUNNING'
     assert not job.complete()
@@ -410,15 +410,15 @@ def test_batch_filter_jobs():
     assert not_failed.jobs[0].succeeded() and not not_failed.jobs[0].expired()
     assert not_failed.jobs[1].running()
     assert not_failed.jobs[2].succeeded() and not_failed.jobs[2].expired()
-    assert not_failed.jobs[3].running()
+    assert not_failed.jobs[3].pending()
 
     not_failed_or_expired = batch.filter_jobs(include_expired=False)
     assert len(not_failed_or_expired) == 3
     assert not_failed_or_expired.jobs[0].succeeded() and not not_failed_or_expired.jobs[0].expired()
     assert not_failed_or_expired.jobs[1].running()
-    assert not_failed_or_expired.jobs[2].running()
+    assert not_failed_or_expired.jobs[2].pending()
 
-    succeeded = batch.filter_jobs(running=False)
+    succeeded = batch.filter_jobs(pending=False, running=False)
     assert len(succeeded) == 2
     assert succeeded.jobs[0].succeeded() and not succeeded.jobs[0].expired()
     assert succeeded.jobs[1].succeeded() and succeeded.jobs[1].expired()
@@ -426,9 +426,9 @@ def test_batch_filter_jobs():
     running = batch.filter_jobs(succeeded=False)
     assert len(running) == 2
     assert running.jobs[0].running()
-    assert running.jobs[1].running()
+    assert running.jobs[1].pending()
 
-    failed = batch.filter_jobs(succeeded=False, running=False, failed=True)
+    failed = batch.filter_jobs(succeeded=False, pending=False, running=False, failed=True)
     assert len(failed) == 1
     assert failed.jobs[0].failed()
 

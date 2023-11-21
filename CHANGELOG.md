@@ -11,6 +11,10 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Added `HyP3.submit_insar_isce_burst_job` and `HyP3.prepare_insar_isce_burst_job` methods for submitting
   InSAR ISCE burst jobs to HyP3.
 
+## [3.3.0]
+### Fixed
+* `running` status now only includes running jobs, and pending jobs have their status.
+
 ## [3.2.0]
 ### Added
 * The HyP3 SDK now explicitly supports Python 3.9-3.12

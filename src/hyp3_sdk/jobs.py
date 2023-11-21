@@ -100,10 +100,11 @@ class Job:
     def complete(self) -> bool:
         return self.succeeded() or self.failed()
 
-    # TODO may want to update this to check if status code is actually RUNNING, because currently this also returns
-    #  true if status is PENDING
+    def pending(self) -> bool:
+        return self.status_code == 'PENDING'
+
     def running(self) -> bool:
-        return not self.complete()
+        return self.status_code == 'RUNNING'
 
     def expired(self) -> bool:
         return self.expiration_time is not None and datetime.now(tz.UTC) >= self.expiration_time
@@ -249,13 +250,20 @@ class Batch:
         return False
 
     def filter_jobs(
-            self, succeeded: bool = True, running: bool = True, failed: bool = False, include_expired: bool = True,
+        self,
+        succeeded: bool = True,
+        running: bool = True,
+        pending: bool = True,
+        failed: bool = False,
+        include_expired: bool = True,
     ) -> 'Batch':
-        """Filter jobs by status. By default, only succeeded and still running jobs will be in the returned batch.
+        """Filter jobs by status. By default, only succeeded, pending,
+        and still running jobs will be in the returned batch.
 
         Args:
             succeeded: Include all succeeded jobs
             running: Include all running jobs
+            pending: Include all pending jobs
             failed: Include all failed jobs
             include_expired: Include expired jobs in the result
 
@@ -271,6 +279,9 @@ class Batch:
                     filtered_jobs.append(job)
 
             elif job.running() and running:
+                filtered_jobs.append(job)
+
+            elif job.pending() and pending:
                 filtered_jobs.append(job)
 
             elif job.failed() and failed:
