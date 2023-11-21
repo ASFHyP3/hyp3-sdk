@@ -435,7 +435,7 @@ class HyP3:
             granule2: The second granule (scene) to use
             name: A name for the job
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
-                as invalid for phase unwrapping 
+                as invalid for phase unwrapping
             looks: Number of looks to take in range and azimuth
 
         Returns:
@@ -460,7 +460,7 @@ class HyP3:
             granule2: The second granule (scene) to use
             name: A name for the job
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
-                as invalid for phase unwrapping 
+                as invalid for phase unwrapping
             looks: Number of looks to take in range and azimuth
 
         Returns:
