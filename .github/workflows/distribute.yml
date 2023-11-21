@@ -7,7 +7,7 @@ on:
 
 jobs:
   call-version-info-workflow:
-    uses: ASFHyP3/actions/.github/workflows/reusable-version-info.yml@v0.8.2
+    uses: ASFHyP3/actions/.github/workflows/reusable-version-info.yml@v0.8.3
 
   distribute:
     runs-on: ubuntu-latest
@@ -15,11 +15,13 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: mamba-org/provision-with-micromamba@v15
+      - uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: environment.yml
 
       - name: Build distribution
         id: build
@@ -27,7 +29,7 @@ jobs:
           python -m build
 
       - name: upload to PyPI.org
-        uses: pypa/gh-action-pypi-publish@v1.8.8
+        uses: pypa/gh-action-pypi-publish@v1.8.10
         with:
           user: __token__
           password: ${{ secrets.TOOLS_PYPI_PAK }}
@@ -41,9 +43,11 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: mamba-org/provision-with-micromamba@v15
+      - uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: environment.yml
 
       - name: Ensure hyp3_sdk v${{ needs.call-version-info-workflow.outputs.version }}} is pip installable
         run: |
