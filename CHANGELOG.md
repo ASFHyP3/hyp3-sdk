@@ -7,6 +7,10 @@ and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [3.3.0]
+### Fixed
+* `running` status now only includes running jobs, and pending jobs have their status.
+
 ## [3.2.0]
 ### Added
 * The HyP3 SDK now explicitly supports Python 3.9-3.12
