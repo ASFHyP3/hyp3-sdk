@@ -434,8 +434,8 @@ class HyP3:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
             name: A name for the job
-            apply_water_mask: Set pixels over coastal and large inland water bodies to NoData
-                in wrapped and unwrapped phase GeoTIFFs (after unwrapping)
+            apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
+                as invalid for phase unwrapping
             looks: Number of looks to take in range and azimuth
 
         Returns:
@@ -459,8 +459,8 @@ class HyP3:
             granule1: The first granule (scene) to use
             granule2: The second granule (scene) to use
             name: A name for the job
-            apply_water_mask: Set pixels over coastal and large inland water bodies to NoData
-                in wrapped and unwrapped phase GeoTIFFs (after unwrapping)
+            apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
+                as invalid for phase unwrapping
             looks: Number of looks to take in range and azimuth
 
         Returns:
