@@ -296,6 +296,27 @@ def test_prepare_insar_job():
     }
 
 
+def test_prepare_insar_isce_burst_job():
+    assert HyP3.prepare_insar_isce_burst_job(granule1='my_granule1', granule2='my_granule2') == {
+        'job_type': 'INSAR_ISCE_BURST',
+        'job_parameters': {
+            'granules': ['my_granule1', 'my_granule2'],
+            'apply_water_mask': False,
+            'looks': '20x4',
+        }
+    }
+    assert HyP3.prepare_insar_isce_burst_job(granule1='my_granule1', granule2='my_granule2', name='my_name',
+                                             apply_water_mask=True, looks='10x2') == {
+        'job_type': 'INSAR_ISCE_BURST',
+        'name': 'my_name',
+        'job_parameters': {
+            'granules': ['my_granule1', 'my_granule2'],
+            'apply_water_mask': True,
+            'looks': '10x2',
+        }
+    }
+
+
 def test_deprecated_warning():
     with warnings.catch_warnings(record=True) as w:
         HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2', include_los_displacement=False)
@@ -350,6 +371,21 @@ def test_submit_insar_job(get_mock_job):
         api = HyP3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
     batch = api.submit_insar_job('g1', 'g2')
+    assert batch.jobs[0] == job
+
+
+@responses.activate
+def test_submit_insar_isce_burst_job(get_mock_job):
+    job = get_mock_job('INSAR_ISCE_BURST', job_parameters={'granules': ['g1', 'g2']})
+    api_response = {
+        'jobs': [
+            job.to_dict()
+        ]
+    }
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+    responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
+    batch = api.submit_insar_isce_burst_job('g1', 'g2')
     assert batch.jobs[0] == job
 
 
