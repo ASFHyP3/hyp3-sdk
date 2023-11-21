@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0]
+### Added
+* The HyP3 SDK now explicitly supports Python 3.9-3.12
+* Added `HyP3.submit_insar_isce_burst_job` and `HyP3.prepare_insar_isce_burst_job` methods for submitting
+  InSAR ISCE burst jobs to HyP3.
+* A `pending` method to the `Job` class.
+* A `pending` argument to the `Batch.filter_jobs()` method.
+
+### Changed
+* The order of the arguments for `Batch.filter_jobs()`. The new order is `succeeded, pending, running, failed, include_expired`.
+
+### Removed
+* Support for Python 3.8 has been dropped.
+
+### Fixed
+* The `running` method of the `Job` class now only returns `True` if job has status `RUNNING`. Jobs in the `PENDING` state now return `True` when calling the `pending` method of `Job`.
+
 ## [3.1.0]
 ### Added
 * Added the `phase_filter_parameter` keyword argument for the `HyP3.submit_insar_job` and `HyP3.prepare_insar_job` methods.
