@@ -247,7 +247,7 @@ class HyP3:
                        resolution: Literal[10, 20, 30] = 30,
                        scale: Literal['amplitude', 'decibel', 'power'] = 'power',
                        speckle_filter: bool = False,
-                       dem_name: Literal['copernicus', 'legacy'] = 'copernicus') -> Batch:
+                       dem_name: Literal['copernicus'] = 'copernicus') -> Batch:
         """Submit an RTC job
 
         Args:
@@ -264,8 +264,7 @@ class HyP3:
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; power, decibel or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
-            dem_name: Name of the DEM to use for processing.  `copernicus` will use the Copernicus GLO-30 Public DEM,
-                while `legacy` will use the DEM with the best coverage from ASF's legacy SRTM/NED datasets.
+            dem_name: Name of the DEM to use for processing.  `copernicus` is the only option, and it will use the Copernicus GLO-30 Public DEM.
 
         Returns:
             A Batch object containing the RTC job
@@ -288,7 +287,7 @@ class HyP3:
                         resolution: Literal[10, 20, 30] = 30,
                         scale: Literal['amplitude', 'decibel', 'power'] = 'power',
                         speckle_filter: bool = False,
-                        dem_name: Literal['copernicus', 'legacy'] = 'copernicus') -> dict:
+                        dem_name: Literal['copernicus'] = 'copernicus') -> dict:
         """Submit an RTC job
 
         Args:
@@ -305,8 +304,7 @@ class HyP3:
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; power, decibel or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
-            dem_name: Name of the DEM to use for processing.  `copernicus` will use the Copernicus GLO-30 Public DEM,
-                while `legacy` will use the DEM with the best coverage from ASF's legacy SRTM/NED datasets.
+            dem_name: Name of the DEM to use for processing.  `copernicus` is the only option, and it will use the Copernicus GLO-30 Public DEM.
 
         Returns:
             A dictionary containing the prepared RTC job
