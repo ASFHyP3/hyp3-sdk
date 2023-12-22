@@ -8,7 +8,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [4.0.1]
 ### Removed
-* Legacy option in the dem_name argument of prepare_rtc_job and submit_rtc_job functions in hyp3.py.
+* Legacy option in the `dem_name` argument of `prepare_rtc_job` and `submit_rtc_job` functions in hyp3.py.
 
 ## [4.0.0]
 ### Added
