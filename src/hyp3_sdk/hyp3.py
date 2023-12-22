@@ -305,7 +305,7 @@ class HyP3:
             resolution: Desired output pixel spacing in meters
             scale: Scale of output image; power, decibel or amplitude
             speckle_filter: Apply an Enhanced Lee speckle filter
-            dem_name: Name of the DEM to use for processing.  `copernicus` is the only option, and it will use
+            dem_name: Name of the DEM to use for processing. `copernicus` is the only option, and it will use
             the Copernicus GLO-30 Public DEM.
 
         Returns:
