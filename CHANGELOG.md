@@ -6,9 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.1]
+## [5.0.0]
 ### Removed
-* Legacy option in the `dem_name` argument of `prepare_rtc_job` and `submit_rtc_job` functions in hyp3.py.
+* `legacy` option for the `dem_name` argument of `HyP3.prepare_rtc_job()` and `HyP3.submit_rtc_job()`.
 
 ## [4.0.0]
 ### Added
