@@ -490,7 +490,7 @@ class HyP3:
     def check_quota(self) -> Optional[int]:
         """
         Returns:
-            The number of jobs left in your quota, or None if you have no quota
+            Your remaining processing credits, or None if you have no processing limit
         """
         info = self.my_info()
-        return info['quota']['remaining']
+        return info['remaining_credits']

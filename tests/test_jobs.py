@@ -23,7 +23,8 @@ SUCCEEDED_JOB = {
     "request_time": "2020-09-22T23:55:10+00:00",
     "status_code": "SUCCEEDED",
     "thumbnail_images": ["https://PAIR_PROCESS_thumb.png"],
-    "user_id": "asf_hyp3"
+    "user_id": "asf_hyp3",
+    "credit_cost": 1,
 }
 
 FAILED_JOB = {
@@ -39,7 +40,8 @@ FAILED_JOB = {
     "name": "test_failure",
     "request_time": "2020-09-22T23:55:10+00:00",
     "status_code": "FAILED",
-    "user_id": "asf_hyp3"
+    "user_id": "asf_hyp3",
+    "credit_cost": 1,
 }
 
 

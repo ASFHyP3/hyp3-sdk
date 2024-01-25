@@ -411,10 +411,7 @@ def test_my_info():
             'name1',
             'name2'
         ],
-        'quota': {
-            'max_job_per_month': 50,
-            'remaining': 25
-        },
+        'remaining_credits': 25,
         'user_id': 'someUser'
     }
     with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
@@ -431,14 +428,11 @@ def test_check_quota():
             'name1',
             'name2'
         ],
-        'quota': {
-            'max_job_per_month': 50,
-            'remaining': 25
-        },
+        'remaining_credits': 25,
         'user_id': 'someUser'
     }
     with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
         api = HyP3()
     responses.add(responses.GET, urljoin(api.url, '/user'), json=api_response)
-    response = api.check_quota()
-    assert response == api_response['quota']['remaining']
+
+    assert api.check_quota() == 25
