@@ -13,7 +13,7 @@ This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0
 * `credit_cost` attribute to the `Job` class
 
 ### Changed
-* `HyP3.my_info()`: A new `reminaing_credits` field replaces the `quota` field in the return value 
+* `HyP3.my_info()`: A new `remaining_credits` field replaces the `quota` field in the return value 
 
 ## [5.0.0]
 ### Removed
