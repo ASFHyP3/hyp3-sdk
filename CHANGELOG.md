@@ -11,14 +11,14 @@ This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0
 
 ### Added
 * `credit_cost` attribute to the `Job` class
-* `HyP3.credits_credits` method to determine your remaining processing credits
+* `HyP3.check_credits` method to determine your remaining processing credits
 
 ### Changed
 * `HyP3.my_info()`: A new `remaining_credits` field replaces the `quota` field in the return value
 * `HyP3.check_quota` may return a float or an integer if the user has processing credits
 
 ### Deprecated
-* `HyP3.check_quota` has been deprecated in favor of `hyp3.check_credits`
+* `HyP3.check_quota` has been deprecated in favor of `HyP3.check_credits`
 
 ## [5.0.0]
 ### Removed
