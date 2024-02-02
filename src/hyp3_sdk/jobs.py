@@ -31,6 +31,7 @@ class Job:
             thumbnail_images: Optional[List] = None,
             expiration_time: Optional[datetime] = None,
             processing_times: Optional[List[float]] = None,
+            credit_cost: Optional[float] = None,
     ):
         self.job_id = job_id
         self.job_type = job_type
@@ -45,6 +46,7 @@ class Job:
         self.thumbnail_images = thumbnail_images
         self.expiration_time = expiration_time
         self.processing_times = processing_times
+        self.credit_cost = credit_cost
 
     def __repr__(self):
         return f'Job.from_dict({self.to_dict()})'
@@ -72,6 +74,7 @@ class Job:
             thumbnail_images=input_dict.get('thumbnail_images'),
             expiration_time=expiration_time,
             processing_times=input_dict.get('processing_times'),
+            credit_cost=input_dict.get('credit_cost'),
         )
 
     def to_dict(self, for_resubmit: bool = False):

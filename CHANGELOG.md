@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0]
+This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0.0
+
+### Added
+* `credit_cost` attribute to the `Job` class
+* `HyP3.check_credits` method to determine your remaining processing credits
+
+### Changed
+* `HyP3.my_info()`: A new `remaining_credits` field replaces the `quota` field in the return value
+* `HyP3.check_quota` may return a float or an integer if the user has processing credits
+
+### Deprecated
+* `HyP3.check_quota` has been deprecated in favor of `HyP3.check_credits`
+
 ## [5.0.0]
 ### Removed
 * `legacy` option for the `dem_name` argument of `HyP3.prepare_rtc_job()` and `HyP3.submit_rtc_job()`.
