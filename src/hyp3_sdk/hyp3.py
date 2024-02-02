@@ -488,7 +488,7 @@ class HyP3:
         _raise_for_hyp3_status(response)
         return response.json()
 
-    def check_credits(self) -> Optional[float]:
+    def check_credits(self) -> Union[float, int, None]:
         """
         Returns:
             Your remaining processing credits, or None if you have no processing limit
@@ -496,7 +496,7 @@ class HyP3:
         info = self.my_info()
         return info['remaining_credits']
 
-    def check_quota(self) -> Optional[float]:
+    def check_quota(self) -> Union[float, int, None]:
         """Deprecated method for checking your remaining processing credits; replaced by `HyP3.check_credits`
 
         Returns:
