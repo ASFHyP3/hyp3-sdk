@@ -6,6 +6,7 @@ from functools import singledispatchmethod
 from getpass import getpass
 from typing import List, Literal, Optional, Union
 from urllib.parse import urljoin
+from warnings import warn
 
 import hyp3_sdk
 import hyp3_sdk.util
@@ -487,10 +488,20 @@ class HyP3:
         _raise_for_hyp3_status(response)
         return response.json()
 
-    def check_quota(self) -> Optional[int]:
+    def check_credits(self) -> Optional[float]:
         """
         Returns:
             Your remaining processing credits, or None if you have no processing limit
         """
         info = self.my_info()
         return info['remaining_credits']
+
+    def check_quota(self) -> Optional[float]:
+        """Deprecated method for checking your remaining processing credits; replaced by `HyP3.check_credits`
+
+        Returns:
+            Your remaining processing credits, or None if you have no processing limit
+        """
+        warn('This method is deprecated and will be removed in a future release.\n'
+             'Please use `HyP3.check_credits` instead.', DeprecationWarning, stacklevel=2)
+        return self.check_credits()
