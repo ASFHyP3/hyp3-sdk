@@ -1,3 +1,4 @@
+import math
 import warnings
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
@@ -411,7 +412,7 @@ def test_my_info():
             'name1',
             'name2'
         ],
-        'remaining_credits': 25,
+        'remaining_credits': 25.,
         'user_id': 'someUser'
     }
     with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
@@ -422,17 +423,17 @@ def test_my_info():
 
 
 @responses.activate
-def test_check_quota():
+def test_check_credits():
     api_response = {
         'job_names': [
             'name1',
             'name2'
         ],
-        'remaining_credits': 25,
+        'remaining_credits': 25.,
         'user_id': 'someUser'
     }
     with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
         api = HyP3()
     responses.add(responses.GET, urljoin(api.url, '/user'), json=api_response)
 
-    assert api.check_quota() == 25
+    assert math.isclose(api.check_credits(), 25.)
