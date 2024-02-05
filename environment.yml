@@ -17,6 +17,7 @@ dependencies:
   - pytest
   - pytest-cov
   - responses
+  - pystac
   # For running
   - python-dateutil
   - requests
