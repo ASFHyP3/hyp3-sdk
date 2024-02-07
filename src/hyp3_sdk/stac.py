@@ -1,4 +1,3 @@
-import json
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -8,16 +7,12 @@ import fsspec
 import pystac
 from PIL import Image
 from PIL.TiffTags import TAGS
-from osgeo import gdal, osr
 from pystac import Extent, ProviderRole, SpatialExtent, Summaries, TemporalExtent
 from pystac.extensions import sar
 from pystac.extensions.projection import ProjectionExtension
 from pystac.extensions.raster import RasterExtension
-from shapely import geometry, to_geojson
 from tqdm import tqdm
 
-
-gdal.UseExceptions()
 
 SENTINEL_CONSTELLATION = 'sentinel-1'
 SENTINEL_PLATFORMS = ['sentinel-1a', 'sentinel-1b']
@@ -199,14 +194,14 @@ def get_geotiff_info_nogdal(file_path, base_fs=None):
     return geotransform, (width, length), utm_epsg
 
 
-def get_geotiff_info(file_path):
-    dataset = gdal.Open(file_path)
-    geotransform = list(dataset.GetGeoTransform())
-    shape = (dataset.RasterXSize, dataset.RasterYSize)
-    proj = osr.SpatialReference(wkt=dataset.GetProjection())
-    utm_epsg = int(proj.GetAttrValue('AUTHORITY', 1))
-    dataset = None
-    return geotransform, shape, utm_epsg
+# def get_geotiff_info(file_path):
+#     dataset = gdal.Open(file_path)
+#     geotransform = list(dataset.GetGeoTransform())
+#     shape = (dataset.RasterXSize, dataset.RasterYSize)
+#     proj = osr.SpatialReference(wkt=dataset.GetProjection())
+#     utm_epsg = int(proj.GetAttrValue('AUTHORITY', 1))
+#     dataset = None
+#     return geotransform, shape, utm_epsg
 
 
 def get_bounding_box(geotransform, shape):
@@ -215,8 +210,33 @@ def get_bounding_box(geotransform, shape):
     max_y = geotransform[3]
     min_y = max_y + geotransform[5] * shape[1]
 
-    bbox = geometry.box(min_x, min_y, max_x, max_y)
+    bbox = [min_x, min_y, max_x, max_y]
     return bbox
+
+
+def get_overall_bbox(bboxes):
+    min_x = min([bbox[0] for bbox in bboxes])
+    min_y = min([bbox[1] for bbox in bboxes])
+    max_x = max([bbox[2] for bbox in bboxes])
+    max_y = max([bbox[3] for bbox in bboxes])
+    return [min_x, min_y, max_x, max_y]
+
+
+def bounding_box_to_geojson(minx, miny, maxx, maxy):
+    """Convert bounding box coordinates to GeoJSON Polygon."""
+    polygon = {
+        'type': 'Polygon',
+        'coordinates': [
+            [
+                [minx, miny],
+                [maxx, miny],
+                [maxx, maxy],
+                [minx, maxy],
+                [minx, miny],
+            ]
+        ],
+    }
+    return polygon
 
 
 def create_stac_item(product) -> dict:
@@ -230,8 +250,10 @@ def create_stac_item(product) -> dict:
     secondary_polarization = param_file.secondary_granule.split('_')[5]
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
+    # If you're using GDAL to get the geotiff info, you can use this code
     # unw_file_url = '/vsicurl/' + base_url.replace('.zip', '_unw_phase.tif')
     # geotransform, shape, epsg = get_geotiff_info(unw_file_url)
+
     unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
     geotransform, shape, epsg = get_geotiff_info_nogdal(unw_file_url)
     bbox = get_bounding_box(geotransform, shape)
@@ -255,8 +277,8 @@ def create_stac_item(product) -> dict:
     properties.update(param_file.__dict__)
     item = pystac.Item(
         id=base_url.split('/')[-1].replace('.zip', ''),
-        geometry=json.loads(to_geojson(bbox)),
-        bbox=bbox.bounds,
+        geometry=bounding_box_to_geojson(*bbox),
+        bbox=bbox,
         datetime=start_time,
         properties=properties,
         stac_extensions=[
@@ -289,14 +311,6 @@ def create_stac_item(product) -> dict:
     )
     item.validate()
     return item
-
-
-def get_overall_bbox(bboxes):
-    min_x = min([bbox[0] for bbox in bboxes])
-    min_y = min([bbox[1] for bbox in bboxes])
-    max_x = max([bbox[2] for bbox in bboxes])
-    max_y = max([bbox[3] for bbox in bboxes])
-    return [min_x, min_y, max_x, max_y]
 
 
 def create_stac_catalog(products, out_path, id='hyp3_jobs'):
