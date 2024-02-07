@@ -1,18 +1,18 @@
 import json
-import struct
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 import fsspec
 import pystac
+from PIL import Image
+from PIL.TiffTags import TAGS
 from osgeo import gdal, osr
 from pystac import Extent, ProviderRole, SpatialExtent, Summaries, TemporalExtent
 from pystac.extensions import sar
 from pystac.extensions.projection import ProjectionExtension
 from pystac.extensions.raster import RasterExtension
-
-# from pystac.extensions.sar import SarExtension
 from shapely import geometry, to_geojson
 from tqdm import tqdm
 
@@ -163,54 +163,50 @@ class ParameterFile:
         return param_file
 
 
-def get_geotiff_bounding_box_no_gdal(file_path):
-    with open(file_path, 'rb') as tiff_file:
-        # Read the TIFF header to get the offset to the first IFD (Image File Directory)
-        header = tiff_file.read(8)
-        (magic_number,) = struct.unpack('HHHH', header)
-        if magic_number != 0x4949 and magic_number != 0x4D4D:
-            raise ValueError('Not a valid TIFF file.')
+def get_utm_epsg(proj_str):
+    pattern = r'WGS 84 \/ UTM zone (\d{1,2}[SN])\|WGS 84\|'
+    match = re.search(pattern, proj_str)
+    if match is None:
+        raise ValueError(f'Invalid projection string: {proj_str}')
+    utm_str = match.group(1)
 
-        if magic_number == 0x4949:  # Little-endian
-            byte_order = '<'
-        else:  # Big-endian
-            byte_order = '>'
+    epsg_code = 32600
+    epsg_code += int(utm_str[:-1])
+    if utm_str[-1] == 'S':
+        epsg_code += 100
+    return epsg_code
 
-        (offset_to_ifd,) = struct.unpack(byte_order + 'I', tiff_file.read(4))
 
-        # Move to the offset of the first IFD
-        tiff_file.seek(offset_to_ifd)
+def get_geotiff_info_nogdal(file_path, base_fs=None):
+    if file_path.startswith('https'):
+        if base_fs is None:
+            base_fs = fsspec.filesystem('https', block_size=5 * (2**20))
+    else:
+        base_fs = fsspec.filesystem('file')
 
-        # Read the number of directory entries
-        (num_entries,) = struct.unpack(byte_order + 'H', tiff_file.read(2))
+    with base_fs.open(file_path, 'rb') as file:
+        image = Image.open(file)
+        meta_dict = {TAGS[key]: image.tag[key] for key in image.tag_v2}
 
-        for _ in range(num_entries):
-            tag, field_type, num_values, value_offset = struct.unpack(byte_order + 'HHII', tiff_file.read(12))
-
-            # GeoKeyDirectoryTag (34735) contains the geo-referencing information
-            if tag == 34735:
-                tiff_file.seek(value_offset)
-                geo_keys = struct.unpack(byte_order + 'I' * num_values, tiff_file.read(4 * num_values))
-
-                min_x = geo_keys[10]  # GeoKeyDirectoryTag: ModelTiepointTag
-                min_y = geo_keys[11]  # GeoKeyDirectoryTag: ModelTiepointTag
-                max_x = min_x + geo_keys[4] * geo_keys[1]  # width * pixel scale in x direction
-                max_y = min_y + geo_keys[5] * geo_keys[0]  # height * pixel scale in y direction
-
-                return min_x, min_y, max_x, max_y
-
-        raise ValueError('GeoTIFF metadata not found.')
+    width = meta_dict['ImageWidth'][0]
+    length = meta_dict['ImageLength'][0]
+    pixel_x, pixel_y = meta_dict['ModelPixelScaleTag'][:2]
+    pixel_y *= -1
+    origin_x, origin_y = meta_dict['ModelTiepointTag'][3:5]
+    geotransform = [origin_x, pixel_x, 0.0, origin_y, 0.0, pixel_y]
+    proj_str = meta_dict['GeoAsciiParamsTag'][0]
+    utm_epsg = get_utm_epsg(proj_str)
+    return geotransform, (width, length), utm_epsg
 
 
 def get_geotiff_info(file_path):
     dataset = gdal.Open(file_path)
     geotransform = list(dataset.GetGeoTransform())
-    # geotransform += [0.0, 0.0, 1.0]
     shape = (dataset.RasterXSize, dataset.RasterYSize)
     proj = osr.SpatialReference(wkt=dataset.GetProjection())
-    epsg = int(proj.GetAttrValue('AUTHORITY', 1))
+    utm_epsg = int(proj.GetAttrValue('AUTHORITY', 1))
     dataset = None
-    return geotransform, shape, epsg
+    return geotransform, shape, utm_epsg
 
 
 def get_bounding_box(geotransform, shape):
@@ -234,8 +230,10 @@ def create_stac_item(product) -> dict:
     secondary_polarization = param_file.secondary_granule.split('_')[5]
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
-    unw_file_url = '/vsicurl/' + base_url.replace('.zip', '_unw_phase.tif')
-    geotransform, shape, epsg = get_geotiff_info(unw_file_url)
+    # unw_file_url = '/vsicurl/' + base_url.replace('.zip', '_unw_phase.tif')
+    # geotransform, shape, epsg = get_geotiff_info(unw_file_url)
+    unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
+    geotransform, shape, epsg = get_geotiff_info_nogdal(unw_file_url)
     bbox = get_bounding_box(geotransform, shape)
 
     image_properties = {
@@ -264,6 +262,7 @@ def create_stac_item(product) -> dict:
         stac_extensions=[
             RasterExtension.get_schema_uri(),
             ProjectionExtension.get_schema_uri(),
+            # TODO can't get this schema to validate for now
             # SarExtension.get_schema_uri(),
         ],
     )
@@ -292,11 +291,25 @@ def create_stac_item(product) -> dict:
     return item
 
 
+def get_overall_bbox(bboxes):
+    min_x = min([bbox[0] for bbox in bboxes])
+    min_y = min([bbox[1] for bbox in bboxes])
+    max_x = max([bbox[2] for bbox in bboxes])
+    max_y = max([bbox[3] for bbox in bboxes])
+    return [min_x, min_y, max_x, max_y]
+
+
 def create_stac_catalog(products, out_path, id='hyp3_jobs'):
-    extent = Extent(
-        SpatialExtent([-180, -90, 180, 90]),
-        TemporalExtent([[datetime(2019, 1, 1, 0, 0, 0), None]]),
-    )
+    items = []
+    dates = []
+    bboxes = []
+    for product in tqdm(products):
+        item = create_stac_item(product)
+        items.append(item)
+        dates.append(item.datetime)
+        bboxes.append(item.bbox)
+
+    extent = Extent(SpatialExtent(get_overall_bbox(bboxes)), TemporalExtent([[min(dates), max(dates)]]))
     summary_dict = {'constellation': [SENTINEL_CONSTELLATION], 'platform': SENTINEL_PLATFORMS}
 
     collection = pystac.Collection(
@@ -308,9 +321,7 @@ def create_stac_catalog(products, out_path, id='hyp3_jobs'):
         summaries=Summaries(summary_dict),
         title='ASF S1 BURST INTERFEROGRAMS',
     )
-    for product in tqdm(products):
-        item = create_stac_item(product)
-        collection.add_item(item)
+    [collection.add_item(item) for item in items]
     collection.normalize_hrefs(str(out_path))
     collection.validate()
     collection.save(catalog_type=pystac.CatalogType.SELF_CONTAINED)
