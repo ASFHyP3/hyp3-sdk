@@ -6,17 +6,37 @@ from pathlib import Path
 
 import fsspec
 import pystac
-from osgeo import gdal
+from osgeo import gdal, osr
+from pystac import Extent, ProviderRole, SpatialExtent, Summaries, TemporalExtent
+from pystac.extensions import sar
+from pystac.extensions.projection import ProjectionExtension
+from pystac.extensions.raster import RasterExtension
+
+# from pystac.extensions.sar import SarExtension
 from shapely import geometry, to_geojson
 from tqdm import tqdm
 
 
 gdal.UseExceptions()
 
-COLLECTION_ID = 'sentinel-1-hyp3-product-stack'
-SAR_INSTRUMENT_MODE = 'IW'
-SAR_FREQUENCY_BAND = 'C'
-
+SENTINEL_CONSTELLATION = 'sentinel-1'
+SENTINEL_PLATFORMS = ['sentinel-1a', 'sentinel-1b']
+SENTINEL_PROVIDER = pystac.Provider(
+    name='ESA',
+    roles=[ProviderRole.LICENSOR, ProviderRole.PRODUCER],
+    url='https://sentinel.esa.int/web/sentinel/missions/sentinel-1',
+)
+SENTINEL_BURST_PROVIDER = pystac.Provider(
+    name='ASF DAAC',
+    roles=[ProviderRole.LICENSOR, ProviderRole.PROCESSOR, ProviderRole.HOST],
+    url='https://hyp3-docs.asf.alaska.edu/guides/burst_insar_product_guide/',
+    extra_fields={
+        'processing:level': 'L3',
+        'processing:lineage': 'ASF DAAC HyP3 2023 using the hyp3_isce2 plugin version 0.9.1 running ISCE release 2.6.3',  # noqa: E501
+        'processing:software': {'ISCE2': '2.6.3'},
+    },
+)
+SENTINEL_BURST_DESCRIPTION = 'SAR Interferometry (InSAR) products and their associated files. The source data for these products are Sentinel-1 bursts, extracted from Single Look Complex (SLC) products processed by ESA, and they were processed using InSAR Scientific Computing Environment version 2 (ISCE2) software.'  # noqa: E501
 INSAR_ISCE_BURST_PRODUCTS = [
     'conncomp',
     'corr',
@@ -116,9 +136,9 @@ class ParameterFile:
             reference_granule=parameters['Reference Granule'],
             secondary_granule=parameters['Secondary Granule'],
             reference_orbit_direction=parameters['Reference Pass Direction'],
-            reference_orbit_number=parameters['Reference Orbit Number'],
+            reference_orbit_number=int(parameters['Reference Orbit Number']),
             secondary_orbit_direction=parameters['Secondary Pass Direction'],
-            secondary_orbit_number=parameters['Secondary Orbit Number'],
+            secondary_orbit_number=int(parameters['Secondary Orbit Number']),
             baseline=float(parameters['Baseline']),
             utc_time=float(parameters['UTC time']),
             heading=float(parameters['Heading']),
@@ -141,16 +161,6 @@ class ParameterFile:
         )
 
         return param_file
-
-
-def jsonify_stac_item(stac_item: dict) -> str:
-    class DateTimeEncoder(json.JSONEncoder):
-        def default(self, obj):
-            if isinstance(obj, datetime) and obj.tzinfo == timezone.utc:
-                return obj.isoformat().removesuffix('+00:00') + 'Z'
-            return json.JSONEncoder.default(self, obj)
-
-    return json.dumps(stac_item, cls=DateTimeEncoder)
 
 
 def get_geotiff_bounding_box_no_gdal(file_path):
@@ -194,11 +204,13 @@ def get_geotiff_bounding_box_no_gdal(file_path):
 
 def get_geotiff_info(file_path):
     dataset = gdal.Open(file_path)
-    geotransform = dataset.GetGeoTransform()
+    geotransform = list(dataset.GetGeoTransform())
+    # geotransform += [0.0, 0.0, 1.0]
     shape = (dataset.RasterXSize, dataset.RasterYSize)
-    proj = dataset.GetProjectionRef()
+    proj = osr.SpatialReference(wkt=dataset.GetProjection())
+    epsg = int(proj.GetAttrValue('AUTHORITY', 1))
     dataset = None
-    return geotransform, shape, proj
+    return geotransform, shape, epsg
 
 
 def get_bounding_box(geotransform, shape):
@@ -223,40 +235,82 @@ def create_stac_item(product) -> dict:
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
     unw_file_url = '/vsicurl/' + base_url.replace('.zip', '_unw_phase.tif')
-    geotransform, shape, proj = get_geotiff_info(unw_file_url)
+    geotransform, shape, epsg = get_geotiff_info(unw_file_url)
     bbox = get_bounding_box(geotransform, shape)
 
+    image_properties = {
+        'data_type': 'float32',
+        'nodata': 0,
+        'proj:shape': shape,
+        'proj:transform': geotransform,
+        'proj:epsg': epsg,
+    }
     properties = {
-        'sar:instrument_mode': SAR_INSTRUMENT_MODE,
-        'sar:frequency_band': SAR_FREQUENCY_BAND,
+        'sar:instrument_mode': 'IW',
+        'sar:frequency_band': sar.FrequencyBand.C,
         'sar:product_type': product.to_dict()['job_type'],
         'sar:polarizations': polarizations,
         'start_datetime': start_time.isoformat(),
         'end_datetime': stop_time.isoformat(),
     }
+    properties.update(image_properties)
     properties.update(param_file.__dict__)
     item = pystac.Item(
         id=base_url.split('/')[-1].replace('.zip', ''),
-        geometry=to_geojson(bbox),
-        bbox=to_geojson(bbox),
+        geometry=json.loads(to_geojson(bbox)),
+        bbox=bbox.bounds,
         datetime=start_time,
         properties=properties,
-        stac_extensions=['https://stac-extensions.github.io/sar/v1.0.0/schema.json'],
+        stac_extensions=[
+            RasterExtension.get_schema_uri(),
+            ProjectionExtension.get_schema_uri(),
+            # SarExtension.get_schema_uri(),
+        ],
     )
     for asset_type in INSAR_ISCE_BURST_PRODUCTS:
         item.add_asset(
             key=asset_type,
             asset=pystac.Asset(
-                href=base_url.replace('.zip', f'_{asset_type}.tif'), media_type=pystac.MediaType.GEOTIFF
+                href=base_url.replace('.zip', f'_{asset_type}.tif'),
+                media_type=pystac.MediaType.GEOTIFF,
+                roles=['data'],
             ),
         )
+
+    item.add_asset(
+        key='browse',
+        asset=pystac.Asset(href=product.browse_images[0], media_type=pystac.MediaType.PNG, roles=['overview']),
+    )
+    item.add_asset(
+        key='thumbnail',
+        asset=pystac.Asset(href=product.thumbnail_images[0], media_type=pystac.MediaType.PNG, roles=['thumbnail']),
+    )
+    item.add_asset(
+        key='metadata', asset=pystac.Asset(href=param_file_url, media_type=pystac.MediaType.TEXT, roles=['metadata'])
+    )
+    item.validate()
     return item
 
 
 def create_stac_catalog(products, out_path, id='hyp3_jobs'):
-    catalog = pystac.Catalog(id=id, description='A catalog of Hyp3 jobs')
+    extent = Extent(
+        SpatialExtent([-180, -90, 180, 90]),
+        TemporalExtent([[datetime(2019, 1, 1, 0, 0, 0), None]]),
+    )
+    summary_dict = {'constellation': [SENTINEL_CONSTELLATION], 'platform': SENTINEL_PLATFORMS}
+
+    collection = pystac.Collection(
+        id=id,
+        description=SENTINEL_BURST_DESCRIPTION,
+        extent=extent,
+        keywords=['sentinel', 'copernicus', 'esa', 'sar'],
+        providers=[SENTINEL_PROVIDER, SENTINEL_BURST_PROVIDER],
+        summaries=Summaries(summary_dict),
+        title='ASF S1 BURST INTERFEROGRAMS',
+    )
     for product in tqdm(products):
         item = create_stac_item(product)
-        catalog.add_item(item)
-    catalog.normalize_hrefs(str(out_path))
-    catalog.save(catalog_type=pystac.CatalogType.SELF_CONTAINED)
+        collection.add_item(item)
+    collection.normalize_hrefs(str(out_path))
+    collection.validate()
+    collection.save(catalog_type=pystac.CatalogType.SELF_CONTAINED)
