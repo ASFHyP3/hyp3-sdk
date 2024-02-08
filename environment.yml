@@ -17,9 +17,12 @@ dependencies:
   - pytest
   - pytest-cov
   - responses
-  - pystac
   # For running
   - python-dateutil
   - requests
   - tqdm
   - urllib3
+  - pystac
+  - fsspec
+  - aiohttp
+  - pillow

@@ -310,6 +310,11 @@ def create_stac_item(job: Job) -> pystac.Item:
     base_url = job.to_dict()['files'][0]['url']
     param_file_url = base_url.replace('.zip', '.txt')
     param_file = ParameterFile.read(param_file_url)
+
+    unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
+    geotransform, shape, epsg = get_geotiff_info_nogdal(unw_file_url)
+    bbox = get_bounding_box(geotransform, shape)
+
     pattern = '%Y%m%dT%H%M%S'
     start_time = datetime.strptime(param_file.reference_granule.split('_')[3], pattern).replace(tzinfo=timezone.utc)
     stop_time = datetime.strptime(param_file.secondary_granule.split('_')[3], pattern).replace(tzinfo=timezone.utc)
@@ -321,9 +326,6 @@ def create_stac_item(job: Job) -> pystac.Item:
     # unw_file_url = '/vsicurl/' + base_url.replace('.zip', '_unw_phase.tif')
     # geotransform, shape, epsg = get_geotiff_info(unw_file_url)
 
-    unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
-    geotransform, shape, epsg = get_geotiff_info_nogdal(unw_file_url)
-    bbox = get_bounding_box(geotransform, shape)
 
     image_properties = {
         'data_type': 'float32',
