@@ -327,14 +327,12 @@ def create_stac_item(job: Job) -> pystac.Item:
     # unw_file_url = '/vsicurl/' + base_url.replace('.zip', '_unw_phase.tif')
     # geotransform, shape, epsg = get_geotiff_info(unw_file_url)
 
-    image_properties = {
+    properties = {
         'data_type': 'float32',
         'nodata': 0,
         'proj:shape': shape,
         'proj:transform': geotransform,
         'proj:epsg': epsg,
-    }
-    properties = {
         'sar:instrument_mode': 'IW',
         'sar:frequency_band': sar.FrequencyBand.C,
         'sar:product_type': job.to_dict()['job_type'],
@@ -342,7 +340,6 @@ def create_stac_item(job: Job) -> pystac.Item:
         'start_datetime': start_time.isoformat(),
         'end_datetime': stop_time.isoformat(),
     }
-    properties.update(image_properties)
     properties.update(param_file.__dict__)
     item = pystac.Item(
         id=base_url.split('/')[-1].replace('.zip', ''),
@@ -353,7 +350,6 @@ def create_stac_item(job: Job) -> pystac.Item:
         stac_extensions=[
             RasterExtension.get_schema_uri(),
             ProjectionExtension.get_schema_uri(),
-            # TODO can't get this schema to validate for now
             SarExtension.get_schema_uri(),
         ],
     )
