@@ -1,4 +1,4 @@
-"""A module for creating STAC collections based on HyP3-SDK Product objects"""
+"""A module for creating STAC collections based on HyP3-SDK Batch/Job objects"""
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
