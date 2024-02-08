@@ -1,7 +1,9 @@
+"""A module for creating STAC collections based on HyP3-SDK Product objects"""
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Iterable, List, Optional, Tuple
 
 import fsspec
 import pystac
@@ -12,6 +14,8 @@ from pystac.extensions import sar
 from pystac.extensions.projection import ProjectionExtension
 from pystac.extensions.raster import RasterExtension
 from tqdm import tqdm
+
+from hyp3_sdk import Batch, Job
 
 
 SENTINEL_CONSTELLATION = 'sentinel-1'
@@ -46,6 +50,8 @@ INSAR_ISCE_BURST_PRODUCTS = [
 
 @dataclass
 class ParameterFile:
+    """Class representing the parameters of a HyP3 InSAR product"""
+
     reference_granule: str
     secondary_granule: str
     reference_orbit_direction: str
@@ -110,13 +116,22 @@ class ParameterFile:
         out_path.write_text(self.__str__())
 
     @staticmethod
-    def read(file_path: Path, base_fs=None):
+    def read(file_path: Path, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> 'ParameterFile':
+        """Read a HyP3 InSAR parameter file
+
+        Args:
+            file_path: Path to the parameter file
+            base_fs: fsspec filesystem to use for reading the file
+
+        Returns:
+            A parameter file object
+        """
         file_path = str(file_path)
-        if file_path.startswith('https'):
-            if base_fs is None:
+        if base_fs is None:
+            if file_path.startswith('https'):
                 base_fs = fsspec.filesystem('https', block_size=5 * (2**20))
-        else:
-            base_fs = fsspec.filesystem('file')
+            else:
+                base_fs = fsspec.filesystem('file')
 
         with base_fs.open(file_path, 'r') as file:
             text = file.read().strip()
@@ -158,7 +173,15 @@ class ParameterFile:
         return param_file
 
 
-def get_utm_epsg(proj_str):
+def get_utm_epsg(proj_str: str) -> int:
+    """Get the EPSG code for the UTM zone from a TIFF projection string
+
+    Args:
+        proj_str: The projection string from a TIFF file
+
+    Returns:
+        The EPSG code for the UTM zone
+    """
     pattern = r'WGS 84 \/ UTM zone (\d{1,2}[SN])\|WGS 84\|'
     match = re.search(pattern, proj_str)
     if match is None:
@@ -172,12 +195,21 @@ def get_utm_epsg(proj_str):
     return epsg_code
 
 
-def get_geotiff_info_nogdal(file_path, base_fs=None):
-    if file_path.startswith('https'):
-        if base_fs is None:
+def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> Tuple:
+    """Get geotiff projection info without using GDAL
+
+    Args:
+        file_path: Path to the geotiff file
+        base_fs: fsspec filesystem to use for reading the file
+
+    Returns:
+        A tuple containing the geotransform, shape, and EPSG code
+    """
+    if base_fs is None:
+        if file_path.startswith('https'):
             base_fs = fsspec.filesystem('https', block_size=5 * (2**20))
-    else:
-        base_fs = fsspec.filesystem('file')
+        else:
+            base_fs = fsspec.filesystem('file')
 
     with base_fs.open(file_path, 'rb') as file:
         image = Image.open(file)
@@ -204,7 +236,16 @@ def get_geotiff_info_nogdal(file_path, base_fs=None):
 #     return geotransform, shape, utm_epsg
 
 
-def get_bounding_box(geotransform, shape):
+def get_bounding_box(geotransform: Iterable, shape: Iterable) -> List:
+    """Get the bounding box for a given geotransform and shape
+
+    Args:
+        geotransform: A gdal geotransform
+        shape: The shape of the associated raster
+
+    Returns:
+        A list containing the bounding box coordinates (min_x, min_y, max_x, max_y)
+    """
     min_x = geotransform[0]
     max_x = min_x + geotransform[1] * shape[0]
     max_y = geotransform[3]
@@ -214,7 +255,15 @@ def get_bounding_box(geotransform, shape):
     return bbox
 
 
-def get_overall_bbox(bboxes):
+def get_overall_bbox(bboxes: Iterable) -> List:
+    """Get the overall bounding box for a list of bounding boxes
+
+    Args:
+        bboxes: A list of bounding boxes
+
+    Returns:
+        A list containing the overall bounding box coordinates (min_x, min_y, max_x, max_y)
+    """
     min_x = min([bbox[0] for bbox in bboxes])
     min_y = min([bbox[1] for bbox in bboxes])
     max_x = max([bbox[2] for bbox in bboxes])
@@ -222,8 +271,18 @@ def get_overall_bbox(bboxes):
     return [min_x, min_y, max_x, max_y]
 
 
-def bounding_box_to_geojson(minx, miny, maxx, maxy):
-    """Convert bounding box coordinates to GeoJSON Polygon."""
+def bounding_box_to_geojson(minx, miny, maxx, maxy) -> dict:
+    """Convert bounding box coordinates to GeoJSON Polygon
+
+    Args:
+        minx: Minimum x coordinate
+        miny: Minimum y coordinate
+        maxx: Maximum x coordinate
+        maxy: Maximum y coordinate
+
+    Returns:
+        A GeoJSON Polygon
+    """
     polygon = {
         'type': 'Polygon',
         'coordinates': [
@@ -239,8 +298,16 @@ def bounding_box_to_geojson(minx, miny, maxx, maxy):
     return polygon
 
 
-def create_stac_item(product) -> dict:
-    base_url = product.to_dict()['files'][0]['url']
+def create_stac_item(job: Job) -> pystac.Item:
+    """Create a STAC item from a HyP3 product
+
+    Args:
+        product: A HyP3 Job object representing the product
+
+    Returns:
+        A STAC item for the product
+    """
+    base_url = job.to_dict()['files'][0]['url']
     param_file_url = base_url.replace('.zip', '.txt')
     param_file = ParameterFile.read(param_file_url)
     pattern = '%Y%m%dT%H%M%S'
@@ -268,7 +335,7 @@ def create_stac_item(product) -> dict:
     properties = {
         'sar:instrument_mode': 'IW',
         'sar:frequency_band': sar.FrequencyBand.C,
-        'sar:product_type': product.to_dict()['job_type'],
+        'sar:product_type': job.to_dict()['job_type'],
         'sar:polarizations': polarizations,
         'start_datetime': start_time.isoformat(),
         'end_datetime': stop_time.isoformat(),
@@ -300,11 +367,11 @@ def create_stac_item(product) -> dict:
 
     item.add_asset(
         key='browse',
-        asset=pystac.Asset(href=product.browse_images[0], media_type=pystac.MediaType.PNG, roles=['overview']),
+        asset=pystac.Asset(href=job.browse_images[0], media_type=pystac.MediaType.PNG, roles=['overview']),
     )
     item.add_asset(
         key='thumbnail',
-        asset=pystac.Asset(href=product.thumbnail_images[0], media_type=pystac.MediaType.PNG, roles=['thumbnail']),
+        asset=pystac.Asset(href=job.thumbnail_images[0], media_type=pystac.MediaType.PNG, roles=['thumbnail']),
     )
     item.add_asset(
         key='metadata', asset=pystac.Asset(href=param_file_url, media_type=pystac.MediaType.TEXT, roles=['metadata'])
@@ -313,12 +380,19 @@ def create_stac_item(product) -> dict:
     return item
 
 
-def create_stac_catalog(products, out_path, id='hyp3_jobs'):
+def create_stac_catalog(batch: Batch, out_path: Path, id: str = 'hyp3_jobs') -> None:
+    """Create a STAC collection from a HyP3 batch and save it to a directory
+
+    Args:
+        batch: A HyP3 Batch object, or a list of jobs
+        out_path: Path to the directory where the STAC collection will be saved
+        id: The ID of the STAC catalog
+    """
     items = []
     dates = []
     bboxes = []
-    for product in tqdm(products):
-        item = create_stac_item(product)
+    for job in tqdm(batch):
+        item = create_stac_item(job)
         items.append(item)
         dates.append(item.datetime)
         bboxes.append(item.bbox)
