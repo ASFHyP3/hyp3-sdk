@@ -326,7 +326,6 @@ def create_stac_item(job: Job) -> pystac.Item:
     # unw_file_url = '/vsicurl/' + base_url.replace('.zip', '_unw_phase.tif')
     # geotransform, shape, epsg = get_geotiff_info(unw_file_url)
 
-
     image_properties = {
         'data_type': 'float32',
         'nodata': 0,
@@ -382,7 +381,7 @@ def create_stac_item(job: Job) -> pystac.Item:
     return item
 
 
-def create_stac_catalog(batch: Batch, out_path: Path, id: str = 'hyp3_jobs') -> None:
+def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'hyp3_jobs') -> None:
     """Create a STAC collection from a HyP3 batch and save it to a directory
 
     Args:
@@ -403,7 +402,7 @@ def create_stac_catalog(batch: Batch, out_path: Path, id: str = 'hyp3_jobs') -> 
     summary_dict = {'constellation': [SENTINEL_CONSTELLATION], 'platform': SENTINEL_PLATFORMS}
 
     collection = pystac.Collection(
-        id=id,
+        id=collection_id,
         description=SENTINEL_BURST_DESCRIPTION,
         extent=extent,
         keywords=['sentinel', 'copernicus', 'esa', 'sar'],
