@@ -13,6 +13,7 @@ from pystac import Extent, ProviderRole, SpatialExtent, Summaries, TemporalExten
 from pystac.extensions import sar
 from pystac.extensions.projection import ProjectionExtension
 from pystac.extensions.raster import RasterExtension
+from pystac.extensions.sar import SarExtension
 from tqdm import tqdm
 
 from hyp3_sdk import Batch, Job
@@ -318,8 +319,8 @@ def create_stac_item(job: Job) -> pystac.Item:
     pattern = '%Y%m%dT%H%M%S'
     start_time = datetime.strptime(param_file.reference_granule.split('_')[3], pattern).replace(tzinfo=timezone.utc)
     stop_time = datetime.strptime(param_file.secondary_granule.split('_')[3], pattern).replace(tzinfo=timezone.utc)
-    reference_polarization = param_file.reference_granule.split('_')[5]
-    secondary_polarization = param_file.secondary_granule.split('_')[5]
+    reference_polarization = param_file.reference_granule.split('_')[4]
+    secondary_polarization = param_file.secondary_granule.split('_')[4]
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
     # If you're using GDAL to get the geotiff info, you can use this code
@@ -353,7 +354,7 @@ def create_stac_item(job: Job) -> pystac.Item:
             RasterExtension.get_schema_uri(),
             ProjectionExtension.get_schema_uri(),
             # TODO can't get this schema to validate for now
-            # SarExtension.get_schema_uri(),
+            SarExtension.get_schema_uri(),
         ],
     )
     for asset_type in INSAR_ISCE_BURST_PRODUCTS:
