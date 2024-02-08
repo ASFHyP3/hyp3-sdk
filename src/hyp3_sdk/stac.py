@@ -193,7 +193,7 @@ def get_utm_epsg(proj_str: str) -> int:
     epsg_code += int(utm_str[:-1])
     if utm_str[-1] == 'S':
         epsg_code += 100
-    return epsg_code
+    return int(epsg_code)
 
 
 def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> Tuple:
@@ -216,15 +216,15 @@ def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFi
         image = Image.open(file)
         meta_dict = {TAGS[key]: image.tag[key] for key in image.tag_v2}
 
-    width = meta_dict['ImageWidth'][0]
-    length = meta_dict['ImageLength'][0]
+    width = int(meta_dict['ImageWidth'][0])
+    length = int(meta_dict['ImageLength'][0])
     pixel_x, pixel_y = meta_dict['ModelPixelScaleTag'][:2]
     pixel_y *= -1
     origin_x, origin_y = meta_dict['ModelTiepointTag'][3:5]
-    geotransform = [origin_x, pixel_x, 0.0, origin_y, 0.0, pixel_y]
+    geotransform = [int(value) for value in [origin_x, pixel_x, 0, origin_y, 0, pixel_y]]
     proj_str = meta_dict['GeoAsciiParamsTag'][0]
     utm_epsg = get_utm_epsg(proj_str)
-    return geotransform, (width, length), utm_epsg
+    return geotransform, (length, width), utm_epsg
 
 
 # def get_geotiff_info(file_path):
@@ -247,10 +247,11 @@ def get_bounding_box(geotransform: Iterable, shape: Iterable) -> List:
     Returns:
         A list containing the bounding box coordinates (min_x, min_y, max_x, max_y)
     """
+    length, width = shape
     min_x = geotransform[0]
-    max_x = min_x + geotransform[1] * shape[0]
+    max_x = min_x + geotransform[1] * length
     max_y = geotransform[3]
-    min_y = max_y + geotransform[5] * shape[1]
+    min_y = max_y + geotransform[5] * width
 
     bbox = [min_x, min_y, max_x, max_y]
     return bbox
@@ -299,6 +300,29 @@ def bounding_box_to_geojson(minx, miny, maxx, maxy) -> dict:
     return polygon
 
 
+def to_proj_geotransform(gdal_geotransform: List) -> Tuple:
+    """Convert a GDAL geotransform to a proj geotransform
+
+    Args:
+        geotransform: A GDAL geotransform
+
+    Returns:
+        A rasterio geotransform
+    """
+    proj_transform = [
+        gdal_geotransform[1],
+        gdal_geotransform[2],
+        gdal_geotransform[0],
+        gdal_geotransform[4],
+        gdal_geotransform[5],
+        gdal_geotransform[3],
+        0,
+        0,
+        1,
+    ]
+    return proj_transform
+
+
 def create_stac_item(job: Job) -> pystac.Item:
     """Create a STAC item from a HyP3 product
 
@@ -331,7 +355,7 @@ def create_stac_item(job: Job) -> pystac.Item:
         'data_type': 'float32',
         'nodata': 0,
         'proj:shape': shape,
-        'proj:transform': geotransform,
+        'proj:transform': to_proj_geotransform(geotransform),
         'proj:epsg': epsg,
         'sar:instrument_mode': 'IW',
         'sar:frequency_band': sar.FrequencyBand.C,
