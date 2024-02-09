@@ -48,6 +48,8 @@ INSAR_ISCE_BURST_PRODUCTS = [
     'water_mask',
 ]
 
+# RTC_PRODUCTS = ['VV', 'VH', 'HH' 'HV', 'rgb', 'area', 'dem', 'inc_map', 'ls_map']
+
 
 @dataclass
 class ParameterFile:
@@ -323,7 +325,33 @@ def to_proj_geotransform(gdal_geotransform: List) -> Tuple:
     return proj_transform
 
 
-def create_stac_item(job: Job) -> pystac.Item:
+def validate_stack(batch: Batch) -> None:
+    """Verifies that all jobs in batch:
+    - Have the SUCCEEDED status
+    - Have the same job type
+    - Have the same processing parameters
+    Notably DOES NOT check that all jobs are co-located.
+
+    Args:
+        batch: A HyP3 Batch object
+    """
+    job_dicts = [job.to_dict() for job in batch]
+    n_success = [job['status_code'] == 'SUCCEEDED' for job in job_dicts].count(True)
+    if n_success != len(batch):
+        raise ValueError('Not all jobs in the batch have succeeded yet')
+
+    job_types = list(set([job['job_type'] for job in job_dicts]))
+    if len(job_types) != 1:
+        raise ValueError(f'Not all jobs have the same job type. Included types: {" ".join(job_types)}')
+
+    job_params = [job['job_parameters'] for job in job_dicts]
+    [job.pop('granules', None) for job in job_params]
+    param_set = list(set([str(job) for job in job_params]))
+    if len(param_set) != 1:
+        raise ValueError('Not all jobs have the same processing parameters')
+
+
+def create_insar_stac_item(job: Job) -> pystac.Item:
     """Create a STAC item from a HyP3 product
 
     Args:
@@ -410,11 +438,12 @@ def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'h
         out_path: Path to the directory where the STAC collection will be saved
         id: The ID of the STAC catalog
     """
+    validate_stack(batch)
     items = []
     dates = []
     bboxes = []
     for job in tqdm(batch):
-        item = create_stac_item(job)
+        item = create_insar_stac_item(job)
         items.append(item)
         dates.append(item.datetime)
         bboxes.append(item.bbox)
