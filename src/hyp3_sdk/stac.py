@@ -1,5 +1,4 @@
 """A module for creating STAC collections based on HyP3-SDK Batch/Job objects"""
-import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -176,26 +175,23 @@ class ParameterFile:
         return param_file
 
 
-def get_utm_epsg(proj_str: str) -> int:
-    """Get the EPSG code for the UTM zone from a TIFF projection string
+def get_epsg(geo_key_list: List) -> int:
+    """Get the EPSG code from a GeoKeyDirectoryTag.
+    Will only workfor projected coordinate systems.
 
     Args:
-        proj_str: The projection string from a TIFF file
+        geo_key_list: A list of GeoKeyDirectoryTag values
 
     Returns:
-        The EPSG code for the UTM zone
+        The EPSG code for the projected coordinate system
     """
-    pattern = r'WGS 84 \/ UTM zone (\d{1,2}[SN])\|WGS 84\|'
-    match = re.search(pattern, proj_str)
-    if match is None:
-        raise ValueError(f'Invalid projection string: {proj_str}')
-    utm_str = match.group(1)
+    projected_crs_key_id = 3072
+    geo_keys = [geo_key_list[i : i + 4] for i in range(0, len(geo_key_list), 4)]
+    for key in geo_keys:
+        if key[0] == projected_crs_key_id:
+            return int(key[3])
 
-    epsg_code = 32600
-    epsg_code += int(utm_str[:-1])
-    if utm_str[-1] == 'S':
-        epsg_code += 100
-    return int(epsg_code)
+    raise ValueError('No EPSG code found in GeoKeyDirectoryTag')
 
 
 def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> Tuple:
@@ -224,8 +220,7 @@ def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFi
     pixel_y *= -1
     origin_x, origin_y = meta_dict['ModelTiepointTag'][3:5]
     geotransform = [int(value) for value in [origin_x, pixel_x, 0, origin_y, 0, pixel_y]]
-    proj_str = meta_dict['GeoAsciiParamsTag'][0]
-    utm_epsg = get_utm_epsg(proj_str)
+    utm_epsg = get_epsg(meta_dict['GeoKeyDirectoryTag'])
     return geotransform, (length, width), utm_epsg
 
 
@@ -368,11 +363,22 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
     geotransform, shape, epsg = get_geotiff_info_nogdal(unw_file_url)
     bbox = get_bounding_box(geotransform, shape)
 
+    if job.to_dict()['job_type'] == 'INSAR_GAMMA':
+        date_loc = 5
+        reference_polarization = 'VV'
+        secondary_polarization = 'VV'
+    elif job.to_dict()['job_type'] == 'INSAR_ISCE_BURST':
+        date_loc = 3
+        reference_polarization = param_file.reference_granule.split('_')[4]
+        secondary_polarization = param_file.secondary_granule.split('_')[4]
+
     pattern = '%Y%m%dT%H%M%S'
-    start_time = datetime.strptime(param_file.reference_granule.split('_')[3], pattern).replace(tzinfo=timezone.utc)
-    stop_time = datetime.strptime(param_file.secondary_granule.split('_')[3], pattern).replace(tzinfo=timezone.utc)
-    reference_polarization = param_file.reference_granule.split('_')[4]
-    secondary_polarization = param_file.secondary_granule.split('_')[4]
+    start_time = datetime.strptime(param_file.reference_granule.split('_')[date_loc], pattern).replace(
+        tzinfo=timezone.utc
+    )
+    stop_time = datetime.strptime(param_file.secondary_granule.split('_')[date_loc], pattern).replace(
+        tzinfo=timezone.utc
+    )
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
     # If you're using GDAL to get the geotiff info, you can use this code
