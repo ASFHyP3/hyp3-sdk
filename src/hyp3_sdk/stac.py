@@ -36,7 +36,7 @@ SENTINEL_BURST_PROVIDER = pystac.Provider(
     },
 )
 SENTINEL_BURST_DESCRIPTION = 'SAR Interferometry (InSAR) products and their associated files. The source data for these products are Sentinel-1 bursts, extracted from Single Look Complex (SLC) products processed by ESA, and they were processed using InSAR Scientific Computing Environment version 2 (ISCE2) software.'  # noqa: E501
-INSAR_ISCE_BURST_PRODUCTS = [
+INSAR_PRODUCTS = [
     'conncomp',
     'corr',
     'unw_phase',
@@ -47,7 +47,7 @@ INSAR_ISCE_BURST_PRODUCTS = [
     'water_mask',
 ]
 
-# RTC_PRODUCTS = ['VV', 'VH', 'HH' 'HV', 'rgb', 'area', 'dem', 'inc_map', 'ls_map']
+RTC_PRODUCTS = ['VV', 'VH', 'HH', 'HV', 'rgb', 'area', 'dem', 'inc_map', 'ls_map']
 
 
 @dataclass
@@ -224,16 +224,6 @@ def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFi
     return geotransform, (length, width), utm_epsg
 
 
-# def get_geotiff_info(file_path):
-#     dataset = gdal.Open(file_path)
-#     geotransform = list(dataset.GetGeoTransform())
-#     shape = (dataset.RasterXSize, dataset.RasterYSize)
-#     proj = osr.SpatialReference(wkt=dataset.GetProjection())
-#     utm_epsg = int(proj.GetAttrValue('AUTHORITY', 1))
-#     dataset = None
-#     return geotransform, shape, utm_epsg
-
-
 def get_bounding_box(geotransform: Iterable, shape: Iterable) -> List:
     """Get the bounding box for a given geotransform and shape
 
@@ -381,10 +371,6 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
     )
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
-    # If you're using GDAL to get the geotiff info, you can use this code
-    # unw_file_url = '/vsicurl/' + base_url.replace('.zip', '_unw_phase.tif')
-    # geotransform, shape, epsg = get_geotiff_info(unw_file_url)
-
     properties = {
         'data_type': 'float32',
         'nodata': 0,
@@ -399,6 +385,45 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
         'end_datetime': stop_time.isoformat(),
     }
     properties.update(param_file.__dict__)
+    item = create_item(base_url, start_time, bbox, INSAR_PRODUCTS, properties)
+    thumbnail = base_url.replace('.zip', '_unw_phase.png')
+    item.add_asset(
+        key='thumbnail',
+        asset=pystac.Asset(href=thumbnail, media_type=pystac.MediaType.PNG, roles=['thumbnail']),
+    )
+    item.validate()
+    return item
+
+
+def create_rtc_stac_item(job: Job) -> pystac.Item:
+    base_url = job.to_dict()['files'][0]['url']
+    pattern = '%Y%m%dT%H%M%S'
+    start_time = datetime.strptime(base_url.split('/')[-1].split('_')[2], pattern).replace(tzinfo=timezone.utc)
+    vv_url = base_url.replace('.zip', '_VV.tif')
+    geotransform, shape, epsg = get_geotiff_info_nogdal(vv_url)
+    bbox = get_bounding_box(geotransform, shape)
+    properties = {
+        'data_type': 'float32',
+        'nodata': 0,
+        'proj:shape': shape,
+        'proj:transform': to_proj_geotransform(geotransform),
+        'proj:epsg': epsg,
+        'sar:instrument_mode': 'IW',
+        'sar:frequency_band': sar.FrequencyBand.C,
+        'sar:product_type': job.to_dict()['job_type'],
+        'sar:polarizations': RTC_PRODUCTS[:4],
+    }
+    item = create_item(base_url, start_time, bbox, RTC_PRODUCTS, properties)
+    thumbnail = base_url.replace('.zip', '_rgb_thumb.png')
+    item.add_asset(
+        key='thumbnail',
+        asset=pystac.Asset(href=thumbnail, media_type=pystac.MediaType.PNG, roles=['thumbnail']),
+    )
+    item.validate()
+    return item
+
+
+def create_item(base_url, start_time, bbox, product_types, properties):
     item = pystac.Item(
         id=base_url.split('/')[-1].replace('.zip', ''),
         geometry=bounding_box_to_geojson(*bbox),
@@ -411,7 +436,7 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
             SarExtension.get_schema_uri(),
         ],
     )
-    for asset_type in INSAR_ISCE_BURST_PRODUCTS:
+    for asset_type in product_types:
         item.add_asset(
             key=asset_type,
             asset=pystac.Asset(
@@ -420,19 +445,6 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
                 roles=['data'],
             ),
         )
-
-    item.add_asset(
-        key='browse',
-        asset=pystac.Asset(href=job.browse_images[0], media_type=pystac.MediaType.PNG, roles=['overview']),
-    )
-    item.add_asset(
-        key='thumbnail',
-        asset=pystac.Asset(href=job.thumbnail_images[0], media_type=pystac.MediaType.PNG, roles=['thumbnail']),
-    )
-    item.add_asset(
-        key='metadata', asset=pystac.Asset(href=param_file_url, media_type=pystac.MediaType.TEXT, roles=['metadata'])
-    )
-    item.validate()
     return item
 
 
@@ -449,7 +461,11 @@ def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'h
     dates = []
     bboxes = []
     for job in tqdm(batch):
-        item = create_insar_stac_item(job)
+        job_type = batch[0].to_dict()['job_type']
+        if 'RTC' in job_type:
+            item = create_rtc_stac_item(job)
+        else:
+            item = create_insar_stac_item(job)
         items.append(item)
         dates.append(item.datetime)
         bboxes.append(item.bbox)
