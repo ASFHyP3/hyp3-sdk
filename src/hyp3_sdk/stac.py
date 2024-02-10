@@ -1,4 +1,5 @@
 """A module for creating STAC collections based on HyP3-SDK Batch/Job objects"""
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -47,7 +48,7 @@ INSAR_PRODUCTS = [
     'water_mask',
 ]
 
-RTC_PRODUCTS = ['VV', 'VH', 'HH', 'HV', 'rgb', 'area', 'dem', 'inc_map', 'ls_map']
+RTC_PRODUCTS = ['rgb', 'area', 'dem', 'inc_map', 'ls_map']
 
 
 @dataclass
@@ -131,7 +132,7 @@ class ParameterFile:
         file_path = str(file_path)
         if base_fs is None:
             if file_path.startswith('https'):
-                base_fs = fsspec.filesystem('https', block_size=5 * (2**20))
+                base_fs = fsspec.filesystem('https', block_size=int(0.1 * (2**20)))
             else:
                 base_fs = fsspec.filesystem('file')
 
@@ -188,9 +189,10 @@ class GeoInfo:
         min_x, size_x, _, max_y, _, size_y = self.transform
         max_x = min_x + size_x * width
         min_y = max_y + size_y * length
-        self.bbox = [min_x, min_y, max_x, max_y]
+        bbox = [min_x, min_y, max_x, max_y]
+        self.bbox = bbox
 
-        self.bbox_geojson = {
+        bbox_geojson = {
             'type': 'Polygon',
             'coordinates': [
                 [
@@ -202,16 +204,8 @@ class GeoInfo:
                 ]
             ],
         }
+        self.bbox_geojson = bbox_geojson
 
-    def get_proj_transform(self) -> Tuple:
-        """Convert a GDAL geotransform to a proj geotransform
-
-        Args:
-            geotransform: A GDAL geotransform
-
-        Returns:
-            A rasterio geotransform
-        """
         proj_transform = [
             self.transform[1],
             self.transform[2],
@@ -223,7 +217,7 @@ class GeoInfo:
             0,
             1,
         ]
-        return proj_transform
+        self.proj_transform = proj_transform
 
 
 def get_epsg(geo_key_list: List) -> int:
@@ -257,7 +251,7 @@ def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFi
     """
     if base_fs is None:
         if file_path.startswith('https'):
-            base_fs = fsspec.filesystem('https', block_size=5 * (2**20))
+            base_fs = fsspec.filesystem('https', block_size=int(0.1 * (2**20)))
         else:
             base_fs = fsspec.filesystem('file')
 
@@ -318,7 +312,7 @@ def validate_stack(batch: Batch) -> None:
         raise ValueError('Not all jobs have the same processing parameters')
 
 
-def create_insar_stac_item(job: Job) -> pystac.Item:
+def create_insar_stac_item(job: Job, geo_info, param_file) -> pystac.Item:
     """Create a STAC item from a HyP3 product
 
     Args:
@@ -328,11 +322,11 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
         A STAC item for the product
     """
     base_url = job.to_dict()['files'][0]['url']
-    param_file_url = base_url.replace('.zip', '.txt')
-    param_file = ParameterFile.read(param_file_url)
-
-    unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
-    geo_info = get_geotiff_info_nogdal(unw_file_url)
+    # param_file_url = base_url.replace('.zip', '.txt')
+    # param_file = ParameterFile.read(param_file_url)
+    #
+    # unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
+    # geo_info = get_geotiff_info_nogdal(unw_file_url)
 
     if job.to_dict()['job_type'] == 'INSAR_GAMMA':
         date_loc = 5
@@ -370,14 +364,12 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
     return item
 
 
-def create_rtc_stac_item(job: Job) -> pystac.Item:
+def create_rtc_stac_item(job: Job, geo_info, available_polarizations) -> pystac.Item:
     base_url = job.to_dict()['files'][0]['url']
     pattern = '%Y%m%dT%H%M%S'
     start_time = datetime.strptime(base_url.split('/')[-1].split('_')[2], pattern).replace(tzinfo=timezone.utc)
-    vv_url = base_url.replace('.zip', '_VV.tif')
-    geo_info = get_geotiff_info_nogdal(vv_url)
-    extra_properties = {'sar:product_type': job.to_dict()['job_type'], 'sar:polarizations': RTC_PRODUCTS[:4]}
-    item = create_item(base_url, start_time, geo_info, RTC_PRODUCTS, extra_properties)
+    extra_properties = {'sar:product_type': job.to_dict()['job_type'], 'sar:polarizations': available_polarizations}
+    item = create_item(base_url, start_time, geo_info, available_polarizations + RTC_PRODUCTS, extra_properties)
     thumbnail = base_url.replace('.zip', '_rgb_thumb.png')
     item.add_asset(
         key='thumbnail',
@@ -392,7 +384,7 @@ def create_item(base_url, start_time, geo_info, product_types, extra_properties)
         'data_type': 'float32',
         'nodata': 0,
         'proj:shape': geo_info.shape,
-        'proj:transform': geo_info.get_proj_geotransform(),
+        'proj:transform': geo_info.proj_transform,
         'proj:epsg': geo_info.epsg,
         'sar:instrument_mode': 'IW',
         'sar:frequency_band': sar.FrequencyBand.C,
@@ -422,7 +414,33 @@ def create_item(base_url, start_time, geo_info, product_types, extra_properties)
     return item
 
 
-def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'hyp3_jobs') -> None:
+def get_insar_info(job):
+    base_url = job.to_dict()['files'][0]['url']
+    unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
+    param_file_url = base_url.replace('.zip', '.txt')
+
+    base_fs = fsspec.filesystem('https', block_size=int(0.1 * (2**20)))
+    geo_info = get_geotiff_info_nogdal(unw_file_url, base_fs)
+    param_file = ParameterFile.read(param_file_url, base_fs)
+    return geo_info, param_file
+
+
+def get_rtc_info(job):
+    base_url = job.to_dict()['files'][0]['url']
+    base_fs = fsspec.filesystem('https', block_size=int(0.1 * (2**20)))
+    available_pols = []
+    # FIXME: This would be more efficient if I can get an ls command to work
+    for pol in ['VV', 'VH', 'HH', 'HV']:
+        url = base_url.replace('.zip', f'_{pol}.tif')
+        if base_fs.exists(url):
+            available_pols.append(pol)
+
+    first_pol_url = base_url.replace('.zip', f'_{available_pols[0]}.tif')
+    geo_info = get_geotiff_info_nogdal(first_pol_url, base_fs)
+    return geo_info, available_pols
+
+
+def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'hyp3_jobs', workers=10) -> None:
     """Create a STAC collection from a HyP3 batch and save it to a directory
 
     Args:
@@ -431,18 +449,19 @@ def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'h
         id: The ID of the STAC catalog
     """
     validate_stack(batch)
-    items = []
-    dates = []
-    bboxes = []
-    for job in tqdm(batch):
-        job_type = batch[0].to_dict()['job_type']
-        if 'RTC' in job_type:
-            item = create_rtc_stac_item(job)
-        else:
-            item = create_insar_stac_item(job)
-        items.append(item)
-        dates.append(item.datetime)
-        bboxes.append(item.bbox)
+
+    job_type = batch[0].to_dict()['job_type']
+    if 'INSAR' in job_type:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            results = list(tqdm(executor.map(get_insar_info, batch), total=len(batch)))
+        items = [create_insar_stac_item(job, geo, param) for job, (geo, param) in zip(batch, results)]
+    elif 'RTC' in job_type:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            results = list(tqdm(executor.map(get_rtc_info, batch), total=len(batch)))
+        items = [create_rtc_stac_item(job, geo, pols) for job, (geo, pols) in zip(batch, results)]
+
+    bboxes = [item.bbox for item in items]
+    dates = [item.datetime for item in items]
 
     extent = Extent(SpatialExtent(get_overall_bbox(bboxes)), TemporalExtent([[min(dates), max(dates)]]))
     summary_dict = {'constellation': [SENTINEL_CONSTELLATION], 'platform': SENTINEL_PLATFORMS}
