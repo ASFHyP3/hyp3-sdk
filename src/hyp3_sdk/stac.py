@@ -352,21 +352,15 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
     )
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
-    properties = {
-        'data_type': 'float32',
-        'nodata': 0,
-        'proj:shape': geo_info.shape,
-        'proj:transform': geo_info.get_proj_transform(),
-        'proj:epsg': geo_info.epsg,
-        'sar:instrument_mode': 'IW',
-        'sar:frequency_band': sar.FrequencyBand.C,
+    extra_properies = {
         'sar:product_type': job.to_dict()['job_type'],
         'sar:polarizations': polarizations,
         'start_datetime': start_time.isoformat(),
         'end_datetime': stop_time.isoformat(),
     }
-    properties.update(param_file.__dict__)
-    item = create_item(base_url, start_time, geo_info, INSAR_PRODUCTS, properties)
+    extra_properies.update(param_file.__dict__)
+
+    item = create_item(base_url, start_time, geo_info, INSAR_PRODUCTS, extra_properies)
     thumbnail = base_url.replace('.zip', '_unw_phase.png')
     item.add_asset(
         key='thumbnail',
@@ -382,18 +376,8 @@ def create_rtc_stac_item(job: Job) -> pystac.Item:
     start_time = datetime.strptime(base_url.split('/')[-1].split('_')[2], pattern).replace(tzinfo=timezone.utc)
     vv_url = base_url.replace('.zip', '_VV.tif')
     geo_info = get_geotiff_info_nogdal(vv_url)
-    properties = {
-        'data_type': 'float32',
-        'nodata': 0,
-        'proj:shape': geo_info.shape,
-        'proj:transform': geo_info.get_proj_geotransform(),
-        'proj:epsg': geo_info.epsg,
-        'sar:instrument_mode': 'IW',
-        'sar:frequency_band': sar.FrequencyBand.C,
-        'sar:product_type': job.to_dict()['job_type'],
-        'sar:polarizations': RTC_PRODUCTS[:4],
-    }
-    item = create_item(base_url, start_time, geo_info, RTC_PRODUCTS, properties)
+    extra_properties = {'sar:product_type': job.to_dict()['job_type'], 'sar:polarizations': RTC_PRODUCTS[:4]}
+    item = create_item(base_url, start_time, geo_info, RTC_PRODUCTS, extra_properties)
     thumbnail = base_url.replace('.zip', '_rgb_thumb.png')
     item.add_asset(
         key='thumbnail',
@@ -403,7 +387,17 @@ def create_rtc_stac_item(job: Job) -> pystac.Item:
     return item
 
 
-def create_item(base_url, start_time, geo_info, product_types, properties):
+def create_item(base_url, start_time, geo_info, product_types, extra_properties):
+    properties = {
+        'data_type': 'float32',
+        'nodata': 0,
+        'proj:shape': geo_info.shape,
+        'proj:transform': geo_info.get_proj_geotransform(),
+        'proj:epsg': geo_info.epsg,
+        'sar:instrument_mode': 'IW',
+        'sar:frequency_band': sar.FrequencyBand.C,
+    }
+    properties.update(extra_properties)
     item = pystac.Item(
         id=base_url.split('/')[-1].replace('.zip', ''),
         geometry=geo_info.bbox_geojson,
