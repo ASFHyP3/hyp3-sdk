@@ -1,5 +1,5 @@
 """A module for creating STAC collections based on HyP3-SDK Batch/Job objects"""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
@@ -175,6 +175,57 @@ class ParameterFile:
         return param_file
 
 
+@dataclass
+class GeoInfo:
+    transform: Iterable[float]
+    shape: Iterable[float]  # y first
+    epsg: int
+    bbox: List = field(init=False)
+
+    def __post_init__(self):
+        """Add bounding box / bounding box geojson attributes"""
+        length, width = self.shape
+        min_x, size_x, _, max_y, _, size_y = self.transform
+        max_x = min_x + size_x * width
+        min_y = max_y + size_y * length
+        self.bbox = [min_x, min_y, max_x, max_y]
+
+        self.bbox_geojson = {
+            'type': 'Polygon',
+            'coordinates': [
+                [
+                    [min_x, min_y],
+                    [max_x, min_y],
+                    [max_x, max_y],
+                    [min_x, max_y],
+                    [min_x, min_y],
+                ]
+            ],
+        }
+
+    def get_proj_transform(self) -> Tuple:
+        """Convert a GDAL geotransform to a proj geotransform
+
+        Args:
+            geotransform: A GDAL geotransform
+
+        Returns:
+            A rasterio geotransform
+        """
+        proj_transform = [
+            self.transform[1],
+            self.transform[2],
+            self.transform[0],
+            self.transform[4],
+            self.transform[5],
+            self.transform[3],
+            0,
+            0,
+            1,
+        ]
+        return proj_transform
+
+
 def get_epsg(geo_key_list: List) -> int:
     """Get the EPSG code from a GeoKeyDirectoryTag.
     Will only workfor projected coordinate systems.
@@ -221,27 +272,8 @@ def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFi
     origin_x, origin_y = meta_dict['ModelTiepointTag'][3:5]
     geotransform = [int(value) for value in [origin_x, pixel_x, 0, origin_y, 0, pixel_y]]
     utm_epsg = get_epsg(meta_dict['GeoKeyDirectoryTag'])
-    return geotransform, (length, width), utm_epsg
-
-
-def get_bounding_box(geotransform: Iterable, shape: Iterable) -> List:
-    """Get the bounding box for a given geotransform and shape
-
-    Args:
-        geotransform: A gdal geotransform
-        shape: The shape of the associated raster
-
-    Returns:
-        A list containing the bounding box coordinates (min_x, min_y, max_x, max_y)
-    """
-    length, width = shape
-    min_x = geotransform[0]
-    max_x = min_x + geotransform[1] * length
-    max_y = geotransform[3]
-    min_y = max_y + geotransform[5] * width
-
-    bbox = [min_x, min_y, max_x, max_y]
-    return bbox
+    geo_info = GeoInfo(geotransform, (length, width), utm_epsg)
+    return geo_info
 
 
 def get_overall_bbox(bboxes: Iterable) -> List:
@@ -258,56 +290,6 @@ def get_overall_bbox(bboxes: Iterable) -> List:
     max_x = max([bbox[2] for bbox in bboxes])
     max_y = max([bbox[3] for bbox in bboxes])
     return [min_x, min_y, max_x, max_y]
-
-
-def bounding_box_to_geojson(minx, miny, maxx, maxy) -> dict:
-    """Convert bounding box coordinates to GeoJSON Polygon
-
-    Args:
-        minx: Minimum x coordinate
-        miny: Minimum y coordinate
-        maxx: Maximum x coordinate
-        maxy: Maximum y coordinate
-
-    Returns:
-        A GeoJSON Polygon
-    """
-    polygon = {
-        'type': 'Polygon',
-        'coordinates': [
-            [
-                [minx, miny],
-                [maxx, miny],
-                [maxx, maxy],
-                [minx, maxy],
-                [minx, miny],
-            ]
-        ],
-    }
-    return polygon
-
-
-def to_proj_geotransform(gdal_geotransform: List) -> Tuple:
-    """Convert a GDAL geotransform to a proj geotransform
-
-    Args:
-        geotransform: A GDAL geotransform
-
-    Returns:
-        A rasterio geotransform
-    """
-    proj_transform = [
-        gdal_geotransform[1],
-        gdal_geotransform[2],
-        gdal_geotransform[0],
-        gdal_geotransform[4],
-        gdal_geotransform[5],
-        gdal_geotransform[3],
-        0,
-        0,
-        1,
-    ]
-    return proj_transform
 
 
 def validate_stack(batch: Batch) -> None:
@@ -350,8 +332,7 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
     param_file = ParameterFile.read(param_file_url)
 
     unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
-    geotransform, shape, epsg = get_geotiff_info_nogdal(unw_file_url)
-    bbox = get_bounding_box(geotransform, shape)
+    geo_info = get_geotiff_info_nogdal(unw_file_url)
 
     if job.to_dict()['job_type'] == 'INSAR_GAMMA':
         date_loc = 5
@@ -374,9 +355,9 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
     properties = {
         'data_type': 'float32',
         'nodata': 0,
-        'proj:shape': shape,
-        'proj:transform': to_proj_geotransform(geotransform),
-        'proj:epsg': epsg,
+        'proj:shape': geo_info.shape,
+        'proj:transform': geo_info.get_proj_transform(),
+        'proj:epsg': geo_info.epsg,
         'sar:instrument_mode': 'IW',
         'sar:frequency_band': sar.FrequencyBand.C,
         'sar:product_type': job.to_dict()['job_type'],
@@ -385,7 +366,7 @@ def create_insar_stac_item(job: Job) -> pystac.Item:
         'end_datetime': stop_time.isoformat(),
     }
     properties.update(param_file.__dict__)
-    item = create_item(base_url, start_time, bbox, INSAR_PRODUCTS, properties)
+    item = create_item(base_url, start_time, geo_info, INSAR_PRODUCTS, properties)
     thumbnail = base_url.replace('.zip', '_unw_phase.png')
     item.add_asset(
         key='thumbnail',
@@ -400,20 +381,19 @@ def create_rtc_stac_item(job: Job) -> pystac.Item:
     pattern = '%Y%m%dT%H%M%S'
     start_time = datetime.strptime(base_url.split('/')[-1].split('_')[2], pattern).replace(tzinfo=timezone.utc)
     vv_url = base_url.replace('.zip', '_VV.tif')
-    geotransform, shape, epsg = get_geotiff_info_nogdal(vv_url)
-    bbox = get_bounding_box(geotransform, shape)
+    geo_info = get_geotiff_info_nogdal(vv_url)
     properties = {
         'data_type': 'float32',
         'nodata': 0,
-        'proj:shape': shape,
-        'proj:transform': to_proj_geotransform(geotransform),
-        'proj:epsg': epsg,
+        'proj:shape': geo_info.shape,
+        'proj:transform': geo_info.get_proj_geotransform(),
+        'proj:epsg': geo_info.epsg,
         'sar:instrument_mode': 'IW',
         'sar:frequency_band': sar.FrequencyBand.C,
         'sar:product_type': job.to_dict()['job_type'],
         'sar:polarizations': RTC_PRODUCTS[:4],
     }
-    item = create_item(base_url, start_time, bbox, RTC_PRODUCTS, properties)
+    item = create_item(base_url, start_time, geo_info, RTC_PRODUCTS, properties)
     thumbnail = base_url.replace('.zip', '_rgb_thumb.png')
     item.add_asset(
         key='thumbnail',
@@ -423,11 +403,11 @@ def create_rtc_stac_item(job: Job) -> pystac.Item:
     return item
 
 
-def create_item(base_url, start_time, bbox, product_types, properties):
+def create_item(base_url, start_time, geo_info, product_types, properties):
     item = pystac.Item(
         id=base_url.split('/')[-1].replace('.zip', ''),
-        geometry=bounding_box_to_geojson(*bbox),
-        bbox=bbox,
+        geometry=geo_info.bbox_geojson,
+        bbox=geo_info.bbox,
         datetime=start_time,
         properties=properties,
         stac_extensions=[
