@@ -26,17 +26,14 @@ SENTINEL_PROVIDER = pystac.Provider(
     roles=[ProviderRole.LICENSOR, ProviderRole.PRODUCER],
     url='https://sentinel.esa.int/web/sentinel/missions/sentinel-1',
 )
-SENTINEL_BURST_PROVIDER = pystac.Provider(
+HYP3_PROVIDER = pystac.Provider(
     name='ASF DAAC',
     roles=[ProviderRole.LICENSOR, ProviderRole.PROCESSOR, ProviderRole.HOST],
-    url='https://hyp3-docs.asf.alaska.edu/guides/burst_insar_product_guide/',
-    extra_fields={
-        'processing:level': 'L3',
-        'processing:lineage': 'ASF DAAC HyP3 2023 using the hyp3_isce2 plugin version 0.9.1 running ISCE release 2.6.3',  # noqa: E501
-        'processing:software': {'ISCE2': '2.6.3'},
-    },
+    url='https://hyp3-docs.asf.alaska.edu/',
+    extra_fields={'processing:level': 'L3', 'processing:lineage': 'ASF DAAC HyP3 2023'},
 )
-SENTINEL_BURST_DESCRIPTION = 'SAR Interferometry (InSAR) products and their associated files. The source data for these products are Sentinel-1 bursts, extracted from Single Look Complex (SLC) products processed by ESA, and they were processed using InSAR Scientific Computing Environment version 2 (ISCE2) software.'  # noqa: E501
+SENTINEL_DATA_DESCRIPTION = 'HyP3 genereted Sentinel-1 SAR products and their associated files. The source data for these products are Sentinel-1 Single Look Complex (SLC) products processed by ESA'
+
 INSAR_PRODUCTS = [
     'conncomp',
     'corr',
@@ -47,7 +44,6 @@ INSAR_PRODUCTS = [
     'dem',
     'water_mask',
 ]
-
 RTC_PRODUCTS = ['rgb', 'area', 'dem', 'inc_map', 'ls_map']
 
 
@@ -290,6 +286,7 @@ def validate_stack(batch: Batch) -> None:
     """Verifies that all jobs in batch:
     - Have the SUCCEEDED status
     - Have the same job type
+    - The job type is one of INSAR_GAMMA, RTC_GAMMA, INSAR
     - Have the same processing parameters
     Notably DOES NOT check that all jobs are co-located.
 
@@ -304,6 +301,11 @@ def validate_stack(batch: Batch) -> None:
     job_types = list(set([job['job_type'] for job in job_dicts]))
     if len(job_types) != 1:
         raise ValueError(f'Not all jobs have the same job type. Included types: {" ".join(job_types)}')
+
+    supported_job_types = ['INSAR_GAMMA', 'RTC_GAMMA', 'INSAR_ISCE_BURST']
+    if job_types[0] not in supported_job_types:
+        msg = f'Job type {job_types[0]} is not supported. Only {" ,".join(supported_job_types)} are supported'
+        raise NotImplementedError(msg)
 
     job_params = [job['job_parameters'] for job in job_dicts]
     [job.pop('granules', None) for job in job_params]
@@ -322,11 +324,6 @@ def create_insar_stac_item(job: Job, geo_info, param_file) -> pystac.Item:
         A STAC item for the product
     """
     base_url = job.to_dict()['files'][0]['url']
-    # param_file_url = base_url.replace('.zip', '.txt')
-    # param_file = ParameterFile.read(param_file_url)
-    #
-    # unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
-    # geo_info = get_geotiff_info_nogdal(unw_file_url)
 
     if job.to_dict()['job_type'] == 'INSAR_GAMMA':
         date_loc = 5
@@ -468,12 +465,12 @@ def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'h
 
     collection = pystac.Collection(
         id=collection_id,
-        description=SENTINEL_BURST_DESCRIPTION,
+        description=SENTINEL_DATA_DESCRIPTION,
         extent=extent,
         keywords=['sentinel', 'copernicus', 'esa', 'sar'],
-        providers=[SENTINEL_PROVIDER, SENTINEL_BURST_PROVIDER],
+        providers=[SENTINEL_PROVIDER, HYP3_PROVIDER],
         summaries=Summaries(summary_dict),
-        title='ASF S1 BURST INTERFEROGRAMS',
+        title='ASF HyP3 Products',
     )
     [collection.add_item(item) for item in items]
     collection.normalize_hrefs(str(out_path))
