@@ -1,9 +1,9 @@
 """A module for creating STAC collections based on HyP3-SDK Batch/Job objects"""
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional
 
 import fsspec
 import pystac
@@ -34,16 +34,6 @@ HYP3_PROVIDER = pystac.Provider(
 )
 SENTINEL_DATA_DESCRIPTION = 'HyP3 genereted Sentinel-1 SAR products and their associated files. The source data for these products are Sentinel-1 Single Look Complex (SLC) products processed by ESA'
 
-INSAR_PRODUCTS = [
-    'conncomp',
-    'corr',
-    'unw_phase',
-    'wrapped_phase',
-    'lv_phi',
-    'lv_theta',
-    'dem',
-    'water_mask',
-]
 RTC_PRODUCTS = ['rgb', 'area', 'dem', 'inc_map', 'ls_map']
 
 
@@ -174,13 +164,14 @@ class ParameterFile:
 
 @dataclass
 class GeoInfo:
+    """Class representing the geospatial information of a geotiff file"""
+
     transform: Iterable[float]
     shape: Iterable[float]  # y first
     epsg: int
-    bbox: List = field(init=False)
 
     def __post_init__(self):
-        """Add bounding box / bounding box geojson attributes"""
+        """Add bounding box, bounding box geojson, and proj_transform attributes"""
         length, width = self.shape
         min_x, size_x, _, max_y, _, size_y = self.transform
         max_x = min_x + size_x * width
@@ -235,15 +226,15 @@ def get_epsg(geo_key_list: List) -> int:
     raise ValueError('No EPSG code found in GeoKeyDirectoryTag')
 
 
-def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> Tuple:
-    """Get geotiff projection info without using GDAL
+def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> GeoInfo:
+    """Get geotiff projection info without using GDAL.
 
     Args:
         file_path: Path to the geotiff file
         base_fs: fsspec filesystem to use for reading the file
 
     Returns:
-        A tuple containing the geotransform, shape, and EPSG code
+        A GeoInfo object containing the geospatial information
     """
     if base_fs is None:
         if file_path.startswith('https'):
@@ -325,6 +316,7 @@ def create_insar_stac_item(job: Job, geo_info, param_file) -> pystac.Item:
     """
     base_url = job.to_dict()['files'][0]['url']
 
+    insar_products = ['corr', 'unw_phase', 'lv_phi', 'lv_theta', 'dem', 'water_mask']
     if job.to_dict()['job_type'] == 'INSAR_GAMMA':
         date_loc = 5
         reference_polarization = 'VV'
@@ -333,6 +325,7 @@ def create_insar_stac_item(job: Job, geo_info, param_file) -> pystac.Item:
         date_loc = 3
         reference_polarization = param_file.reference_granule.split('_')[4]
         secondary_polarization = param_file.secondary_granule.split('_')[4]
+        insar_products += ['conncomp', 'wrapped_phase']
 
     pattern = '%Y%m%dT%H%M%S'
     start_time = datetime.strptime(param_file.reference_granule.split('_')[date_loc], pattern).replace(
@@ -351,7 +344,7 @@ def create_insar_stac_item(job: Job, geo_info, param_file) -> pystac.Item:
     }
     extra_properies.update(param_file.__dict__)
 
-    item = create_item(base_url, start_time, geo_info, INSAR_PRODUCTS, extra_properies)
+    item = create_item(base_url, start_time, geo_info, insar_products, extra_properies)
     thumbnail = base_url.replace('.zip', '_unw_phase.png')
     item.add_asset(
         key='thumbnail',
