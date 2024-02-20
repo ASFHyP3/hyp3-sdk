@@ -22,7 +22,8 @@ dependencies:
   - requests
   - tqdm
   - urllib3
+  # for running stac
   - pystac
   - fsspec
   - aiohttp
-  - pillow
+  - tifffile

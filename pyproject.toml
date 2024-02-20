@@ -30,7 +30,7 @@ dependencies = [
     "pystac",
     "fsspec",
     "aiohttp",
-    "pillow",
+    "tifffile",
 ]
 dynamic = ["version"]
 

@@ -1,4 +1,7 @@
 """Tests for the stac module"""
+import numpy as np
+import pytest
+import tifffile
 from hyp3_sdk import stac
 
 
@@ -42,24 +45,60 @@ def test_parameter_file(tmp_path):
 
 
 def test_geoinfo():
-    """Test the GeoInfo class"""
     geo_info = stac.GeoInfo(
-        transform=[1, 2, 3, 4, 5, 6],
-        shape=[7, 8],
-        epsg=9,
+        transform=[10, 1, 0, 400, 0, -2],
+        shape=[100, 200],
+        epsg=123456,
     )
-
-    assert geo_info.bbox == [1, 46, 17, 4]
+    assert geo_info.bbox == [10, 200, 210, 400]
     assert geo_info.bbox_geojson == {
         'type': 'Polygon',
         'coordinates': [
             [
-                [1, 6],
-                [7, 6],
-                [7, 4],
-                [1, 4],
-                [1, 6],
+                [10, 200],
+                [210, 200],
+                [210, 400],
+                [10, 400],
+                [10, 200],
             ]
         ],
     }
-    assert geo_info.proj_transform == [2, 3, 1, 6, 5, 4, 0, 0, 1]
+    assert geo_info.proj_transform == [1, 0, 10, 0, -2, 400, 0, 0, 1]
+
+
+def test_get_epsg():
+    test_geo_key_list = [9999, 0, 1, 5555, 3072, 0, 1, 4326]
+    assert stac.get_epsg(test_geo_key_list) == 4326
+
+    test_geo_key_list = [9999, 0, 1, 4326, 3071, 0, 1, 4326]
+    with pytest.raises(ValueError, match='No .* EPSG .*'):
+        stac.get_epsg(test_geo_key_list)
+
+
+def create_temp_geotiff(file_path):
+    width, length = 100, 200
+    pixel_x, pixel_y = 1, 2
+    origin_x, origin_y = 10, 20
+    image_data = np.zeros((length, width), dtype=np.uint16)
+
+    tags = {
+        'ModelPixelScaleTag': [33550, 'i', 3, (pixel_x, pixel_y, 0)],
+        'ModelTiepointTag': [33922, 'i', 6, (0, 0, 0, origin_x, origin_y, 0)],
+        'GeoKeyDirectoryTag': [34735, 'i', 4, (3072, 0, 1, 4326)],
+    }
+    extra_tags = [tags[key] for key in tags]
+    tifffile.imsave(
+        file_path,
+        image_data,
+        extratags=extra_tags,
+    )
+    return
+
+
+def test_get_geotiff_info_nogdal(tmp_path):
+    tmp_file = tmp_path / 'test.tif'
+    create_temp_geotiff(tmp_file)
+    geo_info = stac.get_geotiff_info_nogdal(str(tmp_file))
+    assert geo_info.transform == [10, 1, 0, 20, 0, -2]
+    assert geo_info.shape == (200, 100)
+    assert geo_info.epsg == 4326

@@ -3,12 +3,11 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 
 import fsspec
 import pystac
-from PIL import Image
-from PIL.TiffTags import TAGS
+import tifffile
 from pystac import Extent, ProviderRole, SpatialExtent, Summaries, TemporalExtent
 from pystac.extensions import sar
 from pystac.extensions.projection import ProjectionExtension
@@ -166,8 +165,8 @@ class ParameterFile:
 class GeoInfo:
     """Class representing the geospatial information of a geotiff file"""
 
-    transform: Iterable[float]
-    shape: Iterable[float]  # y first
+    transform: Tuple[float]
+    shape: Tuple[int]  # y first
     epsg: int
 
     def __post_init__(self):
@@ -207,7 +206,7 @@ class GeoInfo:
         self.proj_transform = proj_transform
 
 
-def get_epsg(geo_key_list: List) -> int:
+def get_epsg(geo_key_list: Iterable) -> int:
     """Get the EPSG code from a GeoKeyDirectoryTag.
     Will only workfor projected coordinate systems.
 
@@ -223,10 +222,10 @@ def get_epsg(geo_key_list: List) -> int:
         if key[0] == projected_crs_key_id:
             return int(key[3])
 
-    raise ValueError('No EPSG code found in GeoKeyDirectoryTag')
+    raise ValueError('No projected EPSG code found in GeoKeyDirectoryTag')
 
 
-def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> GeoInfo:
+def get_geotiff_info_nogdal(file_path: str, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> GeoInfo:
     """Get geotiff projection info without using GDAL.
 
     Args:
@@ -236,18 +235,28 @@ def get_geotiff_info_nogdal(file_path: Path, base_fs: Optional[fsspec.AbstractFi
     Returns:
         A GeoInfo object containing the geospatial information
     """
+    tag_ids = {
+        'ImageWidth': 256,
+        'ImageLength': 257,
+        'ModelPixelScaleTag': 33550,
+        'ModelTiepointTag': 33922,
+        'GeoKeyDirectoryTag': 34735,
+    }
     if base_fs is None:
         if file_path.startswith('https'):
             base_fs = fsspec.filesystem('https', block_size=int(0.1 * (2**20)))
         else:
             base_fs = fsspec.filesystem('file')
 
+    meta_dict = {}
     with base_fs.open(file_path, 'rb') as file:
-        image = Image.open(file)
-        meta_dict = {TAGS[key]: image.tag[key] for key in image.tag_v2}
+        with tifffile.TiffFile(file) as tif:
+            tags = tif.pages[0].tags
+            for key, value in tag_ids.items():
+                meta_dict[key] = tags[value].value
 
-    width = int(meta_dict['ImageWidth'][0])
-    length = int(meta_dict['ImageLength'][0])
+    width = int(meta_dict['ImageWidth'])
+    length = int(meta_dict['ImageLength'])
     pixel_x, pixel_y = meta_dict['ModelPixelScaleTag'][:2]
     pixel_y *= -1
     origin_x, origin_y = meta_dict['ModelTiepointTag'][3:5]
