@@ -1,8 +1,10 @@
 """Tests for the stac module"""
+from datetime import datetime
+
 import numpy as np
 import pytest
 import tifffile
-from hyp3_sdk import stac
+from hyp3_sdk import Job, stac
 
 
 def test_parameter_file(tmp_path):
@@ -102,3 +104,44 @@ def test_get_geotiff_info_nogdal(tmp_path):
     assert geo_info.transform == [10, 1, 0, 20, 0, -2]
     assert geo_info.shape == (200, 100)
     assert geo_info.epsg == 4326
+
+
+def test_get_overall_bbox():
+    boxes = [[0, 2, 3, 4], [5, 0, 10, 8], [1, 6, 7, 11]]
+    assert stac.get_overall_bbox(boxes) == [0, 0, 10, 11]
+
+
+def test_validate_stac():
+    job1 = Job(
+        job_type='INSAR_GAMMA',
+        job_id='foo',
+        request_time=datetime.now(),
+        status_code='SUCCEEDED',
+        user_id='me',
+        job_parameters={'reference_granule': 'foo', 'secondary_granule': 'bar'},
+    )
+    job2 = Job(
+        job_type='INSAR_GAMMA',
+        job_id='foo',
+        request_time=datetime.now(),
+        status_code='SUCCEEDED',
+        user_id='me',
+        job_parameters={'reference_granule': 'foo', 'secondary_granule': 'baz'},
+    )
+    job3 = Job(job_type='INSAR_GAMMA', job_id='foo', request_time=datetime.now(), status_code='PENDING', user_id='me')
+    job4 = Job(job_type='INSAR_ISCE_BURST', job_id='foo', request_time=datetime.now(), status_code='SUCCEEDED', user_id='me')
+    job5 = Job(job_type='AUTORIFT', job_id='foo', request_time=datetime.now(), status_code='SUCCEEDED', user_id='me')
+
+    with pytest.raises(ValueError, match='Not all .* succeeded .*'):
+        stac.validate_stack([job1, job3])
+
+    with pytest.raises(ValueError, match='Not all.*job type.*'):
+        stac.validate_stack([job1, job4])
+
+    with pytest.raises(ValueError, match='Not all .* parameters'):
+        stac.validate_stack([job1, job2])
+
+    with pytest.raises(NotImplementedError, match='Job type .* not supported.*'):
+        stac.validate_stack([job5])
+
+    stac.validate_stack([job1, job1])
