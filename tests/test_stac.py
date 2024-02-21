@@ -1,5 +1,6 @@
 """Tests for the stac module"""
-from datetime import datetime
+from copy import deepcopy
+from datetime import datetime, timezone
 
 import numpy as np
 import pytest
@@ -7,8 +8,8 @@ import tifffile
 from hyp3_sdk import Job, stac
 
 
-def test_parameter_file(tmp_path):
-    """Test the ParameterFile class"""
+@pytest.fixture
+def param_file():
     param_file = stac.ParameterFile(
         reference_granule='foo',
         secondary_granule='bar',
@@ -36,7 +37,11 @@ def test_parameter_file(tmp_path):
         speckle_filter=True,
         water_mask=True,
     )
+    return param_file
 
+
+def test_parameter_file(tmp_path, param_file):
+    """Test the ParameterFile class"""
     assert str(param_file).startswith('Reference Granule: foo\n')
     assert str(param_file).endswith('Water mask: yes\n')
 
@@ -129,7 +134,9 @@ def test_validate_stac():
         job_parameters={'reference_granule': 'foo', 'secondary_granule': 'baz'},
     )
     job3 = Job(job_type='INSAR_GAMMA', job_id='foo', request_time=datetime.now(), status_code='PENDING', user_id='me')
-    job4 = Job(job_type='INSAR_ISCE_BURST', job_id='foo', request_time=datetime.now(), status_code='SUCCEEDED', user_id='me')
+    job4 = Job(
+        job_type='INSAR_ISCE_BURST', job_id='foo', request_time=datetime.now(), status_code='SUCCEEDED', user_id='me'
+    )
     job5 = Job(job_type='AUTORIFT', job_id='foo', request_time=datetime.now(), status_code='SUCCEEDED', user_id='me')
 
     with pytest.raises(ValueError, match='Not all .* succeeded .*'):
@@ -145,3 +152,99 @@ def test_validate_stac():
         stac.validate_stack([job5])
 
     stac.validate_stack([job1, job1])
+
+
+def test_create_insar_stac_item(param_file):
+    geo_info = stac.GeoInfo(
+        transform=[10, 1, 0, 400, 0, -2],
+        shape=[100, 200],
+        epsg=123456,
+    )
+    job_gamma = Job(
+        job_type='INSAR_GAMMA',
+        job_id='my_job_id',
+        request_time=datetime.now(),
+        status_code='SUCCEEDED',
+        user_id='me',
+        files=[{'url': 'https://example.com/my_job_id.zip'}],
+    )
+    gamma_param_file = deepcopy(param_file)
+    gamma_param_file.reference_granule = '0_1_2_3_4_20190101T000000'
+    gamma_param_file.secondary_granule = '0_1_2_3_4_20190102T000000'
+    item = stac.create_insar_stac_item(job_gamma, geo_info, gamma_param_file)
+    item.validate()
+    assert item.id == 'my_job_id'
+    assert item.datetime == datetime(2019, 1, 1, 0, 0, 0).replace(tzinfo=timezone.utc)
+    assert item.bbox == [10, 200, 210, 400]
+    assert item.properties['sar:product_type'] == 'INSAR_GAMMA'
+    assert item.properties['sar:polarizations'] == ['VV']
+    assert item.properties['start_datetime'] == '2019-01-01T00:00:00+00:00'
+    assert item.properties['end_datetime'] == '2019-01-02T00:00:00+00:00'
+    assert item.properties['reference_granule'] == '0_1_2_3_4_20190101T000000'
+    assert item.properties['secondary_granule'] == '0_1_2_3_4_20190102T000000'
+    assert item.assets['unw_phase'].href == 'https://example.com/my_job_id_unw_phase.tif'
+
+    job_isce = Job(
+        job_type='INSAR_ISCE_BURST',
+        job_id='my_job_id',
+        request_time=datetime.now(),
+        status_code='SUCCEEDED',
+        user_id='me',
+        files=[{'url': 'https://example.com/my_job_id.zip'}],
+    )
+    isce_param_file = deepcopy(param_file)
+    isce_param_file.reference_granule = '0_1_2_20190101T000000_VH'
+    isce_param_file.secondary_granule = '0_1_2_20190102T000000_VH'
+    item = stac.create_insar_stac_item(job_isce, geo_info, isce_param_file)
+    item.validate()
+    # only testing the new properties
+    assert item.properties['sar:product_type'] == 'INSAR_ISCE_BURST'
+    assert item.properties['sar:polarizations'] == ['VH']
+    assert item.properties['start_datetime'] == '2019-01-01T00:00:00+00:00'
+    assert item.properties['end_datetime'] == '2019-01-02T00:00:00+00:00'
+
+
+def test_create_rtc_stac_item():
+    job = Job(
+        job_type='RTC_GAMMA',
+        job_id='my_job_20190101T000000',
+        request_time=datetime.now(),
+        status_code='SUCCEEDED',
+        user_id='me',
+        files=[{'url': 'https://example.com/my_job_20190101T000000.zip'}],
+    )
+    geo_info = stac.GeoInfo(
+        transform=[10, 1, 0, 400, 0, -2],
+        shape=[100, 200],
+        epsg=123456,
+    )
+    available_polarizations = ['VV', 'VH']
+    item = stac.create_rtc_stac_item(job, geo_info, available_polarizations)
+    item.validate()
+    assert item.id == 'my_job_20190101T000000'
+    assert item.datetime == datetime(2019, 1, 1, 0, 0, 0).replace(tzinfo=timezone.utc)
+    assert item.bbox == [10, 200, 210, 400]
+    assert item.properties['sar:product_type'] == 'RTC_GAMMA'
+    assert item.properties['sar:polarizations'] == ['VV', 'VH']
+    assert item.assets['VV'].href == 'https://example.com/my_job_20190101T000000_VV.tif'
+
+
+def test_create_item():
+    base_url = 'https://example.com/my_job_id.zip'
+    start_time = datetime(2019, 1, 1, 0, 0, 0).replace(tzinfo=timezone.utc)
+    geo_info = stac.GeoInfo(
+        transform=[10, 1, 0, 400, 0, -2],
+        shape=[100, 200],
+        epsg=123456,
+    )
+    product_types = ['unw_phase', 'corr']
+    extra_properties = {'foo': 'bar'}
+    item = stac.create_item(base_url, start_time, geo_info, product_types, extra_properties)
+    assert item.id == 'my_job_id'
+    assert item.datetime == start_time
+    assert item.bbox == [10, 200, 210, 400]
+    assert item.properties['foo'] == 'bar'
+    assert item.properties['sar:instrument_mode'] == 'IW'
+    assert item.properties['sar:frequency_band'] == 'C'
+    assert item.assets['unw_phase'].href == 'https://example.com/my_job_id_unw_phase.tif'
+    assert item.assets['corr'].href == 'https://example.com/my_job_id_corr.tif'

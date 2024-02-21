@@ -206,7 +206,7 @@ class GeoInfo:
         self.proj_transform = proj_transform
 
 
-def get_epsg(geo_key_list: Iterable) -> int:
+def get_epsg(geo_key_list: Iterable[int]) -> int:
     """Get the EPSG code from a GeoKeyDirectoryTag.
     Will only workfor projected coordinate systems.
 
@@ -235,6 +235,9 @@ def get_geotiff_info_nogdal(file_path: str, base_fs: Optional[fsspec.AbstractFil
     Returns:
         A GeoInfo object containing the geospatial information
     """
+    # Tag IDs from the TIFF and GeoTIFF specs
+    # https://www.itu.int/itudoc/itu-t/com16/tiff-fx/docs/tiff6.pdf
+    # https://docs.ogc.org/is/19-008r4/19-008r4.html
     tag_ids = {
         'ImageWidth': 256,
         'ImageLength': 257,
@@ -266,7 +269,7 @@ def get_geotiff_info_nogdal(file_path: str, base_fs: Optional[fsspec.AbstractFil
     return geo_info
 
 
-def get_overall_bbox(bboxes: Iterable) -> List:
+def get_overall_bbox(bboxes: Iterable[float]) -> List[float]:
     """Get the overall bounding box for a list of bounding boxes
 
     Args:
@@ -314,11 +317,13 @@ def validate_stack(batch: Batch) -> None:
         raise ValueError('Not all jobs have the same processing parameters')
 
 
-def create_insar_stac_item(job: Job, geo_info, param_file) -> pystac.Item:
-    """Create a STAC item from a HyP3 product
+def create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFile) -> pystac.Item:
+    """Create a STAC item from a HyP3 product.
 
     Args:
-        product: A HyP3 Job object representing the product
+        job: A HyP3 Job object
+        geo_info: A GeoInfo object containing the geospatial information of the product
+        param_file: A ParameterFile object containing the processing parameters of the product
 
     Returns:
         A STAC item for the product
@@ -363,10 +368,21 @@ def create_insar_stac_item(job: Job, geo_info, param_file) -> pystac.Item:
     return item
 
 
-def create_rtc_stac_item(job: Job, geo_info, available_polarizations) -> pystac.Item:
+def create_rtc_stac_item(job: Job, geo_info: GeoInfo, available_polarizations: Iterable[str]) -> pystac.Item:
+    """Create a STAC item from a HyP3 RTC product.
+
+    Args:
+        job: A HyP3 Job object
+        geo_info: A GeoInfo object containing the geospatial information of the product
+        available_polarizations: A list of the available polarizations
+
+    Returns:
+        A STAC item for the product
+    """
     base_url = job.to_dict()['files'][0]['url']
     pattern = '%Y%m%dT%H%M%S'
-    start_time = datetime.strptime(base_url.split('/')[-1].split('_')[2], pattern).replace(tzinfo=timezone.utc)
+    date_string = base_url.split('/')[-1].split('_')[2].split('.')[0]
+    start_time = datetime.strptime(date_string, pattern).replace(tzinfo=timezone.utc)
     extra_properties = {'sar:product_type': job.to_dict()['job_type'], 'sar:polarizations': available_polarizations}
     item = create_item(base_url, start_time, geo_info, available_polarizations + RTC_PRODUCTS, extra_properties)
     thumbnail = base_url.replace('.zip', '_rgb_thumb.png')
@@ -378,7 +394,21 @@ def create_rtc_stac_item(job: Job, geo_info, available_polarizations) -> pystac.
     return item
 
 
-def create_item(base_url, start_time, geo_info, product_types, extra_properties):
+def create_item(
+    base_url: str, start_time: datetime, geo_info: GeoInfo, product_types: Iterable[str], extra_properties: dict
+) -> pystac.Item:
+    """Create a STAC item from a HyP3 product.
+
+    Args:
+        base_url: The base url for the product
+        start_time: The start time of the product
+        geo_info: A GeoInfo object containing the geospatial information of the product
+        product_types: A list of the product types available
+        extra_properties: A dictionary of extra properties to add to the STAC item
+
+    Returns:
+        A STAC item for the product
+    """
     properties = {
         'data_type': 'float32',
         'nodata': 0,
@@ -413,7 +443,16 @@ def create_item(base_url, start_time, geo_info, product_types, extra_properties)
     return item
 
 
-def get_insar_info(job):
+def get_insar_info(job: Job) -> Tuple[GeoInfo, ParameterFile]:
+    """Get the geospatial and parameter information for an InSAR job.
+    Includes all https requests needed to get job info.
+
+    Args:
+        job: A HyP3 Job object
+
+    Returns:
+        A tuple containing the geospatial information and parameter file
+    """
     base_url = job.to_dict()['files'][0]['url']
     unw_file_url = base_url.replace('.zip', '_unw_phase.tif')
     param_file_url = base_url.replace('.zip', '.txt')
@@ -424,7 +463,16 @@ def get_insar_info(job):
     return geo_info, param_file
 
 
-def get_rtc_info(job):
+def get_rtc_info(job: Job) -> Tuple[GeoInfo, List[str]]:
+    """Get the geospatial and polarization information for an RTC job.
+    Includes all https requests needed to get job info.
+
+    Args:
+        job: A HyP3 Job object
+
+    Returns:
+        A tuple containing the geospatial information and available polarizations
+    """
     base_url = job.to_dict()['files'][0]['url']
     base_fs = fsspec.filesystem('https', block_size=int(0.1 * (2**20)))
     available_pols = []
@@ -439,13 +487,14 @@ def get_rtc_info(job):
     return geo_info, available_pols
 
 
-def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'hyp3_jobs', workers=10) -> None:
-    """Create a STAC collection from a HyP3 batch and save it to a directory
+def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'hyp3_jobs', workers: int = 10) -> None:
+    """Create a STAC collection from a HyP3 batch and save it to a directory.
 
     Args:
         batch: A HyP3 Batch object, or a list of jobs
         out_path: Path to the directory where the STAC collection will be saved
         id: The ID of the STAC catalog
+        workers: The number of concurent requests to make when getting job info
     """
     validate_stack(batch)
 
