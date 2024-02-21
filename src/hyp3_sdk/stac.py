@@ -31,7 +31,10 @@ HYP3_PROVIDER = pystac.Provider(
     url='https://hyp3-docs.asf.alaska.edu/',
     extra_fields={'processing:level': 'L3', 'processing:lineage': 'ASF DAAC HyP3 2023'},
 )
-SENTINEL_DATA_DESCRIPTION = 'HyP3 genereted Sentinel-1 SAR products and their associated files. The source data for these products are Sentinel-1 Single Look Complex (SLC) products processed by ESA'
+SENTINEL_DATA_DESCRIPTION = (
+    'HyP3 genereted Sentinel-1 SAR products and their associated files.'
+    ' The source data for these products are Sentinel-1 Single Look Complex (SLC) products processed by ESA'
+)
 
 RTC_PRODUCTS = ['rgb', 'area', 'dem', 'inc_map', 'ls_map']
 
@@ -217,7 +220,7 @@ def get_epsg(geo_key_list: Iterable[int]) -> int:
         The EPSG code for the projected coordinate system
     """
     projected_crs_key_id = 3072
-    geo_keys = [geo_key_list[i : i + 4] for i in range(0, len(geo_key_list), 4)]
+    geo_keys = [geo_key_list[i: i + 4] for i in range(0, len(geo_key_list), 4)]
     for key in geo_keys:
         if key[0] == projected_crs_key_id:
             return int(key[3])
