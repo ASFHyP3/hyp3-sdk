@@ -258,6 +258,23 @@ def write_mintpy_geometry(outfile, dataset, metadata):
     new_dataset.to_netcdf(outfile, format='NETCDF4', mode='w')
 
 
+def create_xarray_dataset(stac_items, select_bands=None, subset_geo=None, subset_yx=None, chunksize='5 MB'):
+    dataset = stackstac.stack(stac_items, chunksize=chunksize, fill_value=0)
+
+    if select_bands:
+        dataset = dataset.sel(band=select_bands)
+
+    if subset_geo and subset_yx:
+        print('Both geographic and index subsets were provided. Using geographic subset method.')
+
+    if subset_geo:
+        dataset = dataset.sel(y=slice(subset_geo[1], subset_geo[0]), x=slice(subset_geo[2], subset_geo[3]))
+    elif subset_yx:
+        dataset = dataset.isel(y=slice(subset_yx[0], subset_yx[1]), x=slice(subset_yx[2], subset_yx[3]))
+
+    return dataset
+
+
 def create_mintpy_inputs(
     stac_file,
     subset_yx=None,
@@ -271,24 +288,20 @@ def create_mintpy_inputs(
 
     collection = pystac.Collection.from_file(stac_file)
     items = list(collection.get_all_items())
-    dataset = stackstac.stack(items, chunksize=chunksize, fill_value=0)
 
-    if subset_geo and subset_yx:
-        print('Both geographic and index subsets were provided. Using geographic subset method.')
-
-    if subset_geo:
-        dataset = dataset.sel(y=slice(subset_geo[1], subset_geo[0]), x=slice(subset_geo[2], subset_geo[3]))
-    elif subset_yx:
-        dataset = dataset.isel(y=slice(subset_yx[0], subset_yx[1]), x=slice(subset_yx[2], subset_yx[3]))
+    dataset = create_xarray_dataset(items, subset_geo=subset_geo, subset_yx=subset_yx, chunksize=chunksize)
 
     meta, date12s, perp_baselines = get_metadata(dataset)
 
+    input_dir = mintpy_dir / 'inputs'
+    input_dir.mkdir(exist_ok=True, parents=True)
+
     meta['FILE_TYPE'] = 'ifgramStack'
-    ifg_outfile = mintpy_dir / 'inputs' / f'{meta["FILE_TYPE"]}.h5'
+    ifg_outfile = input_dir / f'{meta["FILE_TYPE"]}.h5'
     write_mintpy_ifgram_stack(ifg_outfile, dataset, meta, date12s, perp_baselines)
 
     meta['FILE_TYPE'] = 'geometry'
-    geom_outfile = mintpy_dir / 'inputs' / f'{meta["FILE_TYPE"]}.h5'
+    geom_outfile = input_dir / f'{meta["FILE_TYPE"]}.h5'
     write_mintpy_geometry(geom_outfile, dataset, meta)
 
 
