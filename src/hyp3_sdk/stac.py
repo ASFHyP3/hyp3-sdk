@@ -1,4 +1,5 @@
 """A module for creating STAC collections based on HyP3-SDK Batch/Job objects"""
+import json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -220,7 +221,7 @@ def get_epsg(geo_key_list: Iterable[int]) -> int:
         The EPSG code for the projected coordinate system
     """
     projected_crs_key_id = 3072
-    geo_keys = [geo_key_list[i: i + 4] for i in range(0, len(geo_key_list), 4)]
+    geo_keys = [geo_key_list[i : i + 4] for i in range(0, len(geo_key_list), 4)]
     for key in geo_keys:
         if key[0] == projected_crs_key_id:
             return int(key[3])
@@ -318,6 +319,12 @@ def validate_stack(batch: Batch) -> None:
     param_set = list(set([str(job) for job in job_params]))
     if len(param_set) != 1:
         raise ValueError('Not all jobs have the same processing parameters')
+
+
+def write_item(item):
+    item_dict = item.to_dict(include_self_link=False, transform_hrefs=False)
+    with open(f'{item.id}.json', 'w') as f:
+        f.write(json.dumps(item_dict))
 
 
 def create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFile) -> pystac.Item:
