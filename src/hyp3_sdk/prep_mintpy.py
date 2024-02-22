@@ -1,6 +1,8 @@
 import datetime as dt
 import time
+from pathlib import Path
 
+import h5py
 import numpy as np
 import pystac
 import stackstac
@@ -183,7 +185,7 @@ def get_metadata(dataset):
     return meta, date12s, perp_baseline
 
 
-def write_ifgram_stack(outfile, dataset, metadata, date12s, perp_baselines):
+def write_mintpy_ifgram_stack(outfile, dataset, metadata, date12s, perp_baselines):
     stack_dataset_names = {'unw_phase': 'unwrapPhase', 'corr': 'coherence'}
     has_conncomp = 'conncomp' in list(dataset.coords['band'].to_numpy())
     if has_conncomp:
@@ -197,35 +199,46 @@ def write_ifgram_stack(outfile, dataset, metadata, date12s, perp_baselines):
         new_dataset[new_name].attrs['MODIFICATION_TIME'] = str(time.time())
 
     new_dataset = new_dataset.drop_vars(list(dataset.coords))
-    new_dataset['dropIfgram'] = np.ones(new_dataset['unwrapPhase'].shape[0], dtype=np.bool_)
     new_dataset['bperp'] = perp_baselines
 
     date1 = np.array([d1.split('_')[0].encode('utf-8') for d1 in date12s])
     date2 = np.array([d2.split('_')[1].encode('utf-8') for d2 in date12s])
-    new_dataset['date'] = (('date12', 'pair'), np.array((date1, date2)).astype(np.unicode_).T)
+    dates = np.array((date1, date2)).astype(np.unicode_).transpose()
+    new_dataset['date'] = (('date12', 'pair'), dates)
 
     for key, value in metadata.items():
         new_dataset.attrs[key] = str(value)
     new_dataset.to_netcdf(outfile, format='NETCDF4', mode='w')
 
+    # FIXME this shouldn't be needed, but the call below results in dropIfgram
+    # being read back in as an int, not a bool.
+    # new_dataset['dropIfgram'] = np.ones(new_dataset['unwrapPhase'].shape[0], dtype=np.bool_)
+    shape = (new_dataset['unwrapPhase'].shape[0],)
+    with h5py.File(outfile, 'a') as f:
+        f.create_dataset('dropIfgram', shape=shape, dtype=np.bool_)
+        f['dropIfgram'][:] = True
 
-def write_geometry(outfile, dataset, metadata):
+
+def write_mintpy_geometry(outfile, dataset, metadata):
     first_product = dataset.isel(time=0)
     first_product.attrs = {}
 
     # Convert from hyp3/gamma to mintpy/isce2 convention
     incidence_angle = first_product.sel(band='lv_theta')
-    # incidence_angle[incidence_angle == 0] = np.nan
+    incidence_angle = incidence_angle.where(incidence_angle == 0, np.nan)
     incidence_angle = 90 - (incidence_angle * 180 / np.pi)
+    incidence_angle = incidence_angle.where(np.isnan(incidence_angle), 0)
 
     # Calculate Slant Range distance
     slant_range_distance = incidence_angle2slant_range_distance(metadata, incidence_angle)
 
     # Convert from hyp3/gamma to mintpy/isce2 convention
     azimuth_angle = first_product.sel(band='lv_phi')
-    # azimuth_angle[azimuth_angle == 0] = np.nan
+    azimuth_angle = azimuth_angle.where(azimuth_angle == 0, np.nan)
     azimuth_angle = azimuth_angle * 180 / np.pi - 90  # hyp3/gamma to mintpy/isce2 convention
     azimuth_angle = wrap(azimuth_angle, wrap_range=[-180, 180])  # rewrap within -180 to 180
+    azimuth_angle = azimuth_angle.where(np.isnan(azimuth_angle), 0)
+
     bands = {
         'height': first_product.sel(band='dem'),
         'incidenceAngle': incidence_angle,
@@ -250,10 +263,12 @@ def create_mintpy_inputs(
     subset_yx=None,
     subset_geo=None,
     compression=None,
-    ifg_outfile='./inputs/ifgramStack.h5',
-    geom_outfile='./inputs/geometryGeo.h5',
+    mintpy_dir=None,
     chunksize='5 MB',
 ):
+    if mintpy_dir is None:
+        mintpy_dir = Path.cwd()
+
     collection = pystac.Collection.from_file(stac_file)
     items = list(collection.get_all_items())
     dataset = stackstac.stack(items, chunksize=chunksize, fill_value=0)
@@ -269,10 +284,12 @@ def create_mintpy_inputs(
     meta, date12s, perp_baselines = get_metadata(dataset)
 
     meta['FILE_TYPE'] = 'ifgramStack'
-    write_ifgram_stack(ifg_outfile, dataset, meta, date12s, perp_baselines)
+    ifg_outfile = mintpy_dir / 'inputs' / f'{meta["FILE_TYPE"]}.h5'
+    write_mintpy_ifgram_stack(ifg_outfile, dataset, meta, date12s, perp_baselines)
 
     meta['FILE_TYPE'] = 'geometry'
-    write_geometry(geom_outfile, dataset, meta)
+    geom_outfile = mintpy_dir / 'inputs' / f'{meta["FILE_TYPE"]}.h5'
+    write_mintpy_geometry(geom_outfile, dataset, meta)
 
 
 if __name__ == '__main__':
