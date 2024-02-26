@@ -291,3 +291,6 @@ class Batch:
                 filtered_jobs.append(job)
 
         return Batch(filtered_jobs)
+
+    def total_credit_cost(self):
+        return sum(job.credit_cost for job in self.jobs)
