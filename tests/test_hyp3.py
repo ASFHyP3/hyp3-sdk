@@ -437,3 +437,13 @@ def test_check_credits():
     responses.add(responses.GET, urljoin(api.url, '/user'), json=api_response)
 
     assert math.isclose(api.check_credits(), 25.)
+
+
+@responses.activate
+def test_costs():
+    api_response = {'foo': 5}
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+    responses.add(responses.GET, urljoin(api.url, '/costs'), json=api_response)
+
+    assert api.costs() == {'foo': 5}
