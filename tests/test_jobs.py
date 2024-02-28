@@ -453,7 +453,25 @@ def test_batch_total_credit_cost():
             'request_time': '2024-01-01T00:00:00Z',
             'status_code': 'foo',
             'user_id': 'foo',
+        }),
+    ])
+    assert batch.total_credit_cost() == 0
+
+    batch = Batch([
+        Job.from_dict({
+            'job_type': 'foo',
+            'job_id': 'foo',
+            'request_time': '2024-01-01T00:00:00Z',
+            'status_code': 'foo',
+            'user_id': 'foo',
             'credit_cost': 4
+        }),
+        Job.from_dict({
+            'job_type': 'foo',
+            'job_id': 'foo',
+            'request_time': '2024-01-01T00:00:00Z',
+            'status_code': 'foo',
+            'user_id': 'foo',
         }),
     ])
     assert batch.total_credit_cost() == 4

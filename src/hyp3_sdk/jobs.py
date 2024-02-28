@@ -293,4 +293,4 @@ class Batch:
         return Batch(filtered_jobs)
 
     def total_credit_cost(self):
-        return sum(job.credit_cost for job in self.jobs)
+        return sum(job.credit_cost for job in self.jobs if job.credit_cost is not None)
