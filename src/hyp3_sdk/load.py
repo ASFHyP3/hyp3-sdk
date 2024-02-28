@@ -1,6 +1,7 @@
 import datetime as dt
 import time
 from pathlib import Path
+from typing import Iterable, Optional, Tuple
 
 import dask
 import h5py
@@ -33,7 +34,9 @@ SENTINEL1 = {
 }
 
 
-def incidence_angle2slant_range_distance(atr, inc_angle):
+def incidence_angle2slant_range_distance(
+    spacecraft_height: float, earth_radius: float, inc_angle: np.ndarray
+) -> np.ndarray:
     """Calculate the corresponding slant range distance given an incidence angle.
     Originally created by Zhang Yunjun and the MintPy team.
 
@@ -45,41 +48,43 @@ def incidence_angle2slant_range_distance(atr, inc_angle):
     where range_angle = inc_angle - look_angle
           R is the radius of the circumcircle.
 
-    link: http://www.ambrsoft.com/TrigoCalc/Triangle/BasicLaw/BasicTriangle.htm
+    Args:
+        earth_radius: radius of the Earth
+        spacecraft_height: height of the spacecraft
+        inc_angle: incidence angle in degree
 
-    Parameters: atr         - dict, metadata including the following items:
-                                  EARTH_RADIUS
-                                  HEIGHT
-                inc_angle   - float / np.ndarray, incidence angle in degree
-    Returns:    slant_range - float, slant range distance
+    Returns:
+        slant range distance array
     """
     inc_angle = inc_angle / 180 * np.pi
-    r = float(atr['EARTH_RADIUS'])
-    H = float(atr['HEIGHT'])
+    earth_radius = float(earth_radius)
+    spacecraft_height = float(spacecraft_height)
 
     # calculate 2R based on the law of sines
-    R2 = (r + H) / np.sin(np.pi - inc_angle)
+    r2 = (earth_radius + spacecraft_height) / np.sin(np.pi - inc_angle)
 
-    look_angle = np.arcsin(r / R2)
+    look_angle = np.arcsin(earth_radius / r2)
     range_angle = inc_angle - look_angle
-    range_dist = R2 * np.sin(range_angle)
+    range_dist = r2 * np.sin(range_angle)
 
     return range_dist
 
 
-def utm2latlon(meta, easting, northing):
+def utm2latlon(utm_zone: str, easting: float, northing: float) -> (float, float):
     """Convert UTM easting/northing in meters to lat/lon in degrees.
+    Originally created by Zhang Yunjun and the MintPy team.
 
-    Parameters: meta     - dict, mintpy attributes that includes:
-                           UTM_ZONE
-                easting  - scalar or 1/2D np.ndarray, UTM    coordinates in x direction
-                northing - scalar or 1/2D np.ndarray, UTM    coordinates in y direction
-    Returns:    lat      - scalar or 1/2D np.ndarray, WGS 84 coordinates in y direction
-                lon      - scalar or 1/2D np.ndarray, WGS 84 coordinates in x direction
+    Args:
+        utm_zone: UTM zone number and letter
+        easting: UTM easting in meters
+        northing: UTM northing in meters
+
+    Returns:
+        lat, lon: latitude and longitude in degrees
     """
 
-    zone_num = int(meta['UTM_ZONE'][:-1])
-    northern = meta['UTM_ZONE'][-1].upper() == 'N'
+    zone_num = int(utm_zone[:-1])
+    northern = utm_zone[-1].upper() == 'N'
     # set 'strict=False' to allow coordinates outside the range of a typical single UTM zone,
     # which can be common for large area analysis, e.g. the Norwegian mapping authority
     # publishes a height data in UTM zone 33 coordinates for the whole country, even though
@@ -88,18 +93,33 @@ def utm2latlon(meta, easting, northing):
     return lat, lon
 
 
-def wrap(data, wrap_range=[-1.0 * np.pi, np.pi]):
+def wrap(data: np.ndarray, wrap_range: Optional[Tuple] = [-1.0 * np.pi, np.pi]) -> np.ndarray:
     """Wrap data into a range.
-    Parameters: data_in    : np.array, array to be wrapped
-                wrap_range : list of 2 float, range to be wrapped into
-    Returns:    data       : np.array, data after wrapping
+    Originally created by Zhang Yunjun and the MintPy team.
+
+    Args:
+        data: data to be wrapped
+        wrap_range: range to be wrapped into
+
+    Returns:
+        wrapped data
     """
     w0, w1 = wrap_range
     data = w0 + np.mod(data - w0, w1 - w0)
     return data
 
 
-def get_metadata(dataset):
+def get_metadata(dataset: xr.Dataset) -> (dict, list, np.ndarray):
+    """Extract metadata from a Xarray dataset of HyP3 InSAR products and return MintPy compatible metadata.
+
+    Args:
+        dataset: Xarray dataset of HyP3 InSAR products
+
+    Returns:
+        meta: dictionary with metadata
+        date12s: list of date pairs
+        perp_baseline: array of perpendicular baselines
+    """
     keys = list(dataset.coords.keys())
     hyp3_meta = {}
     for key in keys:
@@ -147,8 +167,8 @@ def get_metadata(dataset):
     E = W + float(meta['X_STEP']) * int(meta['WIDTH'])
 
     # convert UTM to lat/lon
-    N, W = utm2latlon(meta, W, N)
-    S, E = utm2latlon(meta, E, S)
+    N, W = utm2latlon(meta['UTM_ZONE'], W, N)
+    S, E = utm2latlon(meta['UTM_ZONE'], E, S)
 
     meta['ORBIT_DIRECTION'] = hyp3_meta['reference_orbit_direction'].upper()
     if meta['ORBIT_DIRECTION'] == 'ASCENDING':
@@ -187,7 +207,18 @@ def get_metadata(dataset):
     return meta, date12s, perp_baseline
 
 
-def write_mintpy_ifgram_stack(outfile, dataset, metadata, date12s, perp_baselines):
+def write_mintpy_ifgram_stack(
+    outfile: str, dataset: xr.Dataset, metadata: dict, date12s: Iterable, perp_baselines: np.ndarray
+):
+    """Create a MintPy compatible interferogram stack and write it to a file.
+
+    Args:
+        outfile: output file path
+        dataset: Xarray dataset of HyP3 InSAR products
+        metadata: metadata dictionary
+        date12s: list of date pairs
+        perp_baselines: array of perpendicular baselines
+    """
     stack_dataset_names = {'unw_phase': 'unwrapPhase', 'corr': 'coherence'}
     has_conncomp = 'conncomp' in list(dataset.coords['band'].to_numpy())
     if has_conncomp:
@@ -221,7 +252,14 @@ def write_mintpy_ifgram_stack(outfile, dataset, metadata, date12s, perp_baseline
         f['dropIfgram'][:] = True
 
 
-def write_mintpy_geometry(outfile, dataset, metadata):
+def write_mintpy_geometry(outfile: str, dataset: xr.Dataset, metadata: dict) -> None:
+    """Create a MintPy compatible geometry stack and write it to a file.
+
+    Args:
+        outfile: output file path
+        dataset: Xarray dataset of HyP3 InSAR products
+        metadata: metadata dictionary
+    """
     first_product = dataset.isel(time=0)
     first_product.attrs = {}
 
@@ -232,7 +270,9 @@ def write_mintpy_geometry(outfile, dataset, metadata):
     incidence_angle = incidence_angle.where(np.isnan(incidence_angle), 0)
 
     # Calculate Slant Range distance
-    slant_range_distance = incidence_angle2slant_range_distance(metadata, incidence_angle)
+    slant_range_distance = incidence_angle2slant_range_distance(
+        metadata['HEIGHT'], metadata['EARTH_RADIUS'], incidence_angle
+    )
 
     # Convert from hyp3/gamma to mintpy/isce2 convention
     azimuth_angle = first_product.sel(band='lv_phi')
@@ -260,7 +300,25 @@ def write_mintpy_geometry(outfile, dataset, metadata):
     new_dataset.to_netcdf(outfile, format='NETCDF4', mode='w')
 
 
-def create_xarray_dataset(stac_items, select_bands=None, subset_geo=None, subset_xy=None, chunksize='5 MB'):
+def create_xarray_dataset(
+    stac_items: Iterable[pystac.Item],
+    select_bands: Optional[Iterable[str]] = None,
+    subset_geo: Optional[Iterable[float]] = None,
+    subset_xy: Optional[Iterable[int]] = None,
+    chunksize: Optional[str | dict] = '5 MB',
+):
+    """Create an Xarray dataset from a list of STAC items.
+
+    Args:
+        stac_items: list of STAC items
+        select_bands: list of bands to select
+        subset_geo: geographic subset as [W, E, S, N]
+        subset_xy: index subset as [x1, x2, y1, y2]
+        chunksize: chunk size for Dask in any format accepted by Dask
+
+    Returns:
+        Xarray dataset
+    """
     # Not sure if stackstac is the best package to use. Could also use odc-stac as for example.
     dataset = stackstac.stack(stac_items, chunksize=chunksize, fill_value=0)
 
@@ -279,18 +337,28 @@ def create_xarray_dataset(stac_items, select_bands=None, subset_geo=None, subset
 
 
 def create_mintpy_inputs(
-    stac_file,
-    subset_geo=None,
-    subset_xy=None,
-    compression=None,
-    mintpy_dir=None,
-    chunksize='15 MB',
-    n_threads=20,
+    stac_collection_file: str,
+    subset_geo: Optional[Iterable[float]] = None,
+    subset_xy: Optional[Iterable[int]] = None,
+    mintpy_dir: Optional[str] = None,
+    chunksize: str = '15 MB',
+    n_threads: int = 20,
 ):
+    """Create MintPy compatible input files from a STAC collection.
+
+    Args:
+        stac_collection_file: path to the STAC collection file
+        subset_geo: geographic subset as [W, E, S, N]
+        subset_xy: index subset as [x1, x2, y1, y2]
+        mintpy_dir: directory to create "input" dir in where the MintPy files will be saved
+        chunksize: chunk size for Dask in any format accepted by Dask
+        n_threads: number of threads to use for Dask
+    """
     if mintpy_dir is None:
         mintpy_dir = Path.cwd()
+    mintpy_dir = Path(mintpy_dir)
 
-    collection = pystac.Collection.from_file(stac_file)
+    collection = pystac.Collection.from_file(stac_collection_file)
     items = list(collection.get_all_items())
 
     dataset = create_xarray_dataset(items, subset_geo=subset_geo, subset_xy=subset_xy, chunksize=chunksize)
