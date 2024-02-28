@@ -358,6 +358,7 @@ def create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFil
     stop_time = datetime.strptime(param_file.secondary_granule.split('_')[date_loc], pattern).replace(
         tzinfo=timezone.utc
     )
+    mid_time = datetime.fromtimestamp((start_time.timestamp() + stop_time.timestamp()) / 2).replace(tzinfo=timezone.utc)
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
     extra_properies = {
@@ -368,7 +369,7 @@ def create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFil
     }
     extra_properies.update(param_file.__dict__)
 
-    item = create_item(base_url, start_time, geo_info, insar_products, extra_properies)
+    item = create_item(base_url, mid_time, geo_info, insar_products, extra_properies)
     thumbnail = base_url.replace('.zip', '_unw_phase.png')
     item.add_asset(
         key='thumbnail',

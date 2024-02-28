@@ -2,6 +2,7 @@ import datetime as dt
 import time
 from pathlib import Path
 
+import dask
 import h5py
 import numpy as np
 import pystac
@@ -33,7 +34,8 @@ SENTINEL1 = {
 
 
 def incidence_angle2slant_range_distance(atr, inc_angle):
-    """Calculate the corresponding slant range distance given an incidence angle
+    """Calculate the corresponding slant range distance given an incidence angle.
+    Originally created by Zhang Yunjun and the MintPy team.
 
     Law of sines:
                r + H                   r               range_dist
@@ -258,30 +260,32 @@ def write_mintpy_geometry(outfile, dataset, metadata):
     new_dataset.to_netcdf(outfile, format='NETCDF4', mode='w')
 
 
-def create_xarray_dataset(stac_items, select_bands=None, subset_geo=None, subset_yx=None, chunksize='5 MB'):
+def create_xarray_dataset(stac_items, select_bands=None, subset_geo=None, subset_xy=None, chunksize='5 MB'):
+    # Not sure if stackstac is the best package to use. Could also use odc-stac as for example.
     dataset = stackstac.stack(stac_items, chunksize=chunksize, fill_value=0)
 
     if select_bands:
         dataset = dataset.sel(band=select_bands)
 
-    if subset_geo and subset_yx:
+    if subset_geo and subset_xy:
         print('Both geographic and index subsets were provided. Using geographic subset method.')
 
     if subset_geo:
-        dataset = dataset.sel(y=slice(subset_geo[1], subset_geo[0]), x=slice(subset_geo[2], subset_geo[3]))
-    elif subset_yx:
-        dataset = dataset.isel(y=slice(subset_yx[0], subset_yx[1]), x=slice(subset_yx[2], subset_yx[3]))
+        dataset = dataset.sel(x=slice(subset_geo[0], subset_geo[1]), y=slice(subset_geo[3], subset_geo[2]))
+    elif subset_xy:
+        dataset = dataset.isel(x=slice(subset_xy[0], subset_xy[1]), y=slice(subset_xy[2], subset_xy[3]))
 
     return dataset
 
 
 def create_mintpy_inputs(
     stac_file,
-    subset_yx=None,
     subset_geo=None,
+    subset_xy=None,
     compression=None,
     mintpy_dir=None,
-    chunksize='5 MB',
+    chunksize='15 MB',
+    n_threads=20,
 ):
     if mintpy_dir is None:
         mintpy_dir = Path.cwd()
@@ -289,20 +293,30 @@ def create_mintpy_inputs(
     collection = pystac.Collection.from_file(stac_file)
     items = list(collection.get_all_items())
 
-    dataset = create_xarray_dataset(items, subset_geo=subset_geo, subset_yx=subset_yx, chunksize=chunksize)
+    dataset = create_xarray_dataset(items, subset_geo=subset_geo, subset_xy=subset_xy, chunksize=chunksize)
 
     meta, date12s, perp_baselines = get_metadata(dataset)
 
     input_dir = mintpy_dir / 'inputs'
     input_dir.mkdir(exist_ok=True, parents=True)
 
+    msg = f'Downloading using a chunk size of {chunksize}'
+    if n_threads > 1:
+        msg += f' and {n_threads} threads'
+        dask.config.set(scheduler='threads', num_workers=n_threads)
+    print(msg)
+
     meta['FILE_TYPE'] = 'ifgramStack'
-    ifg_outfile = input_dir / f'{meta["FILE_TYPE"]}.h5'
+    ifg_outfile = input_dir / 'ifgramStack.h5'
+    print('Creating interferogram stack...')
     write_mintpy_ifgram_stack(ifg_outfile, dataset, meta, date12s, perp_baselines)
 
     meta['FILE_TYPE'] = 'geometry'
-    geom_outfile = input_dir / f'{meta["FILE_TYPE"]}.h5'
+    geom_outfile = input_dir / 'geometryGeo.h5'
+    print('Creating geometry dataset...')
     write_mintpy_geometry(geom_outfile, dataset, meta)
+
+    print('Done!')
 
 
 if __name__ == '__main__':
