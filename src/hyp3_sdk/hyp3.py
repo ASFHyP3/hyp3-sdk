@@ -505,3 +505,12 @@ class HyP3:
         warn('This method is deprecated and will be removed in a future release.\n'
              'Please use `HyP3.check_credits` instead.', DeprecationWarning, stacklevel=2)
         return self.check_credits()
+
+    def costs(self) -> dict:
+        """
+        Returns:
+            Table of job costs
+        """
+        response = self.session.get(urljoin(self.url, '/costs'))
+        _raise_for_hyp3_status(response)
+        return response.json()
