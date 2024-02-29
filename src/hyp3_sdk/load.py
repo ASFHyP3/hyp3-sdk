@@ -10,6 +10,7 @@ import pystac
 import stackstac
 import utm
 import xarray as xr
+from odc import stac as odcstac
 from osgeo import osr
 
 
@@ -109,7 +110,7 @@ def wrap(data: np.ndarray, wrap_range: Optional[Tuple] = [-1.0 * np.pi, np.pi]) 
     return data
 
 
-def get_metadata(dataset: xr.Dataset) -> (dict, list, np.ndarray):
+def get_metadata(dataset: xr.Dataset, items: Iterable[pystac.Item]) -> (dict, list, np.ndarray):
     """Extract metadata from a Xarray dataset of HyP3 InSAR products and return MintPy compatible metadata.
 
     Args:
@@ -120,40 +121,36 @@ def get_metadata(dataset: xr.Dataset) -> (dict, list, np.ndarray):
         date12s: list of date pairs
         perp_baseline: array of perpendicular baselines
     """
-    keys = list(dataset.coords.keys())
-    hyp3_meta = {}
-    for key in keys:
-        if key in ['time', 'x', 'y', 'band']:
-            continue
-
-        value = dataset.coords[key].values
-        if value.shape == ():
-            value = value.item()
-        else:
-            value = list(value)
-
-        hyp3_meta[key] = value
-
     # Add geospatial metadata
     meta = {}
-    n_dates, n_bands, meta['LENGTH'], meta['WIDTH'] = dataset.shape
-    example_image = dataset.isel(time=0)
-    meta['X_FIRST'] = dataset.coords['x'].to_numpy()[0]
-    meta['Y_FIRST'] = dataset.coords['y'].to_numpy()[0]
-    meta['X_STEP'], _, _, _, meta['Y_STEP'], *_ = dataset.attrs['transform']
-    meta['DATA_TYPE'] = example_image['data_type'].values.item()
-    meta['EPSG'] = example_image['epsg'].values.item()
     meta['X_UNIT'] = 'meters'
     meta['Y_UNIT'] = 'meters'
-    meta['NoDataValue'] = example_image['nodata'].values.item()
+    meta['LENGTH'] = dataset.sizes['y']
+    meta['WIDTH'] = dataset.sizes['x']
+    transform = [float(x) for x in dataset.spatial_ref.attrs['GeoTransform'].split(' ')]
+    _, meta['X_STEP'], _, _, _, meta['Y_STEP'] = transform
+    meta['X_FIRST'] = dataset.coords['x'].to_numpy()[0]
+    meta['Y_FIRST'] = dataset.coords['y'].to_numpy()[0]
+    meta['DATA_TYPE'] = str(dataset['unw_phase'].dtype)
+    meta['EPSG'] = dataset.spatial_ref.values.item()
+    meta['NoDataValue'] = 0
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(meta['EPSG'])
     meta['UTM_ZONE'] = srs.GetName().split(' ')[-1]
 
+    hyp3_meta = {}
+    keys = list(items[0].properties.keys())
+    for item in items:
+        for key in keys:
+            if key in hyp3_meta:
+                hyp3_meta[key].append(item.properties[key])
+            else:
+                hyp3_meta[key] = [item.properties[key]]
+
     # add universal hyp3 metadata
     meta['PROCESSOR'] = 'hyp3'
-    meta['ALOOKS'] = hyp3_meta['azimuth_looks']
-    meta['RLOOKS'] = hyp3_meta['range_looks']
+    meta['ALOOKS'] = hyp3_meta['azimuth_looks'][0]
+    meta['RLOOKS'] = hyp3_meta['range_looks'][0]
     meta['EARTH_RADIUS'] = np.mean(hyp3_meta['earth_radius_at_nadir'])
     meta['HEIGHT'] = np.mean(hyp3_meta['spacecraft_height'])
     meta['STARTING_RANGE'] = np.mean(hyp3_meta['slant_range_near'])
@@ -170,7 +167,7 @@ def get_metadata(dataset: xr.Dataset) -> (dict, list, np.ndarray):
     N, W = utm2latlon(meta['UTM_ZONE'], W, N)
     S, E = utm2latlon(meta['UTM_ZONE'], E, S)
 
-    meta['ORBIT_DIRECTION'] = hyp3_meta['reference_orbit_direction'].upper()
+    meta['ORBIT_DIRECTION'] = hyp3_meta['reference_orbit_direction'][0].upper()
     if meta['ORBIT_DIRECTION'] == 'ASCENDING':
         meta['LAT_REF1'] = str(S)
         meta['LAT_REF2'] = str(S)
@@ -199,11 +196,20 @@ def get_metadata(dataset: xr.Dataset) -> (dict, list, np.ndarray):
     else:
         raise NotImplementedError('Only Sentinel-1 data is currently supported')
 
-    date1s = [dt.datetime.fromisoformat(x).strftime('%Y%m%d') for x in hyp3_meta['start_datetime']]
-    date2s = [dt.datetime.fromisoformat(x).strftime('%Y%m%d') for x in hyp3_meta['end_datetime']]
-    date12s = [f'{d1}_{d2}' for d1, d2 in zip(date1s, date2s)]
+    date1s = [dt.datetime.fromisoformat(x) for x in hyp3_meta['start_datetime']]
+    date2s = [dt.datetime.fromisoformat(x) for x in hyp3_meta['end_datetime']]
 
-    perp_baseline = np.abs(hyp3_meta['baseline'])
+    date12s = [''] * len(date1s)
+    perp_baseline = np.zeros(len(date1s))
+    dataset_dates = dataset.time.to_numpy()
+    for date1, date2, baseline in zip(date1s, date2s, hyp3_meta['baseline']):
+        date_mid = dt.datetime.fromtimestamp((date1.timestamp() + date2.timestamp()) / 2)
+        np_date_mid = np.array(date_mid).astype('datetime64[ns]')
+        index = np.where(np_date_mid == dataset_dates)[0][0]
+
+        date12s[index] = f"{date1.strftime('%Y%m%d')}_{date2.strftime('%Y%m%d')}"
+        perp_baseline[index] = np.abs(baseline)
+
     return meta, date12s, perp_baseline
 
 
@@ -220,18 +226,15 @@ def write_mintpy_ifgram_stack(
         perp_baselines: array of perpendicular baselines
     """
     stack_dataset_names = {'unw_phase': 'unwrapPhase', 'corr': 'coherence'}
-    has_conncomp = 'conncomp' in list(dataset.coords['band'].to_numpy())
-    if has_conncomp:
+    if 'conncomp' in list(dataset.data_vars):
         stack_dataset_names['conncomp'] = 'connectComponent'
-    dataset.attrs = {}
 
-    new_dataset = xr.Dataset()
-    for name in stack_dataset_names:
-        new_name = stack_dataset_names[name]
-        new_dataset[new_name] = dataset.sel(band=name).astype(np.float32)
-        new_dataset[new_name].attrs['MODIFICATION_TIME'] = str(time.time())
-
-    new_dataset = new_dataset.drop_vars(list(dataset.coords))
+    new_dataset = dataset.copy()
+    new_dataset.attrs = {}
+    to_drop = list(set(new_dataset.data_vars) - set(stack_dataset_names.keys()))
+    new_dataset = new_dataset.drop_vars(to_drop)
+    new_dataset = new_dataset.rename(stack_dataset_names)
+    new_dataset = new_dataset.drop(list(new_dataset.coords))
     new_dataset['bperp'] = perp_baselines
 
     date1 = np.array([d1.split('_')[0].encode('utf-8') for d1 in date12s])
@@ -260,14 +263,13 @@ def write_mintpy_geometry(outfile: str, dataset: xr.Dataset, metadata: dict) -> 
         dataset: Xarray dataset of HyP3 InSAR products
         metadata: metadata dictionary
     """
-    first_product = dataset.isel(time=0)
+    first_product = dataset.isel(time=0).copy()
     first_product.attrs = {}
+    first_product = first_product.drop(list(first_product.coords))
 
     # Convert from hyp3/gamma to mintpy/isce2 convention
-    incidence_angle = first_product.sel(band='lv_theta')
-    incidence_angle = incidence_angle.where(incidence_angle == 0, np.nan)
+    incidence_angle = first_product['lv_theta']
     incidence_angle = 90 - (incidence_angle * 180 / np.pi)
-    incidence_angle = incidence_angle.where(np.isnan(incidence_angle), 0)
 
     # Calculate Slant Range distance
     slant_range_distance = incidence_angle2slant_range_distance(
@@ -275,26 +277,23 @@ def write_mintpy_geometry(outfile: str, dataset: xr.Dataset, metadata: dict) -> 
     )
 
     # Convert from hyp3/gamma to mintpy/isce2 convention
-    azimuth_angle = first_product.sel(band='lv_phi')
-    azimuth_angle = azimuth_angle.where(azimuth_angle == 0, np.nan)
+    azimuth_angle = first_product['lv_phi']
     azimuth_angle = azimuth_angle * 180 / np.pi - 90  # hyp3/gamma to mintpy/isce2 convention
     azimuth_angle = wrap(azimuth_angle, wrap_range=[-180, 180])  # rewrap within -180 to 180
-    azimuth_angle = azimuth_angle.where(np.isnan(azimuth_angle), 0)
 
     bands = {
-        'height': first_product.sel(band='dem'),
-        'incidenceAngle': incidence_angle,
-        'slantRangeDistance': slant_range_distance,
-        'azimuthAngle': azimuth_angle,
-        'waterMask': first_product.sel(band='water_mask'),
+        'height': first_product['dem'].astype(np.float32),
+        'incidenceAngle': incidence_angle.astype(np.float32),
+        'slantRangeDistance': slant_range_distance.astype(np.float32),
+        'azimuthAngle': azimuth_angle.astype(np.float32),
+        'waterMask': first_product['water_mask'].astype(np.bool_),
     }
     new_dataset = xr.Dataset()
     for name in bands:
-        dtype = np.bool_ if name == 'water_mask' else np.float32
-        new_dataset[name] = bands[name].astype(dtype)
+        # dtype = np.bool_ if name == 'water_mask' else np.float32
+        new_dataset[name] = bands[name]
         new_dataset[name].attrs['MODIFICATION_TIME'] = str(time.time())
 
-    new_dataset = new_dataset.drop_vars(list(dataset.coords))
     for key, value in metadata.items():
         new_dataset.attrs[key] = str(value)
     new_dataset.to_netcdf(outfile, format='NETCDF4', mode='w')
@@ -305,7 +304,7 @@ def create_xarray_dataset(
     select_bands: Optional[Iterable[str]] = None,
     subset_geo: Optional[Iterable[float]] = None,
     subset_xy: Optional[Iterable[int]] = None,
-    chunksize: Optional[str | dict] = '5 MB',
+    chunksize: dict = {'x': 1024, 'y': 1024},
 ):
     """Create an Xarray dataset from a list of STAC items.
 
@@ -314,13 +313,14 @@ def create_xarray_dataset(
         select_bands: list of bands to select
         subset_geo: geographic subset as [W, E, S, N]
         subset_xy: index subset as [x1, x2, y1, y2]
-        chunksize: chunk size for Dask in any format accepted by Dask
+        chunksize: chunk size for Dask
 
     Returns:
         Xarray dataset
     """
     # Not sure if stackstac is the best package to use. Could also use odc-stac as for example.
-    dataset = stackstac.stack(stac_items, chunksize=chunksize, fill_value=0)
+    # dataset = stackstac.stack(stac_items, chunksize=chunksize, fill_value=0)
+    dataset = odcstac.load(stac_items, chunks=chunksize)
 
     if select_bands:
         dataset = dataset.sel(band=select_bands)
@@ -333,6 +333,7 @@ def create_xarray_dataset(
     elif subset_xy:
         dataset = dataset.isel(x=slice(subset_xy[0], subset_xy[1]), y=slice(subset_xy[2], subset_xy[3]))
 
+    dataset = dataset.fillna(0)
     return dataset
 
 
@@ -341,7 +342,7 @@ def create_mintpy_inputs(
     subset_geo: Optional[Iterable[float]] = None,
     subset_xy: Optional[Iterable[int]] = None,
     mintpy_dir: Optional[str] = None,
-    chunksize: str = '15 MB',
+    chunksize: dict = {'x': 512, 'y': 512},
     n_threads: int = 20,
 ):
     """Create MintPy compatible input files from a STAC collection.
@@ -351,7 +352,7 @@ def create_mintpy_inputs(
         subset_geo: geographic subset as [W, E, S, N]
         subset_xy: index subset as [x1, x2, y1, y2]
         mintpy_dir: directory to create "input" dir in where the MintPy files will be saved
-        chunksize: chunk size for Dask in any format accepted by Dask
+        chunksize: chunk size for Dask
         n_threads: number of threads to use for Dask
     """
     if mintpy_dir is None:
@@ -363,12 +364,12 @@ def create_mintpy_inputs(
 
     dataset = create_xarray_dataset(items, subset_geo=subset_geo, subset_xy=subset_xy, chunksize=chunksize)
 
-    meta, date12s, perp_baselines = get_metadata(dataset)
+    meta, date12s, perp_baselines = get_metadata(dataset, items)
 
     input_dir = mintpy_dir / 'inputs'
     input_dir.mkdir(exist_ok=True, parents=True)
 
-    msg = f'Downloading using a chunk size of {chunksize}'
+    msg = f'Downloading using chunks of {chunksize}'
     if n_threads > 1:
         msg += f' and {n_threads} threads'
         dask.config.set(scheduler='threads', num_workers=n_threads)
@@ -385,7 +386,3 @@ def create_mintpy_inputs(
     write_mintpy_geometry(geom_outfile, dataset, meta)
 
     print('Done!')
-
-
-if __name__ == '__main__':
-    create_mintpy_inputs('./stac/collection.json', subset_geo=[3903739, 3992303, 403177, 498368])
