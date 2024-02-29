@@ -3,14 +3,26 @@ import time
 from pathlib import Path
 from typing import Iterable, Optional, Tuple
 
+import numpy as np
+
+
+try:
+    import h5py
+except ImportError:
+    raise ImportError('h5py is required for this module')
+
+try:
+    import odc.stac as odcstac
+except ImportError:
+    raise ImportError('odc-stac is required for this module')
+
+# these imports are dependencies of odc.stac, and don't need to be tried separately
 import dask
 import h5py
-import numpy as np
 import pystac
-import utm
 import xarray as xr
-from odc import stac as odcstac
 from osgeo import osr
+from pyproj.transformer import Transformer
 
 
 osr.UseExceptions()
@@ -59,7 +71,7 @@ def incidence_angle2slant_range_distance(
     return range_dist
 
 
-def utm2latlon(utm_zone: str, easting: float, northing: float) -> (float, float):
+def utm2latlon(epsg_code: int, easting: float, northing: float) -> (float, float):
     """Convert UTM easting/northing in meters to lat/lon in degrees.
     Originally created by Zhang Yunjun and the MintPy team.
 
@@ -71,14 +83,8 @@ def utm2latlon(utm_zone: str, easting: float, northing: float) -> (float, float)
     Returns:
         lat, lon: latitude and longitude in degrees
     """
-
-    zone_num = int(utm_zone[:-1])
-    northern = utm_zone[-1].upper() == 'N'
-    # set 'strict=False' to allow coordinates outside the range of a typical single UTM zone,
-    # which can be common for large area analysis, e.g. the Norwegian mapping authority
-    # publishes a height data in UTM zone 33 coordinates for the whole country, even though
-    # most of it is technically outside zone 33.
-    lat, lon = utm.to_latlon(easting, northing, zone_num, northern=northern, strict=False)
+    transformer = Transformer.from_crs(f'EPSG:{epsg_code}', 'EPSG:4326', always_xy=True)
+    lon, lat = transformer.transform(easting, northing)
     return lat, lon
 
 
@@ -152,8 +158,8 @@ def get_metadata(dataset: xr.Dataset, items: Iterable[pystac.Item]) -> (dict, li
     E = W + float(meta['X_STEP']) * int(meta['WIDTH'])
 
     # convert UTM to lat/lon
-    N, W = utm2latlon(meta['UTM_ZONE'], W, N)
-    S, E = utm2latlon(meta['UTM_ZONE'], E, S)
+    N, W = utm2latlon(meta['EPSG'], W, N)
+    S, E = utm2latlon(meta['EPSG'], E, S)
 
     meta['ORBIT_DIRECTION'] = hyp3_meta['reference_orbit_direction'][0].upper()
     if meta['ORBIT_DIRECTION'] == 'ASCENDING':

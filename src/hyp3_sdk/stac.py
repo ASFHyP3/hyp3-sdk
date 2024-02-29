@@ -6,29 +6,38 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
 
-import fsspec
-import pystac
-import tifffile
-from pystac import Extent, ProviderRole, SpatialExtent, Summaries, TemporalExtent
-from pystac.extensions import sar
-from pystac.extensions.projection import ProjectionExtension
-from pystac.extensions.raster import RasterExtension
-from pystac.extensions.sar import SarExtension
 from tqdm import tqdm
 
 from hyp3_sdk import Batch, Job
+
+
+try:
+    import pystac
+    from pystac.extensions import projection, raster, sar
+except ImportError:
+    raise ImportError('pystac is required for this module')
+
+try:
+    import fsspec
+except ImportError:
+    raise ImportError('fsspec is required for this module')
+
+try:
+    import tifffile
+except ImportError:
+    raise ImportError('tifffile is required for this module')
 
 
 SENTINEL_CONSTELLATION = 'sentinel-1'
 SENTINEL_PLATFORMS = ['sentinel-1a', 'sentinel-1b']
 SENTINEL_PROVIDER = pystac.Provider(
     name='ESA',
-    roles=[ProviderRole.LICENSOR, ProviderRole.PRODUCER],
+    roles=[pystac.ProviderRole.LICENSOR, pystac.ProviderRole.PRODUCER],
     url='https://sentinel.esa.int/web/sentinel/missions/sentinel-1',
 )
 HYP3_PROVIDER = pystac.Provider(
     name='ASF DAAC',
-    roles=[ProviderRole.LICENSOR, ProviderRole.PROCESSOR, ProviderRole.HOST],
+    roles=[pystac.ProviderRole.LICENSOR, pystac.ProviderRole.PROCESSOR, pystac.ProviderRole.HOST],
     url='https://hyp3-docs.asf.alaska.edu/',
     extra_fields={'processing:level': 'L3', 'processing:lineage': 'ASF DAAC HyP3 2023'},
 )
@@ -437,9 +446,9 @@ def create_item(
         datetime=start_time,
         properties=properties,
         stac_extensions=[
-            RasterExtension.get_schema_uri(),
-            ProjectionExtension.get_schema_uri(),
-            SarExtension.get_schema_uri(),
+            raster.RasterExtension.get_schema_uri(),
+            projection.ProjectionExtension.get_schema_uri(),
+            sar.SarExtension.get_schema_uri(),
         ],
     )
     for asset_type in product_types:
@@ -522,7 +531,9 @@ def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'h
     bboxes = [item.bbox for item in items]
     dates = [item.datetime for item in items]
 
-    extent = Extent(SpatialExtent(get_overall_bbox(bboxes)), TemporalExtent([[min(dates), max(dates)]]))
+    extent = pystac.Extent(
+        pystac.SpatialExtent(get_overall_bbox(bboxes)), pystac.TemporalExtent([[min(dates), max(dates)]])
+    )
     summary_dict = {'constellation': [SENTINEL_CONSTELLATION], 'platform': SENTINEL_PLATFORMS}
 
     collection = pystac.Collection(
@@ -531,7 +542,7 @@ def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'h
         extent=extent,
         keywords=['sentinel', 'copernicus', 'esa', 'sar'],
         providers=[SENTINEL_PROVIDER, HYP3_PROVIDER],
-        summaries=Summaries(summary_dict),
+        summaries=pystac.Summaries(summary_dict),
         title='ASF HyP3 Products',
     )
     [collection.add_item(item) for item in items]
