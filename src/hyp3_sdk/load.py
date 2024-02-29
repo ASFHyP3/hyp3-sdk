@@ -7,7 +7,6 @@ import dask
 import h5py
 import numpy as np
 import pystac
-import stackstac
 import utm
 import xarray as xr
 from odc import stac as odcstac
@@ -19,19 +18,8 @@ osr.UseExceptions()
 SPEED_OF_LIGHT = 299792458  # m/s
 SENTINEL1 = {
     'carrier_frequency': 5.405e9,  # Hz
-    'altitude': 705e3,  # m, mean value
-    'antenna_length': 12.3,  # m
-    'antenna_width': 0.82,  # m
-    'doppler_bandwidth': 380,  # Hz
-    'pulse_repetition_frequency': 1717.13,  # Hz, based on real data; 1000-3000 (programmable)
-    'chirp_bandwidth': 56.50e6,  # Hz
-    'sampling_frequency': 64.35e6,  # Hz
     'azimuth_pixel_size': 14.1,  # m, this is the ground azimuth pixel spacing, NOT on orbits!
     'range_pixel_size': 2.3,  # m
-    'ground_range_pixel_size': 4.1,  # m
-    'IW1': {'range_resolution': 2.7, 'azimuth_resolution': 22.5},
-    'IW2': {'range_resolution': 3.1, 'azimuth_resolution': 22.7},
-    'IW3': {'range_resolution': 3.5, 'azimuth_resolution': 22.6},
 }
 
 
@@ -278,7 +266,7 @@ def write_mintpy_geometry(outfile: str, dataset: xr.Dataset, metadata: dict) -> 
 
     # Convert from hyp3/gamma to mintpy/isce2 convention
     azimuth_angle = first_product['lv_phi']
-    azimuth_angle = azimuth_angle * 180 / np.pi - 90  # hyp3/gamma to mintpy/isce2 convention
+    azimuth_angle = azimuth_angle * 180 / np.pi - 90
     azimuth_angle = wrap(azimuth_angle, wrap_range=[-180, 180])  # rewrap within -180 to 180
 
     bands = {
@@ -290,7 +278,6 @@ def write_mintpy_geometry(outfile: str, dataset: xr.Dataset, metadata: dict) -> 
     }
     new_dataset = xr.Dataset()
     for name in bands:
-        # dtype = np.bool_ if name == 'water_mask' else np.float32
         new_dataset[name] = bands[name]
         new_dataset[name].attrs['MODIFICATION_TIME'] = str(time.time())
 
@@ -318,8 +305,6 @@ def create_xarray_dataset(
     Returns:
         Xarray dataset
     """
-    # Not sure if stackstac is the best package to use. Could also use odc-stac as for example.
-    # dataset = stackstac.stack(stac_items, chunksize=chunksize, fill_value=0)
     dataset = odcstac.load(stac_items, chunks=chunksize)
 
     if select_bands:
