@@ -230,7 +230,7 @@ def get_epsg(geo_key_list: Iterable[int]) -> int:
         The EPSG code for the projected coordinate system
     """
     projected_crs_key_id = 3072
-    geo_keys = [geo_key_list[i : i + 4] for i in range(0, len(geo_key_list), 4)]
+    geo_keys = [geo_key_list[i: i + 4] for i in range(0, len(geo_key_list), 4)]
     for key in geo_keys:
         if key[0] == projected_crs_key_id:
             return int(key[3])
