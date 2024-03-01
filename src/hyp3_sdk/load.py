@@ -5,6 +5,13 @@ from typing import Iterable, Optional, Tuple
 
 import numpy as np
 
+try:
+    # these imports are dependencies of odc.stac, and don't need to be tried separately
+    import dask
+    import odc.stac as odcstac
+    import xarray as xr
+except ImportError:
+    raise ImportError('odc-stac is required for this module')
 
 try:
     import h5py
@@ -12,21 +19,19 @@ except ImportError:
     raise ImportError('h5py is required for this module')
 
 try:
-    import odc.stac as odcstac
-except ImportError:
-    raise ImportError('odc-stac is required for this module')
-
-try:
     from osgeo import osr
 except ImportError:
     raise ImportError('osgeo/gdal is required for this module')
 
-# these imports are dependencies of odc.stac, and don't need to be tried separately
-import dask
-import h5py
-import pystac
-import xarray as xr
-from pyproj.transformer import Transformer
+try:
+    import pystac
+except ImportError:
+    raise ImportError('pystac is required for this module')
+
+try:
+    from pyproj.transformer import Transformer
+except ImportError:
+    raise ImportError('pyproj is required for this module')
 
 
 osr.UseExceptions()
