@@ -440,3 +440,66 @@ def test_batch_filter_jobs():
         assert job.status_code == batch.jobs[ii].status_code
         if job.succeeded():
             assert job.expired() == batch.jobs[ii].expired()
+
+
+def test_batch_total_credit_cost():
+    batch = Batch()
+    assert batch.total_credit_cost() == 0
+
+    batch = Batch([
+        Job.from_dict({
+            'job_type': 'foo',
+            'job_id': 'foo',
+            'request_time': '2024-01-01T00:00:00Z',
+            'status_code': 'foo',
+            'user_id': 'foo',
+        }),
+    ])
+    assert batch.total_credit_cost() == 0
+
+    batch = Batch([
+        Job.from_dict({
+            'job_type': 'foo',
+            'job_id': 'foo',
+            'request_time': '2024-01-01T00:00:00Z',
+            'status_code': 'foo',
+            'user_id': 'foo',
+            'credit_cost': 4
+        }),
+        Job.from_dict({
+            'job_type': 'foo',
+            'job_id': 'foo',
+            'request_time': '2024-01-01T00:00:00Z',
+            'status_code': 'foo',
+            'user_id': 'foo',
+        }),
+    ])
+    assert batch.total_credit_cost() == 4
+
+    batch = Batch([
+        Job.from_dict({
+            'job_type': 'foo',
+            'job_id': 'foo',
+            'request_time': '2024-01-01T00:00:00Z',
+            'status_code': 'foo',
+            'user_id': 'foo',
+            'credit_cost': 1
+        }),
+        Job.from_dict({
+            'job_type': 'foo',
+            'job_id': 'foo',
+            'request_time': '2024-01-01T00:00:00Z',
+            'status_code': 'foo',
+            'user_id': 'foo',
+            'credit_cost': 2
+        }),
+        Job.from_dict({
+            'job_type': 'foo',
+            'job_id': 'foo',
+            'request_time': '2024-01-01T00:00:00Z',
+            'status_code': 'foo',
+            'user_id': 'foo',
+            'credit_cost': 5
+        }),
+    ])
+    assert batch.total_credit_cost() == 8
