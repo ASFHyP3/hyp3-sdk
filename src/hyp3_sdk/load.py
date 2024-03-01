@@ -16,12 +16,16 @@ try:
 except ImportError:
     raise ImportError('odc-stac is required for this module')
 
+try:
+    from osgeo import osr
+except ImportError:
+    raise ImportError('osgeo/gdal is required for this module')
+
 # these imports are dependencies of odc.stac, and don't need to be tried separately
 import dask
 import h5py
 import pystac
 import xarray as xr
-from osgeo import osr
 from pyproj.transformer import Transformer
 
 

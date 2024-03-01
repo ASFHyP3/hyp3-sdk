@@ -27,10 +27,6 @@ dependencies = [
     "requests",
     "urllib3",
     "tqdm",
-    "pystac",
-    "fsspec",
-    "aiohttp",
-    "tifffile",
 ]
 dynamic = ["version"]
 
@@ -38,7 +34,14 @@ dynamic = ["version"]
 develop = [
     "pytest",
     "pytest-cov",
-    "responses"
+    "responses",
+    "pystac",
+    "fsspec",
+    "aiohttp",
+    "tifffile",
+    "h5py",
+    "gdal",
+    "odc-stac",
 ]
 
 [project.urls]

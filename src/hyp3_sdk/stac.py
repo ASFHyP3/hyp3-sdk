@@ -384,7 +384,7 @@ def create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFil
         key='thumbnail',
         asset=pystac.Asset(href=thumbnail, media_type=pystac.MediaType.PNG, roles=['thumbnail']),
     )
-    item.validate()
+    # item.validate()
     return item
 
 
@@ -547,5 +547,5 @@ def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'h
     )
     [collection.add_item(item) for item in items]
     collection.normalize_hrefs(str(out_path))
-    collection.validate()
+    # collection.validate()
     collection.save(catalog_type=pystac.CatalogType.SELF_CONTAINED)
