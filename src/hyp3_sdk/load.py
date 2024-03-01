@@ -5,6 +5,7 @@ from typing import Iterable, Optional, Tuple
 
 import numpy as np
 
+
 try:
     # these imports are dependencies of odc.stac, and don't need to be tried separately
     import dask
@@ -206,7 +207,8 @@ def get_metadata(dataset: xr.Dataset, items: Iterable[pystac.Item]) -> (dict, li
     perp_baseline = np.zeros(len(date1s))
     dataset_dates = dataset.time.to_numpy()
     for date1, date2, baseline in zip(date1s, date2s, hyp3_meta['baseline']):
-        date_mid = dt.datetime.fromtimestamp((date1.timestamp() + date2.timestamp()) / 2)
+        date_mid = date1 + ((date2 - date1) / 2)
+        date_mid = date_mid.replace(tzinfo=dt.timezone.utc)
         np_date_mid = np.array(date_mid).astype('datetime64[ns]')
         index = np.where(np_date_mid == dataset_dates)[0][0]
 

@@ -175,7 +175,7 @@ def test_create_insar_stac_item(param_file):
     item = stac.create_insar_stac_item(job_gamma, geo_info, gamma_param_file)
     item.validate()
     assert item.id == 'my_job_id'
-    assert item.datetime == datetime(2019, 1, 1, 0, 0, 0).replace(tzinfo=timezone.utc)
+    assert item.datetime == datetime(2019, 1, 1, 12, 0, 0).replace(tzinfo=timezone.utc)
     assert item.bbox == [10, 200, 210, 400]
     assert item.properties['sar:product_type'] == 'INSAR_GAMMA'
     assert item.properties['sar:polarizations'] == ['VV']

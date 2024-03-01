@@ -230,7 +230,7 @@ def get_epsg(geo_key_list: Iterable[int]) -> int:
         The EPSG code for the projected coordinate system
     """
     projected_crs_key_id = 3072
-    geo_keys = [geo_key_list[i: i + 4] for i in range(0, len(geo_key_list), 4)]
+    geo_keys = [geo_key_list[i : i + 4] for i in range(0, len(geo_key_list), 4)]
     for key in geo_keys:
         if key[0] == projected_crs_key_id:
             return int(key[3])
@@ -367,7 +367,8 @@ def create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFil
     stop_time = datetime.strptime(param_file.secondary_granule.split('_')[date_loc], pattern).replace(
         tzinfo=timezone.utc
     )
-    mid_time = datetime.fromtimestamp((start_time.timestamp() + stop_time.timestamp()) / 2).replace(tzinfo=timezone.utc)
+    mid_time = start_time + ((stop_time - start_time) / 2)
+    mid_time = mid_time.replace(tzinfo=timezone.utc)
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
     extra_properies = {
