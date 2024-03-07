@@ -317,7 +317,7 @@ def validate_stack(batch: Batch) -> None:
     n_success = [job['status_code'] == 'SUCCEEDED' for job in job_dicts].count(True)
     if n_success != len(batch):
         raise ValueError('Not all jobs in the batch have succeeded yet')
-    
+
     # TODO add this later
     # if batch.any_expired():
     #     raise ValueError('Some of the jobs in the batch have expired')
