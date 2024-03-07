@@ -11,22 +11,25 @@ from tqdm import tqdm
 from hyp3_sdk import Batch, Job
 
 
+missing_modules = []
 try:
     import pystac
     from pystac.extensions import projection, raster, sar
 except ImportError:
-    raise ImportError('pystac is required for this module')
+    missing_modules.append('pystac')
 
 try:
     import fsspec
 except ImportError:
-    raise ImportError('fsspec is required for this module')
+    missing_modules.append('fsspec')
 
 try:
     import tifffile
 except ImportError:
-    raise ImportError('tifffile is required for this module')
+    missing_modules.append('tifffile')
 
+if missing_modules:
+    raise ImportError(f'package(s) {" ,".join(missing_modules)} is/are required for this module')
 
 SENTINEL_CONSTELLATION = 'sentinel-1'
 SENTINEL_PLATFORMS = ['sentinel-1a', 'sentinel-1b']
@@ -230,7 +233,7 @@ def get_epsg(geo_key_list: Iterable[int]) -> int:
         The EPSG code for the projected coordinate system
     """
     projected_crs_key_id = 3072
-    geo_keys = [geo_key_list[i: i + 4] for i in range(0, len(geo_key_list), 4)]
+    geo_keys = [geo_key_list[i : i + 4] for i in range(0, len(geo_key_list), 4)]
     for key in geo_keys:
         if key[0] == projected_crs_key_id:
             return int(key[3])
@@ -301,6 +304,7 @@ def get_overall_bbox(bboxes: Iterable[float]) -> List[float]:
 def validate_stack(batch: Batch) -> None:
     """Verifies that all jobs in batch:
     - Have the SUCCEEDED status
+    - Are not expired
     - Have the same job type
     - The job type is one of INSAR_GAMMA, RTC_GAMMA, INSAR
     - Have the same processing parameters
@@ -313,6 +317,9 @@ def validate_stack(batch: Batch) -> None:
     n_success = [job['status_code'] == 'SUCCEEDED' for job in job_dicts].count(True)
     if n_success != len(batch):
         raise ValueError('Not all jobs in the batch have succeeded yet')
+
+    if batch.any_expired():
+        raise ValueError('Some of the jobs in the batch have expired')
 
     job_types = list(set([job['job_type'] for job in job_dicts]))
     if len(job_types) != 1:

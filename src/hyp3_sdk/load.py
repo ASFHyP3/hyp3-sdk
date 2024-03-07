@@ -6,36 +6,36 @@ from typing import Iterable, Optional, Tuple
 import numpy as np
 
 
+missing_modules = []
 try:
-    # these imports are dependencies of odc.stac, and don't need to be tried separately
+    # xarray and dask are dependencies of odc.stac and don't need to be tried separately
     import dask
-    import odc.stac as odcstac
+    import odc.stac
     import xarray as xr
 except ImportError:
-    raise ImportError('odc-stac is required for this module')
+    missing_modules.append('odc-stac')
 
 try:
     import h5py
 except ImportError:
-    raise ImportError('h5py is required for this module')
-
-try:
-    from osgeo import osr
-except ImportError:
-    raise ImportError('osgeo/gdal is required for this module')
+    missing_modules.append('h5py')
 
 try:
     import pystac
 except ImportError:
-    raise ImportError('pystac is required for this module')
+    missing_modules.append('pystac')
 
 try:
+    from pyproj import CRS
     from pyproj.transformer import Transformer
 except ImportError:
-    raise ImportError('pyproj is required for this module')
+    missing_modules.append('pyproj')
+
+if missing_modules:
+    raise ImportError(f'package(s) {" ,".join(missing_modules)} is/are required for this module')
 
 
-osr.UseExceptions()
+odc.stac.configure_rio(cloud_defaults=True)
 
 SPEED_OF_LIGHT = 299792458  # m/s
 SENTINEL1 = {
@@ -138,9 +138,10 @@ def get_metadata(dataset: xr.Dataset, items: Iterable[pystac.Item]) -> (dict, li
     meta['DATA_TYPE'] = str(dataset['unw_phase'].dtype)
     meta['EPSG'] = dataset.spatial_ref.values.item()
     meta['NoDataValue'] = 0
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(meta['EPSG'])
-    meta['UTM_ZONE'] = srs.GetName().split(' ')[-1]
+    # srs = osr.SpatialReference()
+    # srs.ImportFromEPSG(meta['EPSG'])
+    # meta['UTM_ZONE'] = srs.GetName().split(' ')[-1]
+    meta['UTM_ZONE'] = CRS.from_epsg(meta['EPSG']).utm_zone
 
     hyp3_meta = {}
     keys = list(items[0].properties.keys())
@@ -322,7 +323,7 @@ def create_xarray_dataset(
     Returns:
         Xarray dataset
     """
-    dataset = odcstac.load(stac_items, chunks=chunksize)
+    dataset = odc.stac.load(stac_items, chunks=chunksize)
 
     if select_bands:
         dataset = dataset.sel(band=select_bands)
