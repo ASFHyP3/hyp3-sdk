@@ -1,33 +1,13 @@
+from importlib import import_module
+
+
 missing_modules = []
-try:
-    import fsspec  # noqa F401
-except ImportError:
-    missing_modules.append('fsspec')
-
-try:
-    import h5py  # noqa F401
-except ImportError:
-    missing_modules.append('h5py')
-
-try:
-    import pyproj  # noqa F401
-except ImportError:
-    missing_modules.append('pyproj')
-
-try:
-    import pystac  # noqa F401
-except ImportError:
-    missing_modules.append('pystac')
-
-try:
-    import odc.stac  # noqa F401
-except ImportError:
-    missing_modules.append('odc-stac')
-
-try:
-    import tifffile  # noqa F401
-except ImportError:
-    missing_modules.append('tifffile')
+needed_modules = ['aiohttp', 'fsspec', 'h5py', 'pyproj', 'pystac', 'odc.stac', 'tifffile']
+for module in needed_modules:
+    try:
+        import_module(module)
+    except ImportError:
+        missing_modules.append(module)
 
 if missing_modules:
-    raise ImportError(f'package(s) {" ,".join(missing_modules)} is/are required for this submodule.')
+    raise ImportError(f'package(s) {", ".join(missing_modules)} is/are required for this submodule.')
