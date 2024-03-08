@@ -75,13 +75,13 @@ def test_geoinfo():
     assert geo_info.proj_transform == [1, 0, 10, 0, -2, 400, 0, 0, 1]
 
 
-def test_get_epsg():
+def test__get_epsg():
     test_geo_key_list = [9999, 0, 1, 5555, 3072, 0, 1, 4326]
-    assert stac.get_epsg(test_geo_key_list) == 4326
+    assert stac._get_epsg(test_geo_key_list) == 4326
 
     test_geo_key_list = [9999, 0, 1, 4326, 3071, 0, 1, 4326]
     with pytest.raises(ValueError, match='No .* EPSG .*'):
-        stac.get_epsg(test_geo_key_list)
+        stac._get_epsg(test_geo_key_list)
 
 
 def create_temp_geotiff(file_path):
@@ -104,10 +104,10 @@ def create_temp_geotiff(file_path):
     return
 
 
-def test_get_geotiff_info_nogdal(tmp_path):
+def test__get_geotiff_info_nogdal(tmp_path):
     tmp_file = tmp_path / 'test.tif'
     create_temp_geotiff(tmp_file)
-    geo_info = stac.get_geotiff_info_nogdal(str(tmp_file))
+    geo_info = stac._get_geotiff_info_nogdal(str(tmp_file))
     assert geo_info.transform == [10, 1, 0, 20, 0, -2]
     assert geo_info.shape == (200, 100)
     assert geo_info.epsg == 4326
@@ -156,7 +156,7 @@ def test_validate_stac():
     stac.validate_stack([job1, job1])
 
 
-def test_create_insar_stac_item(param_file):
+def test__create_insar_stac_item(param_file):
     geo_info = stac.GeoInfo(
         transform=[10, 1, 0, 400, 0, -2],
         shape=[100, 200],
@@ -173,7 +173,7 @@ def test_create_insar_stac_item(param_file):
     gamma_param_file = deepcopy(param_file)
     gamma_param_file.reference_granule = '0_1_2_3_4_20190101T000000'
     gamma_param_file.secondary_granule = '0_1_2_3_4_20190102T000000'
-    item = stac.create_insar_stac_item(job_gamma, geo_info, gamma_param_file)
+    item = stac._create_insar_stac_item(job_gamma, geo_info, gamma_param_file)
     item.validate()
     assert item.id == 'my_job_id'
     assert item.datetime == datetime(2019, 1, 1, 12, 0, 0).replace(tzinfo=timezone.utc)
@@ -197,7 +197,7 @@ def test_create_insar_stac_item(param_file):
     isce_param_file = deepcopy(param_file)
     isce_param_file.reference_granule = '0_1_2_20190101T000000_VH'
     isce_param_file.secondary_granule = '0_1_2_20190102T000000_VH'
-    item = stac.create_insar_stac_item(job_isce, geo_info, isce_param_file)
+    item = stac._create_insar_stac_item(job_isce, geo_info, isce_param_file)
     item.validate()
     # only testing the new properties
     assert item.properties['sar:product_type'] == 'INSAR_ISCE_BURST'
@@ -206,7 +206,7 @@ def test_create_insar_stac_item(param_file):
     assert item.properties['end_datetime'] == '2019-01-02T00:00:00+00:00'
 
 
-def test_create_rtc_stac_item():
+def test__create_rtc_stac_item():
     job = Job(
         job_type='RTC_GAMMA',
         job_id='my_job_20190101T000000',
@@ -221,7 +221,7 @@ def test_create_rtc_stac_item():
         epsg=123456,
     )
     available_polarizations = ['VV', 'VH']
-    item = stac.create_rtc_stac_item(job, geo_info, available_polarizations)
+    item = stac._create_rtc_stac_item(job, geo_info, available_polarizations)
     item.validate()
     assert item.id == 'my_job_20190101T000000'
     assert item.datetime == datetime(2019, 1, 1, 0, 0, 0).replace(tzinfo=timezone.utc)
@@ -231,7 +231,7 @@ def test_create_rtc_stac_item():
     assert item.assets['VV'].href == 'https://example.com/my_job_20190101T000000_VV.tif'
 
 
-def test_create_item():
+def test__create_item():
     base_url = 'https://example.com/my_job_id.zip'
     start_time = datetime(2019, 1, 1, 0, 0, 0).replace(tzinfo=timezone.utc)
     geo_info = stac.GeoInfo(
@@ -241,7 +241,7 @@ def test_create_item():
     )
     product_types = ['unw_phase', 'corr']
     extra_properties = {'foo': 'bar'}
-    item = stac.create_item(base_url, start_time, geo_info, product_types, extra_properties)
+    item = stac._create_item(base_url, start_time, geo_info, product_types, extra_properties)
     assert item.id == 'my_job_id'
     assert item.datetime == start_time
     assert item.bbox == [10, 200, 210, 400]

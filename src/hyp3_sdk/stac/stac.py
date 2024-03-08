@@ -213,7 +213,7 @@ class GeoInfo:
         self.proj_transform = proj_transform
 
 
-def get_epsg(geo_key_list: Iterable[int]) -> int:
+def _get_epsg(geo_key_list: Iterable[int]) -> int:
     """Get the EPSG code from a GeoKeyDirectoryTag.
     Will only workfor projected coordinate systems.
 
@@ -232,7 +232,7 @@ def get_epsg(geo_key_list: Iterable[int]) -> int:
     raise ValueError('No projected EPSG code found in GeoKeyDirectoryTag')
 
 
-def get_geotiff_info_nogdal(file_path: str, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> GeoInfo:
+def _get_geotiff_info_nogdal(file_path: str, base_fs: Optional[fsspec.AbstractFileSystem] = None) -> GeoInfo:
     """Get geotiff projection info without using GDAL.
 
     Args:
@@ -271,7 +271,7 @@ def get_geotiff_info_nogdal(file_path: str, base_fs: Optional[fsspec.AbstractFil
     pixel_y *= -1
     origin_x, origin_y = meta_dict['ModelTiepointTag'][3:5]
     geotransform = [int(value) for value in [origin_x, pixel_x, 0, origin_y, 0, pixel_y]]
-    utm_epsg = get_epsg(meta_dict['GeoKeyDirectoryTag'])
+    utm_epsg = _get_epsg(meta_dict['GeoKeyDirectoryTag'])
     geo_info = GeoInfo(geotransform, (length, width), utm_epsg)
     return geo_info
 
@@ -329,13 +329,13 @@ def validate_stack(batch: Batch) -> None:
         raise ValueError('Not all jobs have the same processing parameters')
 
 
-def write_item(item):
+def _write_item(item):
     item_dict = item.to_dict(include_self_link=False, transform_hrefs=False)
     with open(f'{item.id}.json', 'w') as f:
         f.write(json.dumps(item_dict))
 
 
-def create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFile) -> pystac.Item:
+def _create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFile) -> pystac.Item:
     """Create a STAC item from a HyP3 product.
 
     Args:
@@ -378,7 +378,7 @@ def create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFil
     }
     extra_properies.update(param_file.__dict__)
 
-    item = create_item(base_url, mid_time, geo_info, insar_products, extra_properies)
+    item = _create_item(base_url, mid_time, geo_info, insar_products, extra_properies)
     thumbnail = base_url.replace('.zip', '_unw_phase.png')
     item.add_asset(
         key='thumbnail',
@@ -388,7 +388,7 @@ def create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFil
     return item
 
 
-def create_rtc_stac_item(job: Job, geo_info: GeoInfo, available_polarizations: Iterable[str]) -> pystac.Item:
+def _create_rtc_stac_item(job: Job, geo_info: GeoInfo, available_polarizations: Iterable[str]) -> pystac.Item:
     """Create a STAC item from a HyP3 RTC product.
 
     Args:
@@ -404,7 +404,7 @@ def create_rtc_stac_item(job: Job, geo_info: GeoInfo, available_polarizations: I
     date_string = base_url.split('/')[-1].split('_')[2].split('.')[0]
     start_time = datetime.strptime(date_string, pattern).replace(tzinfo=timezone.utc)
     extra_properties = {'sar:product_type': job.to_dict()['job_type'], 'sar:polarizations': available_polarizations}
-    item = create_item(base_url, start_time, geo_info, available_polarizations + RTC_PRODUCTS, extra_properties)
+    item = _create_item(base_url, start_time, geo_info, available_polarizations + RTC_PRODUCTS, extra_properties)
     thumbnail = base_url.replace('.zip', '_rgb_thumb.png')
     item.add_asset(
         key='thumbnail',
@@ -414,7 +414,7 @@ def create_rtc_stac_item(job: Job, geo_info: GeoInfo, available_polarizations: I
     return item
 
 
-def create_item(
+def _create_item(
     base_url: str, start_time: datetime, geo_info: GeoInfo, product_types: Iterable[str], extra_properties: dict
 ) -> pystac.Item:
     """Create a STAC item from a HyP3 product.
@@ -463,7 +463,7 @@ def create_item(
     return item
 
 
-def get_insar_info(job: Job) -> Tuple[GeoInfo, ParameterFile]:
+def _get_insar_info(job: Job) -> Tuple[GeoInfo, ParameterFile]:
     """Get the geospatial and parameter information for an InSAR job.
     Includes all https requests needed to get job info.
 
@@ -478,12 +478,12 @@ def get_insar_info(job: Job) -> Tuple[GeoInfo, ParameterFile]:
     param_file_url = base_url.replace('.zip', '.txt')
 
     base_fs = fsspec.filesystem('https', block_size=int(0.1 * (2**20)))
-    geo_info = get_geotiff_info_nogdal(unw_file_url, base_fs)
+    geo_info = _get_geotiff_info_nogdal(unw_file_url, base_fs)
     param_file = ParameterFile.read(param_file_url, base_fs)
     return geo_info, param_file
 
 
-def get_rtc_info(job: Job) -> Tuple[GeoInfo, List[str]]:
+def _get_rtc_info(job: Job) -> Tuple[GeoInfo, List[str]]:
     """Get the geospatial and polarization information for an RTC job.
     Includes all https requests needed to get job info.
 
@@ -503,7 +503,7 @@ def get_rtc_info(job: Job) -> Tuple[GeoInfo, List[str]]:
             available_pols.append(pol)
 
     first_pol_url = base_url.replace('.zip', f'_{available_pols[0]}.tif')
-    geo_info = get_geotiff_info_nogdal(first_pol_url, base_fs)
+    geo_info = _get_geotiff_info_nogdal(first_pol_url, base_fs)
     return geo_info, available_pols
 
 
@@ -521,12 +521,12 @@ def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'h
     job_type = batch[0].to_dict()['job_type']
     if 'INSAR' in job_type:
         with ThreadPoolExecutor(max_workers=workers) as executor:
-            results = list(tqdm(executor.map(get_insar_info, batch), total=len(batch)))
-        items = [create_insar_stac_item(job, geo, param) for job, (geo, param) in zip(batch, results)]
+            results = list(tqdm(executor.map(_get_insar_info, batch), total=len(batch)))
+        items = [_create_insar_stac_item(job, geo, param) for job, (geo, param) in zip(batch, results)]
     elif 'RTC' in job_type:
         with ThreadPoolExecutor(max_workers=workers) as executor:
-            results = list(tqdm(executor.map(get_rtc_info, batch), total=len(batch)))
-        items = [create_rtc_stac_item(job, geo, pols) for job, (geo, pols) in zip(batch, results)]
+            results = list(tqdm(executor.map(_get_rtc_info, batch), total=len(batch)))
+        items = [_create_rtc_stac_item(job, geo, pols) for job, (geo, pols) in zip(batch, results)]
 
     bboxes = [item.bbox for item in items]
     dates = [item.datetime for item in items]
