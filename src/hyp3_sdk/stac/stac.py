@@ -1,5 +1,6 @@
 """A module for creating STAC collections based on HyP3-SDK Batch/Job objects"""
 import json
+import warnings
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -13,6 +14,12 @@ from pystac.extensions import projection, raster, sar
 from tqdm import tqdm
 
 from hyp3_sdk import Batch, Job
+
+
+warnings.warn(
+    'This submodule is under rapid development. STAC item (not collection) creation will eventually move to hyp3-lib.',
+    FutureWarning,
+)
 
 
 SENTINEL_CONSTELLATION = 'sentinel-1'
