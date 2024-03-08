@@ -6,30 +6,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
 
+import fsspec
+import pystac
+import tifffile
+from pystac.extensions import projection, raster, sar
 from tqdm import tqdm
 
 from hyp3_sdk import Batch, Job
 
-
-missing_modules = []
-try:
-    import pystac
-    from pystac.extensions import projection, raster, sar
-except ImportError:
-    missing_modules.append('pystac')
-
-try:
-    import fsspec
-except ImportError:
-    missing_modules.append('fsspec')
-
-try:
-    import tifffile
-except ImportError:
-    missing_modules.append('tifffile')
-
-if missing_modules:
-    raise ImportError(f'package(s) {" ,".join(missing_modules)} is/are required for this module')
 
 SENTINEL_CONSTELLATION = 'sentinel-1'
 SENTINEL_PLATFORMS = ['sentinel-1a', 'sentinel-1b']
@@ -233,7 +217,7 @@ def get_epsg(geo_key_list: Iterable[int]) -> int:
         The EPSG code for the projected coordinate system
     """
     projected_crs_key_id = 3072
-    geo_keys = [geo_key_list[i: i + 4] for i in range(0, len(geo_key_list), 4)]
+    geo_keys = [geo_key_list[i : i + 4] for i in range(0, len(geo_key_list), 4)]
     for key in geo_keys:
         if key[0] == projected_crs_key_id:
             return int(key[3])

@@ -3,36 +3,14 @@ import time
 from pathlib import Path
 from typing import Iterable, Optional, Tuple
 
+import dask
+import h5py
 import numpy as np
-
-
-missing_modules = []
-try:
-    # xarray and dask are dependencies of odc.stac and don't need to be tried separately
-    import dask
-    import odc.stac
-    import xarray as xr
-except ImportError:
-    missing_modules.append('odc-stac')
-
-try:
-    import h5py
-except ImportError:
-    missing_modules.append('h5py')
-
-try:
-    import pystac
-except ImportError:
-    missing_modules.append('pystac')
-
-try:
-    from pyproj import CRS
-    from pyproj.transformer import Transformer
-except ImportError:
-    missing_modules.append('pyproj')
-
-if missing_modules:
-    raise ImportError(f'package(s) {" ,".join(missing_modules)} is/are required for this module')
+import odc.stac
+import pystac
+import xarray as xr
+from pyproj import CRS
+from pyproj.transformer import Transformer
 
 
 odc.stac.configure_rio(cloud_defaults=True)

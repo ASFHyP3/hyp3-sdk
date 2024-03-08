@@ -6,7 +6,8 @@ import numpy as np
 import pytest
 import tifffile
 
-from hyp3_sdk import Job, stac
+from hyp3_sdk import Job
+from hyp3_sdk.stac import stac
 
 
 @pytest.fixture
@@ -95,7 +96,7 @@ def create_temp_geotiff(file_path):
         'GeoKeyDirectoryTag': [34735, 'i', 4, (3072, 0, 1, 4326)],
     }
     extra_tags = [tags[key] for key in tags]
-    tifffile.imsave(
+    tifffile.imwrite(
         file_path,
         image_data,
         extratags=extra_tags,
