@@ -10,7 +10,7 @@ from typing import Iterable, List, Optional, Tuple
 import fsspec
 import pystac
 import tifffile
-from pystac.extensions import projection, raster, sar
+from pystac.extensions import projection, raster, sar, sat, view
 from tqdm import tqdm
 
 from hyp3_sdk import Batch, Job
@@ -33,7 +33,7 @@ HYP3_PROVIDER = pystac.Provider(
     name='ASF DAAC',
     roles=[pystac.ProviderRole.LICENSOR, pystac.ProviderRole.PROCESSOR, pystac.ProviderRole.HOST],
     url='https://hyp3-docs.asf.alaska.edu/',
-    extra_fields={'processing:level': 'L3', 'processing:lineage': 'ASF DAAC HyP3 2023'},
+    extra_fields={'processing:level': 'L3', 'processing:lineage': 'ASF DAAC HyP3'},
 )
 SENTINEL_DATA_DESCRIPTION = (
     'HyP3 genereted Sentinel-1 SAR products and their associated files.'
@@ -224,7 +224,7 @@ def _get_epsg(geo_key_list: Iterable[int]) -> int:
         The EPSG code for the projected coordinate system
     """
     projected_crs_key_id = 3072
-    geo_keys = [geo_key_list[i: i + 4] for i in range(0, len(geo_key_list), 4)]
+    geo_keys = [geo_key_list[i: i + 4] for i in range(0, len(geo_key_list), 4)]  # fmt: off
     for key in geo_keys:
         if key[0] == projected_crs_key_id:
             return int(key[3])
@@ -353,11 +353,13 @@ def _create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFi
         date_loc = 5
         reference_polarization = 'VV'
         secondary_polarization = 'VV'
+        lineage = 'Created by ASF DAAC HyP3 using the hyp3_isce2 plugin running ISCE2 SAR processing software'
     elif job.to_dict()['job_type'] == 'INSAR_ISCE_BURST':
         date_loc = 3
         reference_polarization = param_file.reference_granule.split('_')[4]
         secondary_polarization = param_file.secondary_granule.split('_')[4]
         insar_products += ['conncomp', 'wrapped_phase']
+        lineage = 'Created by ASF DAAC HyP3 using the hyp3_gamma plugin running GAMMA SAR processing software'
 
     pattern = '%Y%m%dT%H%M%S'
     start_time = datetime.strptime(param_file.reference_granule.split('_')[date_loc], pattern).replace(
@@ -370,21 +372,31 @@ def _create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFi
     mid_time = mid_time.replace(tzinfo=timezone.utc)
     polarizations = list(set([reference_polarization, secondary_polarization]))
 
-    extra_properies = {
-        'sar:product_type': job.to_dict()['job_type'],
-        'sar:polarizations': polarizations,
-        'start_datetime': start_time.isoformat(),
-        'end_datetime': stop_time.isoformat(),
-    }
-    extra_properies.update(param_file.__dict__)
+    extra_properties = {f'hyp3:{key}': value for key, value in param_file.__dict__.items()}
+    extra_properties.update(
+        {
+            'sar:product_type': job.to_dict()['job_type'],
+            'sar:polarizations': polarizations,
+            'sar:looks_azimuth': extra_properties['hyp3:azimuth_looks'],
+            'sar:looks_range': extra_properties['hyp3:range_looks'],
+            'sat:orbit_state': extra_properties['hyp3:reference_orbit_direction'].lower(),
+            'sat:absolute_orbit': extra_properties['hyp3:reference_orbit_number'],
+            'view:azimuth': (360 + extra_properties['hyp3:heading']) % 360,  # change of convention
+            'processing:level': 'L3',
+            'processing:lineage': lineage,
+            'hyp3:start_datetime': start_time.isoformat(),
+            'hyp3:end_datetime': stop_time.isoformat(),
+        }
+    )
 
-    item = _create_item(base_url, mid_time, geo_info, insar_products, extra_properies)
+    item = _create_item(base_url, mid_time, geo_info, insar_products, extra_properties)
     thumbnail = base_url.replace('.zip', '_unw_phase.png')
     item.add_asset(
         key='thumbnail',
         asset=pystac.Asset(href=thumbnail, media_type=pystac.MediaType.PNG, roles=['thumbnail']),
     )
-    # item.validate()
+    item.stac_extensions += [sat.SatExtension.get_schema_uri(), view.ViewExtension.get_schema_uri()]
+    item.validate()
     return item
 
 
@@ -403,7 +415,13 @@ def _create_rtc_stac_item(job: Job, geo_info: GeoInfo, available_polarizations: 
     pattern = '%Y%m%dT%H%M%S'
     date_string = base_url.split('/')[-1].split('_')[2].split('.')[0]
     start_time = datetime.strptime(date_string, pattern).replace(tzinfo=timezone.utc)
-    extra_properties = {'sar:product_type': job.to_dict()['job_type'], 'sar:polarizations': available_polarizations}
+    lineage = 'Created by ASF DAAC HyP3 using the hyp3_gamma plugin running GAMMA SAR processing software'
+    extra_properties = {
+        'sar:product_type': job.to_dict()['job_type'],
+        'sar:polarizations': available_polarizations,
+        'processing:level': 'L3',
+        'processing:lineage': lineage,
+    }
     item = _create_item(base_url, start_time, geo_info, available_polarizations + RTC_PRODUCTS, extra_properties)
     thumbnail = base_url.replace('.zip', '_rgb_thumb.png')
     item.add_asset(
@@ -437,6 +455,7 @@ def _create_item(
         'proj:epsg': geo_info.epsg,
         'sar:instrument_mode': 'IW',
         'sar:frequency_band': sar.FrequencyBand.C,
+        'sar:observation_direction': 'right',
     }
     properties.update(extra_properties)
     item = pystac.Item(
@@ -446,8 +465,8 @@ def _create_item(
         datetime=start_time,
         properties=properties,
         stac_extensions=[
-            raster.RasterExtension.get_schema_uri(),
             projection.ProjectionExtension.get_schema_uri(),
+            raster.RasterExtension.get_schema_uri(),
             sar.SarExtension.get_schema_uri(),
         ],
     )
@@ -547,5 +566,5 @@ def create_stac_collection(batch: Batch, out_path: Path, collection_id: str = 'h
     )
     [collection.add_item(item) for item in items]
     collection.normalize_hrefs(str(out_path))
-    # collection.validate()
+    collection.validate()
     collection.save(catalog_type=pystac.CatalogType.SELF_CONTAINED)

@@ -125,10 +125,12 @@ def get_metadata(dataset: xr.Dataset, items: Iterable[pystac.Item]) -> (dict, li
     keys = list(items[0].properties.keys())
     for item in items:
         for key in keys:
-            if key in hyp3_meta:
-                hyp3_meta[key].append(item.properties[key])
-            else:
-                hyp3_meta[key] = [item.properties[key]]
+            if key.startswith('hyp3:'):
+                simple_key = key.split(':')[-1]
+                if simple_key in hyp3_meta:
+                    hyp3_meta[simple_key].append(item.properties[key])
+                else:
+                    hyp3_meta[simple_key] = [item.properties[key]]
 
     # add universal hyp3 metadata
     meta['PROCESSOR'] = 'hyp3'

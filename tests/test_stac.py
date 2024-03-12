@@ -180,10 +180,10 @@ def test__create_insar_stac_item(param_file):
     assert item.bbox == [10, 200, 210, 400]
     assert item.properties['sar:product_type'] == 'INSAR_GAMMA'
     assert item.properties['sar:polarizations'] == ['VV']
-    assert item.properties['start_datetime'] == '2019-01-01T00:00:00+00:00'
-    assert item.properties['end_datetime'] == '2019-01-02T00:00:00+00:00'
-    assert item.properties['reference_granule'] == '0_1_2_3_4_20190101T000000'
-    assert item.properties['secondary_granule'] == '0_1_2_3_4_20190102T000000'
+    assert item.properties['hyp3:start_datetime'] == '2019-01-01T00:00:00+00:00'
+    assert item.properties['hyp3:end_datetime'] == '2019-01-02T00:00:00+00:00'
+    assert item.properties['hyp3:reference_granule'] == '0_1_2_3_4_20190101T000000'
+    assert item.properties['hyp3:secondary_granule'] == '0_1_2_3_4_20190102T000000'
     assert item.assets['unw_phase'].href == 'https://example.com/my_job_id_unw_phase.tif'
 
     job_isce = Job(
@@ -202,8 +202,8 @@ def test__create_insar_stac_item(param_file):
     # only testing the new properties
     assert item.properties['sar:product_type'] == 'INSAR_ISCE_BURST'
     assert item.properties['sar:polarizations'] == ['VH']
-    assert item.properties['start_datetime'] == '2019-01-01T00:00:00+00:00'
-    assert item.properties['end_datetime'] == '2019-01-02T00:00:00+00:00'
+    assert item.properties['hyp3:start_datetime'] == '2019-01-01T00:00:00+00:00'
+    assert item.properties['hyp3:end_datetime'] == '2019-01-02T00:00:00+00:00'
 
 
 def test__create_rtc_stac_item():
