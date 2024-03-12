@@ -22,3 +22,12 @@ dependencies:
   - requests
   - tqdm
   - urllib3
+  # For STAC creation
+  - pystac
+  - fsspec
+  - aiohttp
+  - tifffile
+  # For data loading
+  - h5py
+  - gdal
+  - odc-stac
