@@ -40,14 +40,12 @@ def incidence_angle2slant_range_distance(
     Args:
         earth_radius: radius of the Earth
         spacecraft_height: height of the spacecraft
-        inc_angle: incidence angle in degree
+        inc_angle: incidence angle in degrees
 
     Returns:
         slant range distance array
     """
     inc_angle = inc_angle / 180 * np.pi
-    earth_radius = float(earth_radius)
-    spacecraft_height = float(spacecraft_height)
 
     # calculate 2R based on the law of sines
     r2 = (earth_radius + spacecraft_height) / np.sin(np.pi - inc_angle)
@@ -90,6 +88,42 @@ def wrap(data: np.ndarray, wrap_range: Optional[Tuple] = [-1.0 * np.pi, np.pi]) 
     w0, w1 = wrap_range
     data = w0 + np.mod(data - w0, w1 - w0)
     return data
+
+
+def create_xarray_dataset(
+    stac_items: Iterable[pystac.Item],
+    select_bands: Optional[Iterable[str]] = None,
+    subset_geo: Optional[Iterable[float]] = None,
+    subset_xy: Optional[Iterable[int]] = None,
+    chunksize: dict = {'x': 1024, 'y': 1024},
+):
+    """Create an Xarray dataset from a list of STAC items.
+
+    Args:
+        stac_items: list of STAC items
+        select_bands: list of bands to select
+        subset_geo: geographic subset as [W, E, S, N]
+        subset_xy: index subset as [x1, x2, y1, y2]
+        chunksize: chunk size for Dask
+
+    Returns:
+        Xarray dataset
+    """
+    dataset = odc.stac.load(stac_items, chunks=chunksize)
+
+    if select_bands:
+        dataset = dataset.sel(band=select_bands)
+
+    if subset_geo and subset_xy:
+        print('Both geographic and index subsets were provided. Using geographic subset method.')
+
+    if subset_geo:
+        dataset = dataset.sel(x=slice(subset_geo[0], subset_geo[1]), y=slice(subset_geo[3], subset_geo[2]))
+    elif subset_xy:
+        dataset = dataset.isel(x=slice(subset_xy[0], subset_xy[1]), y=slice(subset_xy[2], subset_xy[3]))
+
+    dataset = dataset.fillna(0)
+    return dataset
 
 
 def get_metadata(dataset: xr.Dataset, items: Iterable[pystac.Item]) -> (dict, list, np.ndarray):
@@ -282,42 +316,6 @@ def write_mintpy_geometry(outfile: str, dataset: xr.Dataset, metadata: dict) -> 
     for key, value in metadata.items():
         new_dataset.attrs[key] = str(value)
     new_dataset.to_netcdf(outfile, format='NETCDF4', mode='w')
-
-
-def create_xarray_dataset(
-    stac_items: Iterable[pystac.Item],
-    select_bands: Optional[Iterable[str]] = None,
-    subset_geo: Optional[Iterable[float]] = None,
-    subset_xy: Optional[Iterable[int]] = None,
-    chunksize: dict = {'x': 1024, 'y': 1024},
-):
-    """Create an Xarray dataset from a list of STAC items.
-
-    Args:
-        stac_items: list of STAC items
-        select_bands: list of bands to select
-        subset_geo: geographic subset as [W, E, S, N]
-        subset_xy: index subset as [x1, x2, y1, y2]
-        chunksize: chunk size for Dask
-
-    Returns:
-        Xarray dataset
-    """
-    dataset = odc.stac.load(stac_items, chunks=chunksize)
-
-    if select_bands:
-        dataset = dataset.sel(band=select_bands)
-
-    if subset_geo and subset_xy:
-        print('Both geographic and index subsets were provided. Using geographic subset method.')
-
-    if subset_geo:
-        dataset = dataset.sel(x=slice(subset_geo[0], subset_geo[1]), y=slice(subset_geo[3], subset_geo[2]))
-    elif subset_xy:
-        dataset = dataset.isel(x=slice(subset_xy[0], subset_xy[1]), y=slice(subset_xy[2], subset_xy[3]))
-
-    dataset = dataset.fillna(0)
-    return dataset
 
 
 def create_mintpy_inputs(
