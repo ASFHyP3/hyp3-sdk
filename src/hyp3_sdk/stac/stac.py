@@ -10,6 +10,7 @@ from typing import Iterable, List, Optional, Tuple
 import fsspec
 import pystac
 import tifffile
+from pyproj import Transformer
 from pystac.extensions import projection, raster, sar, sat, view
 from tqdm import tqdm
 
@@ -180,20 +181,22 @@ class GeoInfo:
         """Add bounding box, bounding box geojson, and proj_transform attributes"""
         length, width = self.shape
         min_x, size_x, _, max_y, _, size_y = self.transform
-        max_x = min_x + size_x * width
-        min_y = max_y + size_y * length
-        bbox = [min_x, min_y, max_x, max_y]
-        self.bbox = bbox
+        max_x = min_x + (size_x * width)
+        min_y = max_y + (size_y * length)
+    
+        transformer = Transformer.from_crs(f'EPSG:{self.epsg}', 'EPSG:4326', always_xy=True)
+        (min_lon, max_lon), (max_lat, min_lat) = transformer.transform([min_x, max_x], [max_y, min_y])
+        self.bbox = [min_lon, min_lat, max_lon, max_lat]
 
         bbox_geojson = {
             'type': 'Polygon',
             'coordinates': [
                 [
-                    [min_x, min_y],
-                    [max_x, min_y],
-                    [max_x, max_y],
-                    [min_x, max_y],
-                    [min_x, min_y],
+                    [min_lon, min_lat],
+                    [max_lon, min_lat],
+                    [max_lon, max_lat],
+                    [min_lon, max_lat],
+                    [min_lon, min_lat],
                 ]
             ],
         }

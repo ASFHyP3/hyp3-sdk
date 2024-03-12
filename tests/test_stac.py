@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 import numpy as np
 import pytest
 import tifffile
-
 from hyp3_sdk import Job
 from hyp3_sdk.stac import stac
 
@@ -42,6 +41,11 @@ def param_file():
     return param_file
 
 
+@pytest.fixture
+def geo_info():
+    return stac.GeoInfo(transform=[677962, 1, 0, 4096742, 0, -1], shape=[108630, 92459], epsg=32610)
+
+
 def test_parameter_file(tmp_path, param_file):
     """Test the ParameterFile class"""
     assert str(param_file).startswith('Reference Granule: foo\n')
@@ -53,26 +57,11 @@ def test_parameter_file(tmp_path, param_file):
     assert loaded_param_file == param_file
 
 
-def test_geoinfo():
-    geo_info = stac.GeoInfo(
-        transform=[10, 1, 0, 400, 0, -2],
-        shape=[100, 200],
-        epsg=123456,
-    )
-    assert geo_info.bbox == [10, 200, 210, 400]
-    assert geo_info.bbox_geojson == {
-        'type': 'Polygon',
-        'coordinates': [
-            [
-                [10, 200],
-                [210, 200],
-                [210, 400],
-                [10, 400],
-                [10, 200],
-            ]
-        ],
-    }
-    assert geo_info.proj_transform == [1, 0, 10, 0, -2, 400, 0, 0, 1]
+def test_geoinfo(geo_info):
+    assert np.all(np.round(geo_info.bbox, 4) == np.round([-121, 36, -120, 37], 4))
+    assert geo_info.bbox_geojson['type'] == 'Polygon'
+    assert len(geo_info.bbox_geojson['coordinates'][0]) == 5
+    assert geo_info.proj_transform == [1, 0, 677962, 0, -1, 4096742, 0, 0, 1]
 
 
 def test__get_epsg():
@@ -156,12 +145,7 @@ def test_validate_stac():
     stac.validate_stack([job1, job1])
 
 
-def test__create_insar_stac_item(param_file):
-    geo_info = stac.GeoInfo(
-        transform=[10, 1, 0, 400, 0, -2],
-        shape=[100, 200],
-        epsg=123456,
-    )
+def test__create_insar_stac_item(param_file, geo_info):
     job_gamma = Job(
         job_type='INSAR_GAMMA',
         job_id='my_job_id',
@@ -177,7 +161,7 @@ def test__create_insar_stac_item(param_file):
     item.validate()
     assert item.id == 'my_job_id'
     assert item.datetime == datetime(2019, 1, 1, 12, 0, 0).replace(tzinfo=timezone.utc)
-    assert item.bbox == [10, 200, 210, 400]
+    assert np.all(np.round(item.bbox, 4) == np.round([-121, 36, -120, 37], 4))
     assert item.properties['sar:product_type'] == 'INSAR_GAMMA'
     assert item.properties['sar:polarizations'] == ['VV']
     assert item.properties['hyp3:start_datetime'] == '2019-01-01T00:00:00+00:00'
@@ -206,7 +190,7 @@ def test__create_insar_stac_item(param_file):
     assert item.properties['hyp3:end_datetime'] == '2019-01-02T00:00:00+00:00'
 
 
-def test__create_rtc_stac_item():
+def test__create_rtc_stac_item(geo_info):
     job = Job(
         job_type='RTC_GAMMA',
         job_id='my_job_20190101T000000',
@@ -215,36 +199,26 @@ def test__create_rtc_stac_item():
         user_id='me',
         files=[{'url': 'https://example.com/my_job_20190101T000000.zip'}],
     )
-    geo_info = stac.GeoInfo(
-        transform=[10, 1, 0, 400, 0, -2],
-        shape=[100, 200],
-        epsg=123456,
-    )
     available_polarizations = ['VV', 'VH']
     item = stac._create_rtc_stac_item(job, geo_info, available_polarizations)
     item.validate()
     assert item.id == 'my_job_20190101T000000'
     assert item.datetime == datetime(2019, 1, 1, 0, 0, 0).replace(tzinfo=timezone.utc)
-    assert item.bbox == [10, 200, 210, 400]
+    assert np.all(np.round(item.bbox, 4) == np.round([-121, 36, -120, 37], 4))
     assert item.properties['sar:product_type'] == 'RTC_GAMMA'
     assert item.properties['sar:polarizations'] == ['VV', 'VH']
     assert item.assets['VV'].href == 'https://example.com/my_job_20190101T000000_VV.tif'
 
 
-def test__create_item():
+def test__create_item(geo_info):
     base_url = 'https://example.com/my_job_id.zip'
     start_time = datetime(2019, 1, 1, 0, 0, 0).replace(tzinfo=timezone.utc)
-    geo_info = stac.GeoInfo(
-        transform=[10, 1, 0, 400, 0, -2],
-        shape=[100, 200],
-        epsg=123456,
-    )
     product_types = ['unw_phase', 'corr']
     extra_properties = {'foo': 'bar'}
     item = stac._create_item(base_url, start_time, geo_info, product_types, extra_properties)
     assert item.id == 'my_job_id'
     assert item.datetime == start_time
-    assert item.bbox == [10, 200, 210, 400]
+    assert np.all(np.round(item.bbox, 4) == np.round([-121, 36, -120, 37], 4))
     assert item.properties['foo'] == 'bar'
     assert item.properties['sar:instrument_mode'] == 'IW'
     assert item.properties['sar:frequency_band'] == 'C'
