@@ -183,7 +183,7 @@ class GeoInfo:
         min_x, size_x, _, max_y, _, size_y = self.transform
         max_x = min_x + (size_x * width)
         min_y = max_y + (size_y * length)
-    
+
         transformer = Transformer.from_crs(f'EPSG:{self.epsg}', 'EPSG:4326', always_xy=True)
         (min_lon, max_lon), (max_lat, min_lat) = transformer.transform([min_x, max_x], [max_y, min_y])
         self.bbox = [min_lon, min_lat, max_lon, max_lat]
