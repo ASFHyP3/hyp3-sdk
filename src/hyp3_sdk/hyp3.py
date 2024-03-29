@@ -6,7 +6,6 @@ from functools import singledispatchmethod
 from getpass import getpass
 from typing import List, Literal, Optional, Union
 from urllib.parse import urljoin
-from warnings import warn
 
 import hyp3_sdk
 import hyp3_sdk.util
