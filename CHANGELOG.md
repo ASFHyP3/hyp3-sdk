@@ -6,10 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [6.2.0]
+## [7.0.0]
 
 ### Removed
-* `HyP3.check_quota` method since HyP3 switched to a credits system on April 1st, 2024.
+* `HyP3.check_quota` method, which has been deprecated since v6.0.0 when HyP3 switched to a credits system on April 1st, 2024.
 
 ## [6.1.0]
 
