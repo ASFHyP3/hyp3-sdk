@@ -163,7 +163,7 @@ class ParameterFile:
             dem_resolution=int(parameters['DEM resolution (m)']),
             unwrapping_type=parameters['Unwrapping type'],
             speckle_filter=parameters['Speckle filter'] == 'yes',
-            water_mask=True,
+            water_mask=parameters['Water mask'] == 'yes',
         )
 
         return param_file
