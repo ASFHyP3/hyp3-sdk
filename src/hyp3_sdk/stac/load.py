@@ -109,7 +109,8 @@ def create_xarray_dataset(
     Returns:
         Xarray dataset
     """
-    dataset = odc.stac.load(stac_items, chunks=chunksize)
+    # anchor='center' is used to ensure "pixel as point" convention
+    dataset = odc.stac.load(stac_items, chunks=chunksize, anchor='center')
 
     if select_bands:
         dataset = dataset.sel(band=select_bands)
