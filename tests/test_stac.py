@@ -21,7 +21,7 @@ def param_file():
         secondary_orbit_number=124,
         baseline=100.0,
         utc_time=1546344000.0,
-        heading=0.0,
+        heading=-10.0,
         spacecraft_height=700000.0,
         earth_radius_at_nadir=6371000.0,
         slant_range_near=800000.0,
@@ -169,6 +169,11 @@ def test__create_insar_stac_item(param_file, geo_info):
     assert item.properties['hyp3:end_datetime'] == '2019-01-02T00:00:00+00:00'
     assert item.properties['hyp3:reference_granule'] == '0_1_2_3_4_20190101T000000'
     assert item.properties['hyp3:secondary_granule'] == '0_1_2_3_4_20190102T000000'
+    assert item.properties['view:azimuth'] == 350.0
+    assert item.properties['insar:perpendicular_baseline'] == 100.0
+    assert item.properties['insar:temporal_baseline'] == 1
+    assert item.properties['insar:processing_dem'] == 'COP-DEM_GLO30'
+    assert item.properties['insar:geocoding_dem'] == 'COP-DEM_GLO30'
     assert item.assets['unw_phase'].href == 'https://example.com/my_job_id_unw_phase.tif'
 
     job_isce = Job(

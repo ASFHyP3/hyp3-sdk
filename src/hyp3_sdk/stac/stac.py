@@ -378,6 +378,8 @@ def _create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFi
     extra_properties = {f'hyp3:{key}': value for key, value in param_file.__dict__.items()}
     extra_properties.update(
         {
+            'hyp3:start_datetime': start_time.isoformat(),
+            'hyp3:end_datetime': stop_time.isoformat(),
             'sar:product_type': job.to_dict()['job_type'],
             'sar:polarizations': polarizations,
             'sar:looks_azimuth': extra_properties['hyp3:azimuth_looks'],
@@ -387,8 +389,12 @@ def _create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFi
             'view:azimuth': (360 + extra_properties['hyp3:heading']) % 360,  # change of convention
             'processing:level': 'L3',
             'processing:lineage': lineage,
-            'hyp3:start_datetime': start_time.isoformat(),
-            'hyp3:end_datetime': stop_time.isoformat(),
+            'insar:reference_datetime': start_time.isoformat(),
+            'insar:secondary_datetime': stop_time.isoformat(),
+            'insar:processing_dem': 'COP-DEM_GLO30',
+            'insar:geocoding_dem': 'COP-DEM_GLO30',
+            'insar:perpendicular_baseline': extra_properties['hyp3:baseline'],
+            'insar:temporal_baseline': int((stop_time - start_time).days),
         }
     )
 
@@ -398,7 +404,12 @@ def _create_insar_stac_item(job: Job, geo_info: GeoInfo, param_file: ParameterFi
         key='thumbnail',
         asset=pystac.Asset(href=thumbnail, media_type=pystac.MediaType.PNG, roles=['thumbnail']),
     )
-    item.stac_extensions += [sat.SatExtension.get_schema_uri(), view.ViewExtension.get_schema_uri()]
+    # TODO: insar extension isn't available in pystac yet, so can't add it here.
+    item.stac_extensions += [
+        sat.SatExtension.get_schema_uri(),
+        view.ViewExtension.get_schema_uri(),
+        # insar.InsarExtension.get_schema_uri(),
+    ]
     item.validate()
     return item
 
