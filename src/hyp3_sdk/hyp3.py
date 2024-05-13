@@ -46,6 +46,13 @@ class HyP3:
 
         self.session = hyp3_sdk.util.get_authenticated_session(username, password)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
+        self._check_application_status()
+
+    def _check_application_status(self) -> None:
+        info = self.my_info()
+        if info['application_status'] != 'APPROVED':
+            warnings.warn(f'User {info["user_id"]} has not yet applied for a monthly credit allotment.'
+                          ' Please visit <url> to submit your application.')
 
     def find_jobs(self,
                   start: Optional[datetime] = None,
