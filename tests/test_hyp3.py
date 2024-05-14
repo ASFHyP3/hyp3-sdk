@@ -14,6 +14,7 @@ from hyp3_sdk import HyP3, Job
 def mock_my_info(self):
     return {'application_status': 'APPROVED'}
 
+
 def mock_get_authenticated_session(username, password):
     return requests.Session()
 
@@ -465,7 +466,7 @@ def test_check_application_status_approved():
     with warnings.catch_warnings(record=True) as w:
         with patch('hyp3_sdk.hyp3.HyP3.my_info', lambda x: {'user_id': 'someUser', 'application_status': 'APPROVED'}):
             with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
-                api = HyP3()
+                _ = HyP3()
         assert len(w) == 0
 
 
@@ -474,7 +475,7 @@ def test_check_application_status_not_approved():
     with warnings.catch_warnings(record=True) as w:
         with patch('hyp3_sdk.hyp3.HyP3.my_info', lambda x: {'user_id': 'someUser', 'application_status': 'PENDING'}):
             with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
-                api = HyP3()
+                _ = HyP3()
         assert len(w) == 1
         assert 'not yet applied for a monthly credit allotment' in str(w[0].message)
 
