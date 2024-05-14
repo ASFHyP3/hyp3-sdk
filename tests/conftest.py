@@ -1,11 +1,11 @@
 import shutil
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
 import requests
-from unittest.mock import patch
 
 from hyp3_sdk import Job
 from hyp3_sdk.hyp3 import HyP3
