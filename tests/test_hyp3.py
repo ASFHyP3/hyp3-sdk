@@ -11,14 +11,6 @@ import hyp3_sdk
 from hyp3_sdk import HyP3, Job
 
 
-def mock_my_info(self):
-    return {'application_status': 'APPROVED'}
-
-
-def mock_get_authenticated_session(username, password):
-    return requests.Session()
-
-
 @responses.activate
 def test_session_headers(get_mock_hyp3):
     api = get_mock_hyp3()
