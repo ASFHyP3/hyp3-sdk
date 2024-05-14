@@ -440,6 +440,23 @@ def test_check_credits():
 
 
 @responses.activate
+def test_check_application_status():
+    api_response = {
+        'application_status': 'APPROVED',
+        'job_names': [
+            'name1',
+            'name2'
+        ],
+        'remaining_credits': 25.,
+        'user_id': 'someUser'
+    }
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+    responses.add(responses.GET, urljoin(api.url, '/user'), json=api_response)
+    response = api.my_info()
+    assert response == api_response
+
+@responses.activate
 def test_costs():
     api_response = {'foo': 5}
     with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
