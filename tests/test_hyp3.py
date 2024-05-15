@@ -454,8 +454,6 @@ def test_check_application_status_errors(get_mock_hyp3):
         assert 'request for access has been rejected' in str(w[0].message)
 
 
-
-
 @responses.activate
 def test_costs(get_mock_hyp3):
     api_response = {'foo': 5}
