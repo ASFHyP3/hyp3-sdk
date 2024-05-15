@@ -52,7 +52,7 @@ class HyP3:
         info = self.my_info()
         if info['application_status'] != 'APPROVED':
             warnings.warn(f'User {info["user_id"]} has not yet applied for a monthly credit allotment.'
-                          ' Please visit <url> to submit your application.')
+                          ' Please visit https://hyp3.asf.alaska.edu/request_access to submit your application.')
 
     def find_jobs(self,
                   start: Optional[datetime] = None,
