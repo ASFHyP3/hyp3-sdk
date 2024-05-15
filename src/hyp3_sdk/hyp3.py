@@ -54,9 +54,9 @@ class HyP3:
             warnings.warn(f'User {info["user_id"]} has not yet applied for a monthly credit allotment.'
                           f' Please visit {help_url} to submit your application.')
         if info['application_status'] == 'PENDING':
-            warnings.warn(f'User {info["user_id"]}\'s request for access is pending review  For more information, '
+            warnings.warn(f'User {info["user_id"]}\'s request for access is pending review.  For more information, '
                           f'visit {help_url}')
-        elif info['application_status'] != 'APPROVED':
+        if info['application_status'] == 'REJECTED':
             warnings.warn(f'{info["user_id"]}\'s request for access has been rejected. For more information, '
                           f'visit {help_url}')
 
