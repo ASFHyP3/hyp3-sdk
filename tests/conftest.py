@@ -40,6 +40,7 @@ def get_mock_job():
             thumbnail_images=None,
             expiration_time=None,
             credit_cost=None,
+            priority=None,
     ):
         if job_parameters is None:
             job_parameters = {'param1': 'value1'}
