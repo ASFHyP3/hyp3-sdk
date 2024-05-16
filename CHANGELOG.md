@@ -10,6 +10,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 * `Job.priority` attribute
+* Unapproved `hyp3-sdk` users receive an error message when connecting to `HyP3` 
 
 ## [6.1.0]
 
