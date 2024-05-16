@@ -49,7 +49,7 @@ class HyP3:
         self._check_application_status()
 
     def _check_application_status(self) -> None:
-        help_url = 'https://hyp3.asf.alaska.edu/request_access'
+        help_url = 'https://hyp3-docs.asf.alaska.edu/using/requesting_access'
         info = self.my_info()
         if info['application_status'] == 'NOT_STARTED':
             warnings.warn(f'User {info["user_id"]} has not yet applied for a monthly credit allotment.'
