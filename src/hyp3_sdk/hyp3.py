@@ -46,6 +46,20 @@ class HyP3:
 
         self.session = hyp3_sdk.util.get_authenticated_session(username, password)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
+        self._check_application_status()
+
+    def _check_application_status(self) -> None:
+        help_url = 'https://hyp3-docs.asf.alaska.edu/using/requesting_access'
+        info = self.my_info()
+        if info['application_status'] == 'NOT_STARTED':
+            warnings.warn(f'User {info["user_id"]} has not yet applied for a monthly credit allotment.'
+                          f' Please visit {help_url} to submit your application.')
+        if info['application_status'] == 'PENDING':
+            warnings.warn(f'User {info["user_id"]}\'s request for access is pending review.  For more information, '
+                          f'visit {help_url}')
+        if info['application_status'] == 'REJECTED':
+            warnings.warn(f'{info["user_id"]}\'s request for access has been rejected. For more information, '
+                          f'visit {help_url}')
 
     def find_jobs(self,
                   start: Optional[datetime] = None,
