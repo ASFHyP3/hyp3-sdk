@@ -25,6 +25,7 @@ SUCCEEDED_JOB = {
     "thumbnail_images": ["https://PAIR_PROCESS_thumb.png"],
     "user_id": "asf_hyp3",
     "credit_cost": 1,
+    "priority": 9999,
 }
 
 FAILED_JOB = {
@@ -42,6 +43,7 @@ FAILED_JOB = {
     "status_code": "FAILED",
     "user_id": "asf_hyp3",
     "credit_cost": 1,
+    "priority": 9999,
 }
 
 

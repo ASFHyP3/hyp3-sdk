@@ -32,6 +32,7 @@ class Job:
             expiration_time: Optional[datetime] = None,
             processing_times: Optional[List[float]] = None,
             credit_cost: Optional[float] = None,
+            priority: Optional[int] = None,
     ):
         self.job_id = job_id
         self.job_type = job_type
@@ -47,6 +48,7 @@ class Job:
         self.expiration_time = expiration_time
         self.processing_times = processing_times
         self.credit_cost = credit_cost
+        self.priority = priority
 
     def __repr__(self):
         return f'Job.from_dict({self.to_dict()})'
@@ -75,6 +77,7 @@ class Job:
             expiration_time=expiration_time,
             processing_times=input_dict.get('processing_times'),
             credit_cost=input_dict.get('credit_cost'),
+            priority=input_dict.get('priority'),
         )
 
     def to_dict(self, for_resubmit: bool = False):

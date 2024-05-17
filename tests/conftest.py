@@ -1,11 +1,29 @@
 import shutil
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+import requests
 
 from hyp3_sdk import Job
+from hyp3_sdk.hyp3 import HyP3
+
+
+@pytest.fixture(autouse=True)
+def get_mock_hyp3():
+    def mock_my_info(self):
+        return {'application_status': 'APPROVED'}
+
+    def mock_get_authenticated_session(username, password):
+        return requests.Session()
+
+    def default_hyp3():
+        with patch('hyp3_sdk.hyp3.HyP3.my_info', mock_my_info):
+            with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+                return HyP3()
+    return default_hyp3
 
 
 @pytest.fixture(autouse=True)
@@ -22,6 +40,7 @@ def get_mock_job():
             thumbnail_images=None,
             expiration_time=None,
             credit_cost=None,
+            priority=None,
     ):
         if job_parameters is None:
             job_parameters = {'param1': 'value1'}
