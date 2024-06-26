@@ -8,7 +8,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [6.3.0]
 
-## Removed
+### Removed
 * Support for Python 3.9 has been removed. 
 
 ## [6.2.0]
