@@ -15,3 +15,5 @@ jobs:
     uses: ASFHyP3/actions/.github/workflows/reusable-pytest.yml@v0.11.1
     with:
       local_package_name: hyp3_sdk
+      python_versions: >-
+        ["3.10", "3.11", "3.12"]
