@@ -1,10 +1,8 @@
 import math
 import warnings
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
 from urllib.parse import urljoin
 
-import requests
 import responses
 
 import hyp3_sdk
