@@ -1,10 +1,8 @@
 import math
 import warnings
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
 from urllib.parse import urljoin
 
-import requests
 import responses
 
 import hyp3_sdk
@@ -415,43 +413,6 @@ def test_check_credits(get_mock_hyp3):
     responses.add(responses.GET, urljoin(api.url, '/user'), json=api_response)
 
     assert math.isclose(api.check_credits(), 25.)
-
-
-@responses.activate
-def test_check_application_status_approved(get_mock_hyp3):
-    with warnings.catch_warnings(record=True) as w:
-        _ = get_mock_hyp3()
-        assert len(w) == 0
-
-
-@responses.activate
-def test_check_application_status_errors(get_mock_hyp3):
-    application_status = 'NOT_STARTED'
-    with warnings.catch_warnings(record=True) as w:
-        with patch('hyp3_sdk.hyp3.HyP3.my_info', lambda x: {'user_id': 'someUser',
-                                                            'application_status': application_status}):
-            with patch('hyp3_sdk.util.get_authenticated_session', lambda username, password: requests.Session()):
-                _ = HyP3()
-        assert len(w) == 1
-        assert 'not yet applied for a monthly credit allotment' in str(w[0].message)
-
-    application_status = 'PENDING'
-    with warnings.catch_warnings(record=True) as w:
-        with patch('hyp3_sdk.hyp3.HyP3.my_info', lambda x: {'user_id': 'someUser',
-                                                            'application_status': application_status}):
-            with patch('hyp3_sdk.util.get_authenticated_session', lambda username, password: requests.Session()):
-                _ = HyP3()
-        assert len(w) == 1
-        assert 'request for access is pending review' in str(w[0].message)
-
-    application_status = 'REJECTED'
-    with warnings.catch_warnings(record=True) as w:
-        with patch('hyp3_sdk.hyp3.HyP3.my_info', lambda x: {'user_id': 'someUser',
-                                                            'application_status': application_status}):
-            with patch('hyp3_sdk.util.get_authenticated_session', lambda username, password: requests.Session()):
-                _ = HyP3()
-        assert len(w) == 1
-        assert 'request for access has been rejected' in str(w[0].message)
 
 
 @responses.activate
