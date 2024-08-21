@@ -3,6 +3,7 @@ import warnings
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin
 
+import pytest
 import responses
 
 import hyp3_sdk
@@ -290,6 +291,18 @@ def test_prepare_insar_isce_burst_job():
             'looks': '20x4',
         },
     }
+
+    assert HyP3.prepare_insar_isce_burst_job('ref_granule1', 'sec_granule2', 'job_name') == {
+        'job_type': 'INSAR_ISCE_BURST',
+        'name': 'job_name',
+        'job_parameters': {
+            'reference': ['ref_granule1'],
+            'secondary': ['sec_granule2'],
+            'apply_water_mask': False,
+            'looks': '20x4',
+        },
+    }
+
     assert HyP3.prepare_insar_isce_burst_job(
         reference=['ref_granule1', 'ref_granule2'],
         secondary=['sec_granule1', 'sec_granule2'],
@@ -306,6 +319,35 @@ def test_prepare_insar_isce_burst_job():
             'looks': '10x2',
         },
     }
+
+    assert HyP3.prepare_insar_isce_burst_job(
+        ['ref_granule1', 'ref_granule2'],
+        ['sec_granule1', 'sec_granule2'],
+        name='my_name',
+        apply_water_mask=True,
+        looks='10x2',
+    ) == {
+               'job_type': 'INSAR_ISCE_BURST',
+               'name': 'my_name',
+               'job_parameters': {
+                   'reference': ['ref_granule1', 'ref_granule2'],
+                   'secondary': ['sec_granule1', 'sec_granule2'],
+                   'apply_water_mask': True,
+                   'looks': '10x2',
+               },
+           }
+
+    with pytest.warns(DeprecationWarning):
+        assert HyP3.prepare_insar_isce_burst_job(granule1='ref_granule1', granule2='sec_granule2') == {
+            'job_type': 'INSAR_ISCE_BURST',
+            'job_parameters': {
+                'reference': ['ref_granule1'],
+                'secondary': ['sec_granule2'],
+                'apply_water_mask': False,
+                'looks': '20x4',
+            },
+        }
+
 
 
 def test_deprecated_warning():
