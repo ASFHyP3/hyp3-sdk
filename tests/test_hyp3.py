@@ -349,7 +349,6 @@ def test_prepare_insar_isce_burst_job():
         }
 
 
-
 def test_deprecated_warning():
     with warnings.catch_warnings(record=True) as w:
         HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2', include_los_displacement=False)

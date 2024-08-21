@@ -498,7 +498,6 @@ class HyP3:
         if isinstance(reference, str):
             reference = [reference]
 
-
         if isinstance(secondary, str):
             secondary = [secondary]
 
