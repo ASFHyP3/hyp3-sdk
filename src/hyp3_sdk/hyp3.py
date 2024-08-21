@@ -4,7 +4,7 @@ import warnings
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
-from typing import List, Literal, Optional, Union
+from typing import Iterable, List, Literal, Optional, Union
 from urllib.parse import urljoin
 from warnings import warn
 
@@ -424,16 +424,16 @@ class HyP3:
         return job_dict
 
     def submit_insar_isce_burst_job(self,
-                                    granule1: str,
-                                    granule2: str,
+                                    reference: Union[str, Iterable[str]],
+                                    secondary: Union[str, Iterable[str]],
                                     name: Optional[str] = None,
                                     apply_water_mask: bool = False,
                                     looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> Batch:
         """Submit an InSAR ISCE burst job.
 
         Args:
-            granule1: The first granule (scene) to use
-            granule2: The second granule (scene) to use
+            reference: The reference granule (older scene) to use
+            secondary: The secondary granule (younger scene) to use
             name: A name for the job
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
@@ -449,16 +449,16 @@ class HyP3:
 
     @classmethod
     def prepare_insar_isce_burst_job(cls,
-                                     granule1: str,
-                                     granule2: str,
+                                     reference: Union[str, Iterable[str]],
+                                     secondary: Union[str, Iterable[str]],
                                      name: Optional[str] = None,
                                      apply_water_mask: bool = False,
                                      looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> dict:
         """Prepare an InSAR ISCE burst job.
 
         Args:
-            granule1: The first granule (scene) to use
-            granule2: The second granule (scene) to use
+            reference: The reference granule (older scene) to use
+            secondary: The secondary granule (younger scene) to use
             name: A name for the job
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
@@ -468,11 +468,17 @@ class HyP3:
             A dictionary containing the prepared InSAR ISCE burst job
         """
         job_parameters = locals().copy()
-        for key in ['cls', 'granule1', 'granule2', 'name']:
+        for key in ['cls', 'reference', 'secondary', 'name']:
             job_parameters.pop(key)
 
+        if isinstance(reference, str):
+            reference = [reference]
+
+        if isinstance(secondary, str):
+            secondary = [secondary]
+
         job_dict = {
-            'job_parameters': {'granules': [granule1, granule2], **job_parameters},
+            'job_parameters': {'reference': reference, 'secondary': secondary, **job_parameters},
             'job_type': 'INSAR_ISCE_BURST',
         }
         if name is not None:

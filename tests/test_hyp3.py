@@ -281,23 +281,30 @@ def test_prepare_insar_job():
 
 
 def test_prepare_insar_isce_burst_job():
-    assert HyP3.prepare_insar_isce_burst_job(granule1='my_granule1', granule2='my_granule2') == {
+    assert HyP3.prepare_insar_isce_burst_job(reference='ref_granule1', secondary='sec_granule2') == {
         'job_type': 'INSAR_ISCE_BURST',
         'job_parameters': {
-            'granules': ['my_granule1', 'my_granule2'],
+            'reference': ['ref_granule1'],
+            'secondary': ['sec_granule2'],
             'apply_water_mask': False,
             'looks': '20x4',
-        }
+        },
     }
-    assert HyP3.prepare_insar_isce_burst_job(granule1='my_granule1', granule2='my_granule2', name='my_name',
-                                             apply_water_mask=True, looks='10x2') == {
+    assert HyP3.prepare_insar_isce_burst_job(
+        reference=['ref_granule1', 'ref_granule2'],
+        secondary=['sec_granule1', 'sec_granule2'],
+        name='my_name',
+        apply_water_mask=True,
+        looks='10x2',
+    ) == {
         'job_type': 'INSAR_ISCE_BURST',
         'name': 'my_name',
         'job_parameters': {
-            'granules': ['my_granule1', 'my_granule2'],
+            'reference': ['ref_granule1', 'ref_granule2'],
+            'secondary': ['sec_granule1', 'sec_granule2'],
             'apply_water_mask': True,
             'looks': '10x2',
-        }
+        },
     }
 
 
