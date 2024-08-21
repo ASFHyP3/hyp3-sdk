@@ -424,83 +424,90 @@ class HyP3:
         return job_dict
 
     def submit_insar_isce_burst_job(self,
-                                    *args,
-                                    reference: Union[str, Iterable[str]] = None,
-                                    secondary: Union[str, Iterable[str]] = None,
-                                    granule1: Optional[str] = None,
-                                    granule2: Optional[str] = None,
+                                    reference: Optional[Union[str, Iterable[str]]] = None,
+                                    secondary: Optional[Union[str, Iterable[str]]] = None,
                                     name: Optional[str] = None,
                                     apply_water_mask: bool = False,
-                                    looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> Batch:
+                                    looks: Literal['20x4', '10x2', '5x1'] = '20x4',
+                                    *,
+                                    granule1: Optional[str] = None,
+                                    granule2: Optional[str] = None,
+                                    ) -> Batch:
         """Submit an InSAR ISCE burst job.
 
         Args:
-            reference: The reference granule (older scene) to use
-            secondary: The secondary granule (younger scene) to use
-            granule1: Depreceated argument superseeded by reference
-            granule2: Depreceated argument superseeded by secondary
+            reference: The reference granules (older scenes) to use
+            secondary: The secondary granules (younger scenes) to use
             name: A name for the job
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
             looks: Number of looks to take in range and azimuth
+            granule1: Deprecated argument superseded by reference.The reference granule (older scene) to use
+            granule2: Deprecated argument superseded by secondary. The reference granule (older scene) to use
 
         Returns:
             A Batch object containing the InSAR ISCE burst job
         """
         arguments = locals().copy()
         arguments.pop('self')
-        arguments.pop('args')
-
-        if len(args) == 2:
-            arguments['reference'] = args[0]
-            arguments['secondary'] = args[1]
-
-        if arguments['granule1']:
-            warnings.warn("Keyword argument 'granule1' is deprecated. Use 'reference' instead.", DeprecationWarning)
-            arguments['reference'] = arguments['granule1']
-
-        if arguments['granule2']:
-            warnings.warn("Keyword argument 'granule2' is deprecated. Use 'secondary' instead.", DeprecationWarning)
-            arguments['secondary'] = arguments['granule1']
-
-        arguments.pop('granule1')
-        arguments.pop('granule2')
 
         job_dict = self.prepare_insar_isce_burst_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
     def prepare_insar_isce_burst_job(cls,
-                                     reference: Union[str, Iterable[str]],
-                                     secondary: Union[str, Iterable[str]],
+                                     reference: Optional[Union[str, Iterable[str]]] = None,
+                                     secondary: Optional[Union[str, Iterable[str]]] = None,
                                      name: Optional[str] = None,
                                      apply_water_mask: bool = False,
-                                     looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> dict:
+                                     looks: Literal['20x4', '10x2', '5x1'] = '20x4',
+                                     *,
+                                     granule1: Optional[str] = None,
+                                     granule2: Optional[str] = None,
+                                     ) -> dict:
         """Prepare an InSAR ISCE burst job.
 
         Args:
-            reference: The reference granule (older scene) to use
-            secondary: The secondary granule (younger scene) to use
+        Args:
+            reference: The reference granules (older scenes) to use
+            secondary: The secondary granules (younger scenes) to use
             name: A name for the job
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
             looks: Number of looks to take in range and azimuth
+            granule1: Deprecated argument superseded by reference.The reference granule (older scene) to use
+            granule2: Deprecated argument superseded by secondary. The reference granule (older scene) to use
 
         Returns:
             A dictionary containing the prepared InSAR ISCE burst job
         """
-        job_parameters = locals().copy()
-        for key in ['cls', 'reference', 'secondary', 'name']:
-            job_parameters.pop(key)
+        if reference is None:
+            if granule1:
+                warnings.warn("Keyword argument 'granule1' is deprecated. Use 'reference' instead.", DeprecationWarning)
+                reference = granule1
+            else:
+                raise ValueError('Either reference and secondary or granule1 and granule2 must be provided.')
+
+        if secondary is None:
+            if granule2:
+                warnings.warn("Keyword argument 'granule1' is deprecated. Use 'reference' instead.", DeprecationWarning)
+                secondary = granule2
+            else:
+                raise ValueError('Either reference and secondary or granule1 and granule2 must be provided.')
 
         if isinstance(reference, str):
             reference = [reference]
 
+
         if isinstance(secondary, str):
             secondary = [secondary]
 
+        arguments = locals().copy()
+        for key in ['cls', 'granule1', 'granule2', 'name']:
+            arguments.pop(key)
+
         job_dict = {
-            'job_parameters': {'reference': reference, 'secondary': secondary, **job_parameters},
+            'job_parameters': {**arguments},
             'job_type': 'INSAR_ISCE_BURST',
         }
         if name is not None:
