@@ -424,8 +424,11 @@ class HyP3:
         return job_dict
 
     def submit_insar_isce_burst_job(self,
-                                    reference: Union[str, Iterable[str]],
-                                    secondary: Union[str, Iterable[str]],
+                                    *args,
+                                    reference: Union[str, Iterable[str]] = None,
+                                    secondary: Union[str, Iterable[str]] = None,
+                                    granule1: Optional[str] = None,
+                                    granule2: Optional[str] = None,
                                     name: Optional[str] = None,
                                     apply_water_mask: bool = False,
                                     looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> Batch:
@@ -434,6 +437,8 @@ class HyP3:
         Args:
             reference: The reference granule (older scene) to use
             secondary: The secondary granule (younger scene) to use
+            granule1: Depreceated argument superseeded by reference
+            granule2: Depreceated argument superseeded by secondary
             name: A name for the job
             apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
                 as invalid for phase unwrapping
@@ -444,6 +449,24 @@ class HyP3:
         """
         arguments = locals().copy()
         arguments.pop('self')
+        arguments.pop('args')
+        
+        if len(args) == 2:
+            warnings.warn("Positional arguments for submit_insar_isce_burst_job are now mapped to 'reference' and 'secondary'.", DeprecationWarning)
+            arguments['reference'] = args[0]
+            arguments['secondary'] = args[1]
+
+        if arguments['granule1']:
+            warnings.warn("Keyword argument 'granule1' is deprecated. Use 'reference' instead.", DeprecationWarning)
+            arguments['reference'] = arguments['granule1']
+
+        if arguments['granule2']:
+            warnings.warn("Keyword argument 'granule2' is deprecated. Use 'secondary' instead.", DeprecationWarning)
+            arguments['secondary'] = arguments['granule1']
+
+        arguments.pop('granule1')
+        arguments.pop('granule2')
+
         job_dict = self.prepare_insar_isce_burst_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
