@@ -450,9 +450,8 @@ class HyP3:
         arguments = locals().copy()
         arguments.pop('self')
         arguments.pop('args')
-        
+
         if len(args) == 2:
-            warnings.warn("Positional arguments for submit_insar_isce_burst_job are now mapped to 'reference' and 'secondary'.", DeprecationWarning)
             arguments['reference'] = args[0]
             arguments['secondary'] = args[1]
 
