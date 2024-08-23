@@ -9,7 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [7.1.1]
 
 ### Changed
-* The `insar_isce_burst_job` so that it takes a `reference` and `secondary` scene as input, not `granule1` and `granule2`. Backward compatibility in `submit_insar_isce_burst_job` is maintained for now.
+* `insar_isce_burst_job` so that it takes a `reference` and `secondary` scene as input, rather than `granule1` and `granule2`. Backward compatibility in `submit_insar_isce_burst_job` is maintained for now, but it will be broken in the future.
 
 ## [7.0.1]
 
