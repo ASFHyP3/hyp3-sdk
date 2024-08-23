@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.1.1]
+
+### Changed
+* `insar_isce_burst_job` so that it takes a `reference` and `secondary` scene as input, rather than `granule1` and `granule2`. Backward compatibility in `submit_insar_isce_burst_job` is maintained for now, but it will be broken in the future.
+
 ## [7.0.1]
 
 ### Removed
