@@ -113,9 +113,7 @@ class HyP3:
         return Job.from_dict(response.json())
 
     @singledispatchmethod
-    def watch(
-        self, job_or_batch: Batch | Job, timeout: int = 10800, interval: int | float = 60
-    ) -> Batch | Job:
+    def watch(self, job_or_batch: Batch | Job, timeout: int = 10800, interval: int | float = 60) -> Batch | Job:
         """Watch jobs until they complete
 
         Args:

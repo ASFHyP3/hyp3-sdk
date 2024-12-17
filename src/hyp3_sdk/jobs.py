@@ -214,16 +214,14 @@ class Batch:
         return Counter([job.status_code for job in self.jobs])
 
     def complete(self) -> bool:
-        """Returns: True if all jobs are complete, otherwise returns False
-        """
+        """Returns: True if all jobs are complete, otherwise returns False"""
         for job in self.jobs:
             if not job.complete():
                 return False
         return True
 
     def succeeded(self) -> bool:
-        """Returns: True if all jobs have succeeded, otherwise returns False
-        """
+        """Returns: True if all jobs have succeeded, otherwise returns False"""
         for job in self.jobs:
             if not job.succeeded():
                 return False
