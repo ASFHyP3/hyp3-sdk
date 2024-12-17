@@ -1,7 +1,7 @@
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Union
 
 from dateutil import tz
 from dateutil.parser import parse as parse_date
@@ -17,22 +17,22 @@ class Job:
     _attributes_for_resubmit = {'name', 'job_parameters', 'job_type'}
 
     def __init__(
-            self,
-            job_type: str,
-            job_id: str,
-            request_time: datetime,
-            status_code: str,
-            user_id: str,
-            name: Optional[str] = None,
-            job_parameters: Optional[dict] = None,
-            files: Optional[List] = None,
-            logs: Optional[List] = None,
-            browse_images: Optional[List] = None,
-            thumbnail_images: Optional[List] = None,
-            expiration_time: Optional[datetime] = None,
-            processing_times: Optional[List[float]] = None,
-            credit_cost: Optional[float] = None,
-            priority: Optional[int] = None,
+        self,
+        job_type: str,
+        job_id: str,
+        request_time: datetime,
+        status_code: str,
+        user_id: str,
+        name: str | None = None,
+        job_parameters: dict | None = None,
+        files: list | None = None,
+        logs: list | None = None,
+        browse_images: list | None = None,
+        thumbnail_images: list | None = None,
+        expiration_time: datetime | None = None,
+        processing_times: list[float] | None = None,
+        credit_cost: float | None = None,
+        priority: int | None = None,
     ):
         self.job_id = job_id
         self.job_type = job_type
@@ -115,9 +115,8 @@ class Job:
     def expired(self) -> bool:
         return self.expiration_time is not None and datetime.now(tz.UTC) >= self.expiration_time
 
-    def download_files(self, location: Union[Path, str] = '.', create: bool = True) -> List[Path]:
-        """
-        Args:
+    def download_files(self, location: Path | str = '.', create: bool = True) -> list[Path]:
+        """Args:
             location: Directory location to put files into
             create: Create `location` if it does not point to an existing directory
 
@@ -128,8 +127,10 @@ class Job:
         if not self.succeeded():
             raise HyP3SDKError(f'Only succeeded jobs can be downloaded; job is {self.status_code}.')
         if self.expired():
-            raise HyP3SDKError(f'Expired jobs cannot be downloaded; '
-                               f'job expired {self.expiration_time.isoformat(timespec="seconds")}.')
+            raise HyP3SDKError(
+                f'Expired jobs cannot be downloaded; '
+                f'job expired {self.expiration_time.isoformat(timespec="seconds")}.'
+            )
 
         if create:
             location.mkdir(parents=True, exist_ok=True)
@@ -148,7 +149,7 @@ class Job:
 
 
 class Batch:
-    def __init__(self, jobs: Optional[List[Job]] = None):
+    def __init__(self, jobs: list[Job] | None = None):
         if jobs is None:
             jobs = []
         self.jobs = jobs
@@ -196,23 +197,24 @@ class Batch:
         return self
 
     def __repr__(self):
-        reprs = ", ".join([job.__repr__() for job in self.jobs])
+        reprs = ', '.join([job.__repr__() for job in self.jobs])
         return f'Batch([{reprs}])'
 
     def __str__(self):
         count = self._count_statuses()
-        return f'{len(self)} HyP3 Jobs: ' \
-               f'{count["SUCCEEDED"]} succeeded, ' \
-               f'{count["FAILED"]} failed, ' \
-               f'{count["RUNNING"]} running, ' \
-               f'{count["PENDING"]} pending.'
+        return (
+            f'{len(self)} HyP3 Jobs: '
+            f'{count["SUCCEEDED"]} succeeded, '
+            f'{count["FAILED"]} failed, '
+            f'{count["RUNNING"]} running, '
+            f'{count["PENDING"]} pending.'
+        )
 
     def _count_statuses(self):
         return Counter([job.status_code for job in self.jobs])
 
     def complete(self) -> bool:
-        """
-        Returns: True if all jobs are complete, otherwise returns False
+        """Returns: True if all jobs are complete, otherwise returns False
         """
         for job in self.jobs:
             if not job.complete():
@@ -220,17 +222,15 @@ class Batch:
         return True
 
     def succeeded(self) -> bool:
-        """
-        Returns: True if all jobs have succeeded, otherwise returns False
+        """Returns: True if all jobs have succeeded, otherwise returns False
         """
         for job in self.jobs:
             if not job.succeeded():
                 return False
         return True
 
-    def download_files(self, location: Union[Path, str] = '.', create: bool = True) -> List[Path]:
-        """
-        Args:
+    def download_files(self, location: Path | str = '.', create: bool = True) -> list[Path]:
+        """Args:
             location: Directory location to put files into
             create: Create `location` if it does not point to an existing directory
 

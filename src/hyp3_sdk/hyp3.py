@@ -4,7 +4,7 @@ import warnings
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
-from typing import List, Literal, Optional, Union
+from typing import Literal
 from urllib.parse import urljoin
 from warnings import warn
 
@@ -12,6 +12,7 @@ import hyp3_sdk
 import hyp3_sdk.util
 from hyp3_sdk.exceptions import HyP3Error, _raise_for_hyp3_status
 from hyp3_sdk.jobs import Batch, Job
+
 
 PROD_API = 'https://hyp3-api.asf.alaska.edu'
 TEST_API = 'https://hyp3-test-api.asf.alaska.edu'
@@ -24,8 +25,13 @@ class HyP3:
     https://hyp3-docs.asf.alaska.edu/#public-visibility-of-jobs
     """
 
-    def __init__(self, api_url: str = PROD_API, username: Optional[str] = None, password: Optional[str] = None,
-                 prompt: bool = False):
+    def __init__(
+        self,
+        api_url: str = PROD_API,
+        username: str | None = None,
+        password: str | None = None,
+        prompt: bool = False,
+    ):
         """If username and password are not provided, attempts to use credentials from a `.netrc` file.
 
         Args:
@@ -47,13 +53,15 @@ class HyP3:
         self.session = hyp3_sdk.util.get_authenticated_session(username, password)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
-    def find_jobs(self,
-                  start: Optional[datetime] = None,
-                  end: Optional[datetime] = None,
-                  status_code: Optional[str] = None,
-                  name: Optional[str] = None,
-                  job_type: Optional[str] = None,
-                  user_id: Optional[str] = None) -> Batch:
+    def find_jobs(
+        self,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        status_code: str | None = None,
+        name: str | None = None,
+        job_type: str | None = None,
+        user_id: str | None = None,
+    ) -> Batch:
         """Gets a Batch of jobs from HyP3 matching the provided search criteria
 
         Args:
@@ -105,8 +113,9 @@ class HyP3:
         return Job.from_dict(response.json())
 
     @singledispatchmethod
-    def watch(self, job_or_batch: Union[Batch, Job], timeout: int = 10800,
-              interval: Union[int, float] = 60) -> Union[Batch, Job]:
+    def watch(
+        self, job_or_batch: Batch | Job, timeout: int = 10800, interval: int | float = 60
+    ) -> Batch | Job:
         """Watch jobs until they complete
 
         Args:
@@ -120,7 +129,7 @@ class HyP3:
         raise NotImplementedError(f'Cannot watch {type(job_or_batch)} type object')
 
     @watch.register
-    def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: Union[int, float] = 60) -> Batch:
+    def _watch_batch(self, batch: Batch, timeout: int = 10800, interval: int | float = 60) -> Batch:
         tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
         iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
@@ -142,7 +151,7 @@ class HyP3:
         raise HyP3Error(f'Timeout occurred while waiting for {batch}')
 
     @watch.register
-    def _watch_job(self, job: Job, timeout: int = 10800, interval: Union[int, float] = 60) -> Job:
+    def _watch_job(self, job: Job, timeout: int = 10800, interval: int | float = 60) -> Job:
         tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
         iterations_until_timeout = math.ceil(timeout / interval)
         bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
@@ -158,7 +167,7 @@ class HyP3:
         raise HyP3Error(f'Timeout occurred while waiting for {job}')
 
     @singledispatchmethod
-    def refresh(self, job_or_batch: Union[Batch, Job]) -> Union[Batch, Job]:
+    def refresh(self, job_or_batch: Batch | Job) -> Batch | Job:
         """Refresh each jobs' information
 
         Args:
@@ -180,7 +189,7 @@ class HyP3:
     def _refresh_job(self, job: Job):
         return self.get_job_by_id(job.job_id)
 
-    def submit_prepared_jobs(self, prepared_jobs: Union[dict, List[dict]]) -> Batch:
+    def submit_prepared_jobs(self, prepared_jobs: dict | list[dict]) -> Batch:
         """Submit a prepared job dictionary, or list of prepared job dictionaries
 
         Args:
@@ -202,7 +211,7 @@ class HyP3:
             batch += Job.from_dict(job)
         return batch
 
-    def submit_autorift_job(self, granule1: str, granule2: str, name: Optional[str] = None) -> Batch:
+    def submit_autorift_job(self, granule1: str, granule2: str, name: str | None = None) -> Batch:
         """Submit an autoRIFT job
 
         Args:
@@ -217,7 +226,7 @@ class HyP3:
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_autorift_job(cls, granule1: str, granule2: str, name: Optional[str] = None) -> dict:
+    def prepare_autorift_job(cls, granule1: str, granule2: str, name: str | None = None) -> dict:
         """Submit an autoRIFT job
 
         Args:
@@ -236,19 +245,21 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_rtc_job(self,
-                       granule: str,
-                       name: Optional[str] = None,
-                       dem_matching: bool = False,
-                       include_dem: bool = False,
-                       include_inc_map: bool = False,
-                       include_rgb: bool = False,
-                       include_scattering_area: bool = False,
-                       radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
-                       resolution: Literal[10, 20, 30] = 30,
-                       scale: Literal['amplitude', 'decibel', 'power'] = 'power',
-                       speckle_filter: bool = False,
-                       dem_name: Literal['copernicus'] = 'copernicus') -> Batch:
+    def submit_rtc_job(
+        self,
+        granule: str,
+        name: str | None = None,
+        dem_matching: bool = False,
+        include_dem: bool = False,
+        include_inc_map: bool = False,
+        include_rgb: bool = False,
+        include_scattering_area: bool = False,
+        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+        resolution: Literal[10, 20, 30] = 30,
+        scale: Literal['amplitude', 'decibel', 'power'] = 'power',
+        speckle_filter: bool = False,
+        dem_name: Literal['copernicus'] = 'copernicus',
+    ) -> Batch:
         """Submit an RTC job
 
         Args:
@@ -277,19 +288,21 @@ class HyP3:
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_rtc_job(cls,
-                        granule: str,
-                        name: Optional[str] = None,
-                        dem_matching: bool = False,
-                        include_dem: bool = False,
-                        include_inc_map: bool = False,
-                        include_rgb: bool = False,
-                        include_scattering_area: bool = False,
-                        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
-                        resolution: Literal[10, 20, 30] = 30,
-                        scale: Literal['amplitude', 'decibel', 'power'] = 'power',
-                        speckle_filter: bool = False,
-                        dem_name: Literal['copernicus'] = 'copernicus') -> dict:
+    def prepare_rtc_job(
+        cls,
+        granule: str,
+        name: str | None = None,
+        dem_matching: bool = False,
+        include_dem: bool = False,
+        include_inc_map: bool = False,
+        include_rgb: bool = False,
+        include_scattering_area: bool = False,
+        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+        resolution: Literal[10, 20, 30] = 30,
+        scale: Literal['amplitude', 'decibel', 'power'] = 'power',
+        speckle_filter: bool = False,
+        dem_name: Literal['copernicus'] = 'copernicus',
+    ) -> dict:
         """Submit an RTC job
 
         Args:
@@ -325,19 +338,21 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_insar_job(self,
-                         granule1: str,
-                         granule2: str,
-                         name: Optional[str] = None,
-                         include_look_vectors: bool = False,
-                         include_los_displacement: bool = False,
-                         include_inc_map: bool = False,
-                         looks: Literal['20x4', '10x2'] = '20x4',
-                         include_dem: bool = False,
-                         include_wrapped_phase: bool = False,
-                         apply_water_mask: bool = False,
-                         include_displacement_maps: bool = False,
-                         phase_filter_parameter: float = 0.6) -> Batch:
+    def submit_insar_job(
+        self,
+        granule1: str,
+        granule2: str,
+        name: str | None = None,
+        include_look_vectors: bool = False,
+        include_los_displacement: bool = False,
+        include_inc_map: bool = False,
+        looks: Literal['20x4', '10x2'] = '20x4',
+        include_dem: bool = False,
+        include_wrapped_phase: bool = False,
+        apply_water_mask: bool = False,
+        include_displacement_maps: bool = False,
+        phase_filter_parameter: float = 0.6,
+    ) -> Batch:
         """Submit an InSAR job
 
         Args:
@@ -369,19 +384,21 @@ class HyP3:
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_insar_job(cls,
-                          granule1: str,
-                          granule2: str,
-                          name: Optional[str] = None,
-                          include_look_vectors: bool = False,
-                          include_los_displacement: bool = False,
-                          include_inc_map: bool = False,
-                          looks: Literal['20x4', '10x2'] = '20x4',
-                          include_dem: bool = False,
-                          include_wrapped_phase: bool = False,
-                          apply_water_mask: bool = False,
-                          include_displacement_maps: bool = False,
-                          phase_filter_parameter: float = 0.6) -> dict:
+    def prepare_insar_job(
+        cls,
+        granule1: str,
+        granule2: str,
+        name: str | None = None,
+        include_look_vectors: bool = False,
+        include_los_displacement: bool = False,
+        include_inc_map: bool = False,
+        looks: Literal['20x4', '10x2'] = '20x4',
+        include_dem: bool = False,
+        include_wrapped_phase: bool = False,
+        apply_water_mask: bool = False,
+        include_displacement_maps: bool = False,
+        phase_filter_parameter: float = 0.6,
+    ) -> dict:
         """Submit an InSAR job
 
         Args:
@@ -408,8 +425,11 @@ class HyP3:
             A dictionary containing the prepared InSAR job
         """
         if include_los_displacement:
-            warnings.warn('The include_los_displacement parameter has been deprecated in favor of '
-                          'include_displacement_maps, and will be removed in a future release.', FutureWarning)
+            warnings.warn(
+                'The include_los_displacement parameter has been deprecated in favor of '
+                'include_displacement_maps, and will be removed in a future release.',
+                FutureWarning,
+            )
 
         job_parameters = locals().copy()
         for key in ['cls', 'granule1', 'granule2', 'name']:
@@ -423,12 +443,14 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_insar_isce_burst_job(self,
-                                    granule1: str,
-                                    granule2: str,
-                                    name: Optional[str] = None,
-                                    apply_water_mask: bool = False,
-                                    looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> Batch:
+    def submit_insar_isce_burst_job(
+        self,
+        granule1: str,
+        granule2: str,
+        name: str | None = None,
+        apply_water_mask: bool = False,
+        looks: Literal['20x4', '10x2', '5x1'] = '20x4',
+    ) -> Batch:
         """Submit an InSAR ISCE burst job.
 
         Args:
@@ -448,12 +470,14 @@ class HyP3:
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_insar_isce_burst_job(cls,
-                                     granule1: str,
-                                     granule2: str,
-                                     name: Optional[str] = None,
-                                     apply_water_mask: bool = False,
-                                     looks: Literal['20x4', '10x2', '5x1'] = '20x4') -> dict:
+    def prepare_insar_isce_burst_job(
+        cls,
+        granule1: str,
+        granule2: str,
+        name: str | None = None,
+        apply_water_mask: bool = False,
+        looks: Literal['20x4', '10x2', '5x1'] = '20x4',
+    ) -> dict:
         """Prepare an InSAR ISCE burst job.
 
         Args:
@@ -480,36 +504,37 @@ class HyP3:
         return job_dict
 
     def my_info(self) -> dict:
-        """
-        Returns:
-            Your user information
+        """Returns:
+        Your user information
         """
         response = self.session.get(urljoin(self.url, '/user'))
         _raise_for_hyp3_status(response)
         return response.json()
 
-    def check_credits(self) -> Union[float, int, None]:
-        """
-        Returns:
-            Your remaining processing credits, or None if you have no processing limit
+    def check_credits(self) -> float | int | None:
+        """Returns:
+        Your remaining processing credits, or None if you have no processing limit
         """
         info = self.my_info()
         return info['remaining_credits']
 
-    def check_quota(self) -> Union[float, int, None]:
+    def check_quota(self) -> float | int | None:
         """Deprecated method for checking your remaining processing credits; replaced by `HyP3.check_credits`
 
         Returns:
             Your remaining processing credits, or None if you have no processing limit
         """
-        warn('This method is deprecated and will be removed in a future release.\n'
-             'Please use `HyP3.check_credits` instead.', DeprecationWarning, stacklevel=2)
+        warn(
+            'This method is deprecated and will be removed in a future release.\n'
+            'Please use `HyP3.check_credits` instead.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.check_credits()
 
     def costs(self) -> dict:
-        """
-        Returns:
-            Table of job costs
+        """Returns:
+        Table of job costs
         """
         response = self.session.get(urljoin(self.url, '/costs'))
         _raise_for_hyp3_status(response)
