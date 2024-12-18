@@ -1,8 +1,9 @@
 """Extra utilities for working with HyP3"""
 
 import urllib.parse
+from collections.abc import Generator, Sequence
 from pathlib import Path
-from typing import Any, Generator, Sequence, Union
+from typing import Any
 from zipfile import ZipFile
 
 import requests
@@ -11,13 +12,16 @@ from urllib3.util.retry import Retry
 
 from hyp3_sdk.exceptions import AuthenticationError
 
-AUTH_URL = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
-           '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
+
+AUTH_URL = (
+    'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g'
+    '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
+)
 
 PROFILE_URL = 'https://urs.earthdata.nasa.gov/profile'
 
 
-def extract_zipped_product(zip_file: Union[str, Path], delete: bool = True) -> Path:
+def extract_zipped_product(zip_file: str | Path, delete: bool = True) -> Path:
     """Extract a zipped HyP3 product
 
     Extract a zipped HyP3 product to the same directory as the zipped HyP3 product, optionally
@@ -51,7 +55,7 @@ def chunk(itr: Sequence[Any], n: int = 200) -> Generator[Sequence[Any], None, No
         raise ValueError(f'n must be a positive integer: {n}')
 
     for i in range(0, len(itr), n):
-        yield itr[i:i + n]
+        yield itr[i : i + n]
 
 
 def get_tqdm_progress_bar():
@@ -105,7 +109,7 @@ def get_authenticated_session(username: str, password: str) -> requests.Session:
     return s
 
 
-def download_file(url: str, filepath: Union[Path, str], chunk_size=None, retries=2, backoff_factor=1) -> Path:
+def download_file(url: str, filepath: Path | str, chunk_size=None, retries=2, backoff_factor=1) -> Path:
     """Download a file
     Args:
         url: URL of the file to download
@@ -130,8 +134,9 @@ def download_file(url: str, filepath: Union[Path, str], chunk_size=None, retries
     with session.get(url, stream=stream) as s:
         s.raise_for_status()
         tqdm = get_tqdm_progress_bar()
-        with tqdm.wrapattr(open(filepath, "wb"), 'write', miniters=1, desc=filepath.name,
-                           total=int(s.headers.get('content-length', 0))) as f:
+        with tqdm.wrapattr(
+            open(filepath, 'wb'), 'write', miniters=1, desc=filepath.name, total=int(s.headers.get('content-length', 0))
+        ) as f:
             for chunk in s.iter_content(chunk_size=chunk_size):
                 if chunk:
                     f.write(chunk)
