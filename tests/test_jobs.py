@@ -8,42 +8,45 @@ from dateutil import tz
 from hyp3_sdk.exceptions import HyP3SDKError
 from hyp3_sdk.jobs import Batch, Job
 
+
 SUCCEEDED_JOB = {
-    "browse_images": ["https://PAIR_PROCESS.png"],
-    "expiration_time": "2020-10-08T00:00:00+00:00",
-    "files": [{"filename": "PAIR_PROCESS.nc", "size": 5949932, "url": "https://PAIR_PROCESS.nc"}],
-    "logs": ["https://d1c05104-b455-4f35-a95a-84155d63f855.log"],
-    "job_id": "d1c05104-b455-4f35-a95a-84155d63f855",
-    "job_parameters": {"granules": [
-        "S1A_IW_SLC__1SDH_20180511T204719_20180511T204746_021862_025C12_6F77",
-        "S1B_IW_SLC__1SDH_20180505T204637_20180505T204704_010791_013B91_E42D"
-    ]},
-    "job_type": "PAIR_PROCESS",
-    "name": "test_success",
-    "request_time": "2020-09-22T23:55:10+00:00",
-    "status_code": "SUCCEEDED",
-    "thumbnail_images": ["https://PAIR_PROCESS_thumb.png"],
-    "user_id": "asf_hyp3",
-    "credit_cost": 1,
-    "priority": 9999,
+    'browse_images': ['https://PAIR_PROCESS.png'],
+    'expiration_time': '2020-10-08T00:00:00+00:00',
+    'files': [{'filename': 'PAIR_PROCESS.nc', 'size': 5949932, 'url': 'https://PAIR_PROCESS.nc'}],
+    'logs': ['https://d1c05104-b455-4f35-a95a-84155d63f855.log'],
+    'job_id': 'd1c05104-b455-4f35-a95a-84155d63f855',
+    'job_parameters': {
+        'granules': [
+            'S1A_IW_SLC__1SDH_20180511T204719_20180511T204746_021862_025C12_6F77',
+            'S1B_IW_SLC__1SDH_20180505T204637_20180505T204704_010791_013B91_E42D',
+        ]
+    },
+    'job_type': 'PAIR_PROCESS',
+    'name': 'test_success',
+    'request_time': '2020-09-22T23:55:10+00:00',
+    'status_code': 'SUCCEEDED',
+    'thumbnail_images': ['https://PAIR_PROCESS_thumb.png'],
+    'user_id': 'asf_hyp3',
+    'credit_cost': 1,
+    'priority': 9999,
 }
 
 FAILED_JOB = {
-    "logs": ["https://281b2087-9e7d-4d17-a9b3-aebeb2ad23c6.log"],
-    "job_id": "281b2087-9e7d-4d17-a9b3-aebeb2ad23c6",
-    "job_parameters": {
-        "granules": [
-            "S1A_IW_SLC__1SSH_20161126T080144_20161126T080211_014110_016C51_037E",
-            "S1B_IW_SLC__1SSH_20161120T080102_20161120T080129_003039_0052AE_AA91"
+    'logs': ['https://281b2087-9e7d-4d17-a9b3-aebeb2ad23c6.log'],
+    'job_id': '281b2087-9e7d-4d17-a9b3-aebeb2ad23c6',
+    'job_parameters': {
+        'granules': [
+            'S1A_IW_SLC__1SSH_20161126T080144_20161126T080211_014110_016C51_037E',
+            'S1B_IW_SLC__1SSH_20161120T080102_20161120T080129_003039_0052AE_AA91',
         ]
     },
-    "job_type": "PAIR_PROCESS",
-    "name": "test_failure",
-    "request_time": "2020-09-22T23:55:10+00:00",
-    "status_code": "FAILED",
-    "user_id": "asf_hyp3",
-    "credit_cost": 1,
-    "priority": 9999,
+    'job_type': 'PAIR_PROCESS',
+    'name': 'test_failure',
+    'request_time': '2020-09-22T23:55:10+00:00',
+    'status_code': 'FAILED',
+    'user_id': 'asf_hyp3',
+    'credit_cost': 1,
+    'priority': 9999,
 }
 
 
@@ -125,8 +128,11 @@ def test_job_expired():
 @responses.activate
 def test_job_download_files(tmp_path, get_mock_job):
     unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
-    job = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    job = get_mock_job(
+        status_code='SUCCEEDED',
+        expiration_time=unexpired_time,
+        files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}],
+    )
     responses.add(responses.GET, 'https://foo.com/file', body='foobar')
 
     path = job.download_files(tmp_path)[0]
@@ -134,8 +140,11 @@ def test_job_download_files(tmp_path, get_mock_job):
     assert path == tmp_path / 'file'
     assert contents == 'foobar'
 
-    job = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                       files=[{'url': 'https://foo.com/f1', 'size': 0, 'filename': 'f1'}])
+    job = get_mock_job(
+        status_code='SUCCEEDED',
+        expiration_time=unexpired_time,
+        files=[{'url': 'https://foo.com/f1', 'size': 0, 'filename': 'f1'}],
+    )
     responses.add(responses.GET, 'https://foo.com/f1', body='foobar1')
 
     path = job.download_files(str(tmp_path))[0]
@@ -147,8 +156,11 @@ def test_job_download_files(tmp_path, get_mock_job):
 @responses.activate
 def test_job_download_files_create_dirs(tmp_path, get_mock_job):
     unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
-    job = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    job = get_mock_job(
+        status_code='SUCCEEDED',
+        expiration_time=unexpired_time,
+        files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}],
+    )
 
     with pytest.raises(NotADirectoryError):
         job.download_files(tmp_path / 'not_a_dir', create=False)
@@ -163,8 +175,11 @@ def test_job_download_files_create_dirs(tmp_path, get_mock_job):
 @responses.activate
 def test_job_download_files_expired(tmp_path, get_mock_job):
     expired_time = (datetime.now(tz=tz.UTC) - timedelta(days=7)).isoformat(timespec='seconds')
-    job = get_mock_job(status_code='SUCCEEDED', expiration_time=expired_time,
-                       files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    job = get_mock_job(
+        status_code='SUCCEEDED',
+        expiration_time=expired_time,
+        files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}],
+    )
 
     with pytest.raises(HyP3SDKError):
         job.download_files(tmp_path)
@@ -228,8 +243,11 @@ def test_contains(get_mock_job):
     unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
     j1 = Job.from_dict(SUCCEEDED_JOB)
     j2 = Job.from_dict(FAILED_JOB)
-    j3 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                      files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    j3 = get_mock_job(
+        status_code='SUCCEEDED',
+        expiration_time=unexpired_time,
+        files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}],
+    )
 
     a = Batch([j1, j2])
 
@@ -262,8 +280,11 @@ def test_getitem(get_mock_job):
     unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
     j0 = Job.from_dict(SUCCEEDED_JOB)
     j1 = Job.from_dict(FAILED_JOB)
-    j2 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                      files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    j2 = get_mock_job(
+        status_code='SUCCEEDED',
+        expiration_time=unexpired_time,
+        files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}],
+    )
     batch = Batch([j0, j1, j2])
 
     assert j0 == batch[0]
@@ -277,8 +298,11 @@ def test_setitem(get_mock_job):
     unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
     j0 = Job.from_dict(SUCCEEDED_JOB)
     j1 = Job.from_dict(FAILED_JOB)
-    j2 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                      files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    j2 = get_mock_job(
+        status_code='SUCCEEDED',
+        expiration_time=unexpired_time,
+        files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}],
+    )
     batch = Batch([j0, j1])
 
     assert batch[1] == j1
@@ -290,8 +314,11 @@ def test_reverse(get_mock_job):
     unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
     j0 = Job.from_dict(SUCCEEDED_JOB)
     j1 = Job.from_dict(FAILED_JOB)
-    j2 = get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                      files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}])
+    j2 = get_mock_job(
+        status_code='SUCCEEDED',
+        expiration_time=unexpired_time,
+        files=[{'url': 'https://foo.com/file', 'size': 0, 'filename': 'file'}],
+    )
 
     batch = Batch([j0, j1, j2])
 
@@ -320,14 +347,25 @@ def test_batch_complete_succeeded():
 @responses.activate
 def test_batch_download(tmp_path, get_mock_job):
     expiration_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
-    batch = Batch([
-        get_mock_job(status_code='SUCCEEDED', expiration_time=expiration_time,
-                     files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}]),
-        get_mock_job(status_code='SUCCEEDED', expiration_time=expiration_time,
-                     files=[{'url': 'https://foo.com/file2', 'size': 0, 'filename': 'file2'}]),
-        get_mock_job(status_code='SUCCEEDED', expiration_time=expiration_time,
-                     files=[{'url': 'https://foo.com/file3', 'size': 0, 'filename': 'file3'}])
-    ])
+    batch = Batch(
+        [
+            get_mock_job(
+                status_code='SUCCEEDED',
+                expiration_time=expiration_time,
+                files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}],
+            ),
+            get_mock_job(
+                status_code='SUCCEEDED',
+                expiration_time=expiration_time,
+                files=[{'url': 'https://foo.com/file2', 'size': 0, 'filename': 'file2'}],
+            ),
+            get_mock_job(
+                status_code='SUCCEEDED',
+                expiration_time=expiration_time,
+                files=[{'url': 'https://foo.com/file3', 'size': 0, 'filename': 'file3'}],
+            ),
+        ]
+    )
     responses.add(responses.GET, 'https://foo.com/file1', body='foobar1')
     responses.add(responses.GET, 'https://foo.com/file2', body='foobar2')
     responses.add(responses.GET, 'https://foo.com/file3', body='foobar3')
@@ -344,9 +382,11 @@ def test_batch_download(tmp_path, get_mock_job):
     paths = batch.download_files(tmp_path / 'not_a_dir', create=True)
     contents = [path.read_text() for path in paths]
     assert len(paths) == 3
-    assert set(paths) == {tmp_path / 'not_a_dir' / 'file1',
-                          tmp_path / 'not_a_dir' / 'file2',
-                          tmp_path / 'not_a_dir' / 'file3'}
+    assert set(paths) == {
+        tmp_path / 'not_a_dir' / 'file1',
+        tmp_path / 'not_a_dir' / 'file2',
+        tmp_path / 'not_a_dir' / 'file3',
+    }
     assert set(contents) == {'foobar1', 'foobar2', 'foobar3'}
 
 
@@ -354,14 +394,25 @@ def test_batch_download(tmp_path, get_mock_job):
 def test_batch_download_expired(tmp_path, get_mock_job):
     expired_time = (datetime.now(tz=tz.UTC) - timedelta(days=7)).isoformat(timespec='seconds')
     unexpired_time = (datetime.now(tz=tz.UTC) + timedelta(days=7)).isoformat(timespec='seconds')
-    batch = Batch([
-        get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                     files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}]),
-        get_mock_job(status_code='SUCCEEDED', expiration_time=expired_time,
-                     files=[{'url': 'https://foo.com/file2', 'size': 0, 'filename': 'file2'}]),
-        get_mock_job(status_code='SUCCEEDED', expiration_time=unexpired_time,
-                     files=[{'url': 'https://foo.com/file3', 'size': 0, 'filename': 'file3'}])
-    ])
+    batch = Batch(
+        [
+            get_mock_job(
+                status_code='SUCCEEDED',
+                expiration_time=unexpired_time,
+                files=[{'url': 'https://foo.com/file1', 'size': 0, 'filename': 'file1'}],
+            ),
+            get_mock_job(
+                status_code='SUCCEEDED',
+                expiration_time=expired_time,
+                files=[{'url': 'https://foo.com/file2', 'size': 0, 'filename': 'file2'}],
+            ),
+            get_mock_job(
+                status_code='SUCCEEDED',
+                expiration_time=unexpired_time,
+                files=[{'url': 'https://foo.com/file3', 'size': 0, 'filename': 'file3'}],
+            ),
+        ]
+    )
     responses.add(responses.GET, 'https://foo.com/file1', body='foobar1')
     responses.add(responses.GET, 'https://foo.com/file2', body='foobar2')
     responses.add(responses.GET, 'https://foo.com/file3', body='foobar3')
@@ -448,60 +499,78 @@ def test_batch_total_credit_cost():
     batch = Batch()
     assert batch.total_credit_cost() == 0
 
-    batch = Batch([
-        Job.from_dict({
-            'job_type': 'foo',
-            'job_id': 'foo',
-            'request_time': '2024-01-01T00:00:00Z',
-            'status_code': 'foo',
-            'user_id': 'foo',
-        }),
-    ])
+    batch = Batch(
+        [
+            Job.from_dict(
+                {
+                    'job_type': 'foo',
+                    'job_id': 'foo',
+                    'request_time': '2024-01-01T00:00:00Z',
+                    'status_code': 'foo',
+                    'user_id': 'foo',
+                }
+            ),
+        ]
+    )
     assert batch.total_credit_cost() == 0
 
-    batch = Batch([
-        Job.from_dict({
-            'job_type': 'foo',
-            'job_id': 'foo',
-            'request_time': '2024-01-01T00:00:00Z',
-            'status_code': 'foo',
-            'user_id': 'foo',
-            'credit_cost': 4
-        }),
-        Job.from_dict({
-            'job_type': 'foo',
-            'job_id': 'foo',
-            'request_time': '2024-01-01T00:00:00Z',
-            'status_code': 'foo',
-            'user_id': 'foo',
-        }),
-    ])
+    batch = Batch(
+        [
+            Job.from_dict(
+                {
+                    'job_type': 'foo',
+                    'job_id': 'foo',
+                    'request_time': '2024-01-01T00:00:00Z',
+                    'status_code': 'foo',
+                    'user_id': 'foo',
+                    'credit_cost': 4,
+                }
+            ),
+            Job.from_dict(
+                {
+                    'job_type': 'foo',
+                    'job_id': 'foo',
+                    'request_time': '2024-01-01T00:00:00Z',
+                    'status_code': 'foo',
+                    'user_id': 'foo',
+                }
+            ),
+        ]
+    )
     assert batch.total_credit_cost() == 4
 
-    batch = Batch([
-        Job.from_dict({
-            'job_type': 'foo',
-            'job_id': 'foo',
-            'request_time': '2024-01-01T00:00:00Z',
-            'status_code': 'foo',
-            'user_id': 'foo',
-            'credit_cost': 1
-        }),
-        Job.from_dict({
-            'job_type': 'foo',
-            'job_id': 'foo',
-            'request_time': '2024-01-01T00:00:00Z',
-            'status_code': 'foo',
-            'user_id': 'foo',
-            'credit_cost': 2
-        }),
-        Job.from_dict({
-            'job_type': 'foo',
-            'job_id': 'foo',
-            'request_time': '2024-01-01T00:00:00Z',
-            'status_code': 'foo',
-            'user_id': 'foo',
-            'credit_cost': 5
-        }),
-    ])
+    batch = Batch(
+        [
+            Job.from_dict(
+                {
+                    'job_type': 'foo',
+                    'job_id': 'foo',
+                    'request_time': '2024-01-01T00:00:00Z',
+                    'status_code': 'foo',
+                    'user_id': 'foo',
+                    'credit_cost': 1,
+                }
+            ),
+            Job.from_dict(
+                {
+                    'job_type': 'foo',
+                    'job_id': 'foo',
+                    'request_time': '2024-01-01T00:00:00Z',
+                    'status_code': 'foo',
+                    'user_id': 'foo',
+                    'credit_cost': 2,
+                }
+            ),
+            Job.from_dict(
+                {
+                    'job_type': 'foo',
+                    'job_id': 'foo',
+                    'request_time': '2024-01-01T00:00:00Z',
+                    'status_code': 'foo',
+                    'user_id': 'foo',
+                    'credit_cost': 5,
+                }
+            ),
+        ]
+    )
     assert batch.total_credit_cost() == 8

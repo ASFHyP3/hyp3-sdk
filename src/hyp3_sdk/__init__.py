@@ -3,7 +3,7 @@
 from importlib.metadata import version
 
 from . import util
-from .hyp3 import HyP3, PROD_API, TEST_API
+from .hyp3 import PROD_API, TEST_API, HyP3
 from .jobs import Batch, Job
 
 
