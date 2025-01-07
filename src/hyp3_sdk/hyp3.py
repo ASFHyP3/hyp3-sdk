@@ -50,6 +50,8 @@ class HyP3:
         if password is None and prompt:
             password = getpass('NASA Earthdata Login password: ')
 
+        assert username and password
+
         self.session = hyp3_sdk.util.get_authenticated_session(username, password)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
@@ -133,7 +135,7 @@ class HyP3:
         bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=len(batch), bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
             for ii in range(iterations_until_timeout):
-                batch = self.refresh(batch)
+                batch = self.refresh(batch)  # type: ignore [assignment]
 
                 counts = batch._count_statuses()
                 complete = counts['SUCCEEDED'] + counts['FAILED']
@@ -155,7 +157,7 @@ class HyP3:
         bar_format = '{n_fmt}/{total_fmt} [{postfix[0]}]'
         with tqdm(total=1, bar_format=bar_format, postfix=[f'timeout in {timeout} s']) as progress_bar:
             for ii in range(iterations_until_timeout):
-                job = self.refresh(job)
+                job = self.refresh(job)  # type: ignore [assignment]
                 progress_bar.postfix = [f'timeout in {timeout - ii * interval}s']
                 progress_bar.update(int(job.complete()))
 
@@ -181,7 +183,7 @@ class HyP3:
         jobs = []
         for job in batch.jobs:
             jobs.append(self.refresh(job))
-        return Batch(jobs)
+        return Batch(jobs)  # type: ignore [arg-type]
 
     @refresh.register
     def _refresh_job(self, job: Job):

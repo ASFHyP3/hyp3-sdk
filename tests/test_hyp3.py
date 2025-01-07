@@ -68,8 +68,8 @@ def test_find_jobs_paging(get_mock_hyp3, get_mock_job):
 
     batch = api.find_jobs()
     assert len(batch) == 3
-    assert 'next' not in responses.calls[0].request.params
-    assert 'next' in responses.calls[1].request.params
+    assert 'next' not in responses.calls[0].request.params  # type: ignore [attr-defined]
+    assert 'next' in responses.calls[1].request.params  # type: ignore [attr-defined]
 
 
 @responses.activate
