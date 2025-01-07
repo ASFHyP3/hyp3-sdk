@@ -50,8 +50,6 @@ class HyP3:
         if password is None and prompt:
             password = getpass('NASA Earthdata Login password: ')
 
-        assert username and password
-
         self.session = hyp3_sdk.util.get_authenticated_session(username, password)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
