@@ -185,7 +185,7 @@ class Batch:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Batch):
-            raise NotImplementedError(f'`__eq__` can only compare a Batch object with another Batch object.')
+            raise NotImplementedError('`__eq__` can only compare a Batch object with another Batch object.')
         return self.jobs == other.jobs
 
     def __delitem__(self, job: int):
