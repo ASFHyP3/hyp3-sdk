@@ -85,7 +85,7 @@ class Job:
         if for_resubmit:
             keys_to_process = Job._attributes_for_resubmit
         else:
-            keys_to_process = vars(self).keys()
+            keys_to_process = set(vars(self).keys())
 
         for key in keys_to_process:
             value = self.__getattribute__(key)
@@ -127,6 +127,7 @@ class Job:
         if not self.succeeded():
             raise HyP3SDKError(f'Only succeeded jobs can be downloaded; job is {self.status_code}.')
         if self.expired():
+            assert self.expiration_time is not None
             raise HyP3SDKError(
                 f'Expired jobs cannot be downloaded; '
                 f'job expired {self.expiration_time.isoformat(timespec="seconds")}.'
@@ -136,6 +137,8 @@ class Job:
             location.mkdir(parents=True, exist_ok=True)
         elif not location.is_dir():
             raise NotADirectoryError(str(location))
+
+        assert self.files is not None
 
         downloaded_files = []
         for file in self.files:
@@ -180,14 +183,16 @@ class Batch:
     def __contains__(self, job: Job):
         return job in self.jobs
 
-    def __eq__(self, other: 'Batch'):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Batch):
+            raise TypeError('`__eq__` can only compare a Batch object with another Batch object.')
         return self.jobs == other.jobs
 
     def __delitem__(self, job: int):
         self.jobs.pop(job)
         return self
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int | slice):
         if isinstance(index, slice):
             return Batch(self.jobs[index])
         return self.jobs[index]

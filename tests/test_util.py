@@ -121,8 +121,8 @@ def test_chunk():
     with pytest.raises(ValueError):
         chunks = list(util.chunk(items, n=-2))
 
-    with pytest.raises(ValueError):
-        chunks = list(util.chunk(items, n=10.0))
+    with pytest.raises(TypeError):
+        chunks = list(util.chunk(items, n=10.0))  # type: ignore [arg-type]
 
 
 def test_extract_zipped_product(product_zip):

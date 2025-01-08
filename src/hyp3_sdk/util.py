@@ -51,8 +51,11 @@ def chunk(itr: Sequence[Any], n: int = 200) -> Generator[Sequence[Any], None, No
         itr: A sequence object to chunk
         n: Size of the chunks to return
     """
-    if not isinstance(n, int) or n < 1:
-        raise ValueError(f'n must be a positive integer: {n}')
+    error_message = f'n must be a positive integer: {n}'
+    if not isinstance(n, int):
+        raise TypeError(error_message)
+    if n < 1:
+        raise ValueError(error_message)
 
     for i in range(0, len(itr), n):
         yield itr[i : i + n]
@@ -68,7 +71,7 @@ def get_tqdm_progress_bar():
     return tqdm
 
 
-def get_authenticated_session(username: str, password: str) -> requests.Session:
+def get_authenticated_session(username: str | None, password: str | None) -> requests.Session:
     """Log into HyP3 using credentials for `urs.earthdata.nasa.gov` from either the provided
      credentials or a `.netrc` file.
 
