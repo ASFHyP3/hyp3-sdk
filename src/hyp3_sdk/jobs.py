@@ -138,7 +138,7 @@ class Job:
         elif not location.is_dir():
             raise NotADirectoryError(str(location))
 
-        assert isinstance(self.files, list)
+        assert self.files is not None
 
         downloaded_files = []
         for file in self.files:
