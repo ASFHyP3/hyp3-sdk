@@ -127,7 +127,7 @@ class Job:
         if not self.succeeded():
             raise HyP3SDKError(f'Only succeeded jobs can be downloaded; job is {self.status_code}.')
         if self.expired():
-            assert isinstance(self.expiration_time, datetime)
+            assert self.expiration_time is not None
             raise HyP3SDKError(
                 f'Expired jobs cannot be downloaded; '
                 f'job expired {self.expiration_time.isoformat(timespec="seconds")}.'
