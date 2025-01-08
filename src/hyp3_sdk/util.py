@@ -54,7 +54,7 @@ def chunk(itr: Sequence[Any], n: int = 200) -> Generator[Sequence[Any], None, No
     error_message = f'n must be a positive integer: {n}'
     if not isinstance(n, int):
         raise TypeError(error_message)
-    if not n > 0:
+    if n < 1:
         raise ValueError(error_message)
 
     for i in range(0, len(itr), n):
