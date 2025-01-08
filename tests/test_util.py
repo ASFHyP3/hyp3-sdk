@@ -121,7 +121,7 @@ def test_chunk():
     with pytest.raises(ValueError):
         chunks = list(util.chunk(items, n=-2))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         chunks = list(util.chunk(items, n=10.0))  # type: ignore [arg-type]
 
 
