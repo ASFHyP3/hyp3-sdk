@@ -16,4 +16,4 @@ jobs:
 
   call-mypy-workflow:
     # Docs: https://github.com/ASFHyP3/actions
-    uses: ASFHyP3/actions/.github/workflows/reusable-mypy.yml@v0.14.0
+    uses: ASFHyP3/actions/.github/workflows/reusable-mypy.yml@v0.15.0
