@@ -129,8 +129,7 @@ class Job:
         if self.expired():
             assert self.expiration_time is not None
             raise HyP3SDKError(
-                f'Expired jobs cannot be downloaded; '
-                f'job expired {self.expiration_time.isoformat(timespec="seconds")}.'
+                f'Expired jobs cannot be downloaded; job expired {self.expiration_time.isoformat(timespec="seconds")}.'
             )
 
         if create:
