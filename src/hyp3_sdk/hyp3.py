@@ -479,6 +479,56 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
+    def submit_aria_s1_gunw_job(self,
+                                granule1: str,
+                                granule2: str,
+                                frame_id: int,
+                                name: Optional[str] = None) -> Batch:
+        """Submit an ARIA S1 GUNW job.
+
+        Args:
+            granule1: The first granule (scene) to use
+            granule2: The second granule (scene) to use
+            frame_id: Subset GUNW products to this frame
+            name: A name for the job (optional)
+
+        Returns:
+            A Batch object containing the ARIA S1 GUNW job
+        """
+        arguments = locals().copy()
+        arguments.pop('self')
+        job_dict = self.prepare_insar_isce_burst_job(**arguments)
+        return self.submit_prepared_jobs(prepared_jobs=job_dict)
+
+    @classmethod
+    def prepare_aria_s1_gunw_job(cls,
+                                 granule1: str,
+                                 granule2: str,
+                                 frame_id: int,
+                                 name: Optional[str] = None) -> Batch:
+        """Prepare an ARIA S1 GUNW job.
+
+        Args:
+            granule1: The first granule (scene) to use
+            granule2: The second granule (scene) to use
+            frame_id: Subset GUNW products to this frame
+            name: A name for the job
+
+        Returns:
+            A dictionary containing the prepared ARIA S1 GUNW job
+        """
+        job_parameters = locals().copy()
+        for key in ['cls', 'granule1', 'granule2', 'name']:
+            job_parameters.pop(key)
+
+        job_dict = {
+            'job_parameters': {'granules': [granule1, granule2], **job_parameters},
+            'job_type': 'ARIA_S1_GUNW',
+        }
+        if name is not None:
+            job_dict['name'] = name
+        return job_dict
+
     def my_info(self) -> dict:
         """
         Returns:
