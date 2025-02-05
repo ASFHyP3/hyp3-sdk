@@ -1,27 +1,43 @@
 import shutil
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+import requests
 
 from hyp3_sdk import Job
+from hyp3_sdk.hyp3 import HyP3
+
+
+@pytest.fixture(autouse=True)
+def get_mock_hyp3():
+    def mock_get_authenticated_session(username, password):
+        return requests.Session()
+
+    def default_hyp3():
+        with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+            return HyP3()
+
+    return default_hyp3
 
 
 @pytest.fixture(autouse=True)
 def get_mock_job():
     def default_job(
-            job_type='JOB_TYPE',
-            request_time=datetime.now(),
-            status_code='RUNNING',
-            user_id='user',
-            name='name',
-            job_parameters=None,
-            files=None,
-            browse_images=None,
-            thumbnail_images=None,
-            expiration_time=None,
-            credit_cost=None,
+        job_type='JOB_TYPE',
+        request_time=datetime.now(),
+        status_code='RUNNING',
+        user_id='user',
+        name='name',
+        job_parameters=None,
+        files=None,
+        browse_images=None,
+        thumbnail_images=None,
+        expiration_time=None,
+        credit_cost=None,
+        priority=None,
     ):
         if job_parameters is None:
             job_parameters = {'param1': 'value1'}
@@ -47,6 +63,7 @@ def get_mock_job():
             del job_dict[key]
 
         return Job.from_dict(job_dict)
+
     return default_job
 
 

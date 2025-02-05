@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.0.3]
+
+### Changed
+* The [`static-analysis`](.github/workflows/static-analysis.yml) Github Actions workflow now uses `mypy` for type checking.
+
+### Fixed
+* `util.chunk` now raises `TypeError` rather than `ValueError` when given a non-integer chunk size.
+
+## [7.0.2]
+
+### Changed
+* The [`static-analysis`](.github/workflows/static-analysis.yml) Github Actions workflow now uses `ruff` rather than `flake8` for linting.
+
+## [7.0.1]
+
+### Removed
+* Removed the unapproved user warning implemented in [v6.2.0](https://github.com/ASFHyP3/hyp3-sdk/releases/tag/v6.2.0) (see <https://github.com/ASFHyP3/hyp3-sdk/pull/276>). This feature had unintended consequences which broke some processing pipelines that rely on the HyP3 SDK (see <https://github.com/ASFHyP3/hyp3-sdk/issues/285> for more details).
+
+## [7.0.0]
+
+### Removed
+* Support for Python 3.9 has been removed. 
+
+## [6.2.0]
+
+### Added
+* `Job.priority` attribute
+* Unapproved `hyp3-sdk` users receive an error message when connecting to `HyP3` 
+
 ## [6.1.0]
 
 ### Added

@@ -3,14 +3,12 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - python>=3.9
+  - python>=3.10
   - pip
   # For packaging, and testing
-  - build
-  - flake8
-  - flake8-import-order
-  - flake8-blind-except
-  - flake8-builtins
+  - python-build
+  - ruff
+  - mypy
   - jupyter
   - setuptools>=61
   - setuptools_scm>=6.2
