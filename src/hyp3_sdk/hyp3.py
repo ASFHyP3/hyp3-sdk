@@ -497,7 +497,7 @@ class HyP3:
         """
         arguments = locals().copy()
         arguments.pop('self')
-        job_dict = self.prepare_insar_isce_burst_job(**arguments)
+        job_dict = self.prepare_aria_s1_gunw_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
@@ -518,11 +518,11 @@ class HyP3:
             A dictionary containing the prepared ARIA S1 GUNW job
         """
         job_parameters = locals().copy()
-        for key in ['cls', 'granule1', 'granule2', 'name']:
+        for key in ['cls', 'granule1', 'granule2', 'frame_id', 'name']:
             job_parameters.pop(key)
 
         job_dict = {
-            'job_parameters': {'granules': [granule1, granule2], **job_parameters},
+            'job_parameters': {'granules': [granule1, granule2], 'frame_id': frame_id, **job_parameters},
             'job_type': 'ARIA_S1_GUNW',
         }
         if name is not None:
