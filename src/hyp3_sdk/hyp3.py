@@ -501,11 +501,7 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_aria_s1_gunw_job(self,
-                                granule1: str,
-                                granule2: str,
-                                frame_id: int,
-                                name: str | None = None) -> Batch:
+    def submit_aria_s1_gunw_job(self, granule1: str, granule2: str, frame_id: int, name: str | None = None) -> Batch:
         """Submit an ARIA S1 GUNW job.
 
         Args:
@@ -523,11 +519,7 @@ class HyP3:
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_aria_s1_gunw_job(cls,
-                                 granule1: str,
-                                 granule2: str,
-                                 frame_id: int,
-                                 name: str | None = None) -> Batch:
+    def prepare_aria_s1_gunw_job(cls, granule1: str, granule2: str, frame_id: int, name: str | None = None) -> Batch:
         """Prepare an ARIA S1 GUNW job.
 
         Args:
