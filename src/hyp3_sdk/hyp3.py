@@ -505,7 +505,7 @@ class HyP3:
                                 granule1: str,
                                 granule2: str,
                                 frame_id: int,
-                                name: Optional[str] = None) -> Batch:
+                                name: str | None = None) -> Batch:
         """Submit an ARIA S1 GUNW job.
 
         Args:
@@ -527,7 +527,7 @@ class HyP3:
                                  granule1: str,
                                  granule2: str,
                                  frame_id: int,
-                                 name: Optional[str] = None) -> Batch:
+                                 name: str | None = None) -> Batch:
         """Prepare an ARIA S1 GUNW job.
 
         Args:
