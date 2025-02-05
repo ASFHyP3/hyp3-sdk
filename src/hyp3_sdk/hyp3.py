@@ -25,11 +25,11 @@ class HyP3:
     """
 
     def __init__(
-            self,
-            api_url: str = PROD_API,
-            username: str | None = None,
-            password: str | None = None,
-            prompt: bool = False,
+        self,
+        api_url: str = PROD_API,
+        username: str | None = None,
+        password: str | None = None,
+        prompt: bool = False,
     ):
         """If username and password are not provided, attempts to use credentials from a `.netrc` file.
 
@@ -53,13 +53,13 @@ class HyP3:
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
     def find_jobs(
-            self,
-            start: datetime | None = None,
-            end: datetime | None = None,
-            status_code: str | None = None,
-            name: str | None = None,
-            job_type: str | None = None,
-            user_id: str | None = None,
+        self,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        status_code: str | None = None,
+        name: str | None = None,
+        job_type: str | None = None,
+        user_id: str | None = None,
     ) -> Batch:
         """Gets a Batch of jobs from HyP3 matching the provided search criteria
 
@@ -243,19 +243,19 @@ class HyP3:
         return job_dict
 
     def submit_rtc_job(
-            self,
-            granule: str,
-            name: str | None = None,
-            dem_matching: bool = False,
-            include_dem: bool = False,
-            include_inc_map: bool = False,
-            include_rgb: bool = False,
-            include_scattering_area: bool = False,
-            radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
-            resolution: Literal[10, 20, 30] = 30,
-            scale: Literal['amplitude', 'decibel', 'power'] = 'power',
-            speckle_filter: bool = False,
-            dem_name: Literal['copernicus'] = 'copernicus',
+        self,
+        granule: str,
+        name: str | None = None,
+        dem_matching: bool = False,
+        include_dem: bool = False,
+        include_inc_map: bool = False,
+        include_rgb: bool = False,
+        include_scattering_area: bool = False,
+        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+        resolution: Literal[10, 20, 30] = 30,
+        scale: Literal['amplitude', 'decibel', 'power'] = 'power',
+        speckle_filter: bool = False,
+        dem_name: Literal['copernicus'] = 'copernicus',
     ) -> Batch:
         """Submit an RTC job
 
@@ -286,19 +286,19 @@ class HyP3:
 
     @classmethod
     def prepare_rtc_job(
-            cls,
-            granule: str,
-            name: str | None = None,
-            dem_matching: bool = False,
-            include_dem: bool = False,
-            include_inc_map: bool = False,
-            include_rgb: bool = False,
-            include_scattering_area: bool = False,
-            radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
-            resolution: Literal[10, 20, 30] = 30,
-            scale: Literal['amplitude', 'decibel', 'power'] = 'power',
-            speckle_filter: bool = False,
-            dem_name: Literal['copernicus'] = 'copernicus',
+        cls,
+        granule: str,
+        name: str | None = None,
+        dem_matching: bool = False,
+        include_dem: bool = False,
+        include_inc_map: bool = False,
+        include_rgb: bool = False,
+        include_scattering_area: bool = False,
+        radiometry: Literal['sigma0', 'gamma0'] = 'gamma0',
+        resolution: Literal[10, 20, 30] = 30,
+        scale: Literal['amplitude', 'decibel', 'power'] = 'power',
+        speckle_filter: bool = False,
+        dem_name: Literal['copernicus'] = 'copernicus',
     ) -> dict:
         """Submit an RTC job
 
@@ -336,19 +336,19 @@ class HyP3:
         return job_dict
 
     def submit_insar_job(
-            self,
-            granule1: str,
-            granule2: str,
-            name: str | None = None,
-            include_look_vectors: bool = False,
-            include_los_displacement: bool = False,
-            include_inc_map: bool = False,
-            looks: Literal['20x4', '10x2'] = '20x4',
-            include_dem: bool = False,
-            include_wrapped_phase: bool = False,
-            apply_water_mask: bool = False,
-            include_displacement_maps: bool = False,
-            phase_filter_parameter: float = 0.6,
+        self,
+        granule1: str,
+        granule2: str,
+        name: str | None = None,
+        include_look_vectors: bool = False,
+        include_los_displacement: bool = False,
+        include_inc_map: bool = False,
+        looks: Literal['20x4', '10x2'] = '20x4',
+        include_dem: bool = False,
+        include_wrapped_phase: bool = False,
+        apply_water_mask: bool = False,
+        include_displacement_maps: bool = False,
+        phase_filter_parameter: float = 0.6,
     ) -> Batch:
         """Submit an InSAR job
 
@@ -382,19 +382,19 @@ class HyP3:
 
     @classmethod
     def prepare_insar_job(
-            cls,
-            granule1: str,
-            granule2: str,
-            name: str | None = None,
-            include_look_vectors: bool = False,
-            include_los_displacement: bool = False,
-            include_inc_map: bool = False,
-            looks: Literal['20x4', '10x2'] = '20x4',
-            include_dem: bool = False,
-            include_wrapped_phase: bool = False,
-            apply_water_mask: bool = False,
-            include_displacement_maps: bool = False,
-            phase_filter_parameter: float = 0.6,
+        cls,
+        granule1: str,
+        granule2: str,
+        name: str | None = None,
+        include_look_vectors: bool = False,
+        include_los_displacement: bool = False,
+        include_inc_map: bool = False,
+        looks: Literal['20x4', '10x2'] = '20x4',
+        include_dem: bool = False,
+        include_wrapped_phase: bool = False,
+        apply_water_mask: bool = False,
+        include_displacement_maps: bool = False,
+        phase_filter_parameter: float = 0.6,
     ) -> dict:
         """Submit an InSAR job
 
@@ -441,12 +441,12 @@ class HyP3:
         return job_dict
 
     def submit_insar_isce_burst_job(
-            self,
-            granule1: str,
-            granule2: str,
-            name: str | None = None,
-            apply_water_mask: bool = False,
-            looks: Literal['20x4', '10x2', '5x1'] = '20x4',
+        self,
+        granule1: str,
+        granule2: str,
+        name: str | None = None,
+        apply_water_mask: bool = False,
+        looks: Literal['20x4', '10x2', '5x1'] = '20x4',
     ) -> Batch:
         """Submit an InSAR ISCE burst job.
 
@@ -468,12 +468,12 @@ class HyP3:
 
     @classmethod
     def prepare_insar_isce_burst_job(
-            cls,
-            granule1: str,
-            granule2: str,
-            name: str | None = None,
-            apply_water_mask: bool = False,
-            looks: Literal['20x4', '10x2', '5x1'] = '20x4',
+        cls,
+        granule1: str,
+        granule2: str,
+        name: str | None = None,
+        apply_water_mask: bool = False,
+        looks: Literal['20x4', '10x2', '5x1'] = '20x4',
     ) -> dict:
         """Prepare an InSAR ISCE burst job.
 
@@ -518,11 +518,7 @@ class HyP3:
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_aria_s1_gunw_job(cls,
-                                 granule1: str,
-                                 granule2: str,
-                                 frame_id: int,
-                                 name: str | None = None) -> dict:
+    def prepare_aria_s1_gunw_job(cls, granule1: str, granule2: str, frame_id: int, name: str | None = None) -> dict:
         """Prepare an ARIA S1 GUNW job.
 
         Args:
