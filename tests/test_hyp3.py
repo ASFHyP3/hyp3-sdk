@@ -318,6 +318,25 @@ def test_prepare_insar_isce_burst_job():
     }
 
 
+def test_prepare_aria_s1_gunw_job():
+    assert HyP3.prepare_aria_s1_gunw_job(granule1='my_granule1', granule2='my_granule2', frame_id=100) == {
+        'job_type': 'ARIA_S1_GUNW',
+        'job_parameters': {
+            'granules': ['my_granule1', 'my_granule2'],
+            'frame_id': 100,
+        }
+    }
+    assert HyP3.prepare_aria_s1_gunw_job(granule1='my_granule1', granule2='my_granule2', frame_id=100,
+                                             name='my_name') == {
+        'job_type': 'ARIA_S1_GUNW',
+        'name': 'my_name',
+        'job_parameters': {
+            'granules': ['my_granule1', 'my_granule2'],
+            'frame_id': 100,
+        }
+    }
+
+
 def test_deprecated_warning():
     with warnings.catch_warnings(record=True) as w:
         HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2', include_los_displacement=False)
