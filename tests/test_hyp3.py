@@ -408,6 +408,20 @@ def test_submit_insar_isce_burst_job(get_mock_job):
     batch = api.submit_insar_isce_burst_job('g1', 'g2')
     assert batch.jobs[0] == job
 
+@responses.activate
+def test_submit_aria_s1_gunw_job(get_mock_job):
+    job = get_mock_job('ARIA_S1_GUNW', job_parameters={'granules': ['g1', 'g2'], 'frame_id': 100})
+    api_response = {
+        'jobs': [
+            job.to_dict()
+        ]
+    }
+    with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
+        api = HyP3()
+    responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
+    batch = api.submit_aria_s1_gunw_job('g1', 'g2', 100)
+    assert batch.jobs[0] == job
+
 
 @responses.activate
 def test_resubmit_previous_job(get_mock_job):
