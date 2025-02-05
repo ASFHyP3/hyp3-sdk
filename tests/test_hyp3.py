@@ -74,7 +74,7 @@ def test_find_jobs_paging(get_mock_job):
     }
 
     responses.add(responses.GET, urljoin(api.url, '/jobs'), json=api_response_mock_1, match_querystring=True)
-    responses.add(responses.GET, urljoin(api.url, '/jobs?next=foobar'),  json=api_response_mock_2)
+    responses.add(responses.GET, urljoin(api.url, '/jobs?next=foobar'), json=api_response_mock_2)
 
     batch = api.find_jobs()
     assert len(batch) == 3
@@ -215,7 +215,7 @@ def test_prepare_autorift_job():
             'granules': ['my_granule1', 'my_granule2'],
         }
     }
-    assert HyP3.prepare_autorift_job(granule1='my_granule1',  granule2='my_granule2', name='my_name') == {
+    assert HyP3.prepare_autorift_job(granule1='my_granule1', granule2='my_granule2', name='my_name') == {
         'job_type': 'AUTORIFT',
         'name': 'my_name',
         'job_parameters': {
@@ -276,25 +276,25 @@ def test_prepare_insar_job():
             'phase_filter_parameter': 0.6,
         }
     }
-    assert HyP3.prepare_insar_job(granule1='my_granule1',  granule2='my_granule2', name='my_name', looks='10x2',
+    assert HyP3.prepare_insar_job(granule1='my_granule1', granule2='my_granule2', name='my_name', looks='10x2',
                                   include_los_displacement=True, include_look_vectors=True, include_inc_map=True,
                                   include_dem=True, include_wrapped_phase=True, apply_water_mask=True,
                                   include_displacement_maps=True, phase_filter_parameter=0.4) == {
-        'job_type': 'INSAR_GAMMA',
-        'name': 'my_name',
-        'job_parameters': {
-            'granules': ['my_granule1', 'my_granule2'],
-            'include_look_vectors': True,
-            'include_los_displacement': True,
-            'include_inc_map': True,
-            'looks': '10x2',
-            'include_dem': True,
-            'include_wrapped_phase': True,
-            'apply_water_mask': True,
-            'include_displacement_maps': True,
-            'phase_filter_parameter': 0.4,
-        },
-    }
+               'job_type': 'INSAR_GAMMA',
+               'name': 'my_name',
+               'job_parameters': {
+                   'granules': ['my_granule1', 'my_granule2'],
+                   'include_look_vectors': True,
+                   'include_los_displacement': True,
+                   'include_inc_map': True,
+                   'looks': '10x2',
+                   'include_dem': True,
+                   'include_wrapped_phase': True,
+                   'apply_water_mask': True,
+                   'include_displacement_maps': True,
+                   'phase_filter_parameter': 0.4,
+               },
+           }
 
 
 def test_prepare_insar_isce_burst_job():
@@ -308,14 +308,14 @@ def test_prepare_insar_isce_burst_job():
     }
     assert HyP3.prepare_insar_isce_burst_job(granule1='my_granule1', granule2='my_granule2', name='my_name',
                                              apply_water_mask=True, looks='10x2') == {
-        'job_type': 'INSAR_ISCE_BURST',
-        'name': 'my_name',
-        'job_parameters': {
-            'granules': ['my_granule1', 'my_granule2'],
-            'apply_water_mask': True,
-            'looks': '10x2',
-        }
-    }
+               'job_type': 'INSAR_ISCE_BURST',
+               'name': 'my_name',
+               'job_parameters': {
+                   'granules': ['my_granule1', 'my_granule2'],
+                   'apply_water_mask': True,
+                   'looks': '10x2',
+               }
+           }
 
 
 def test_prepare_aria_s1_gunw_job():
@@ -327,14 +327,14 @@ def test_prepare_aria_s1_gunw_job():
         }
     }
     assert HyP3.prepare_aria_s1_gunw_job(granule1='my_granule1', granule2='my_granule2', frame_id=100,
-                                             name='my_name') == {
-        'job_type': 'ARIA_S1_GUNW',
-        'name': 'my_name',
-        'job_parameters': {
-            'granules': ['my_granule1', 'my_granule2'],
-            'frame_id': 100,
-        }
-    }
+                                         name='my_name') == {
+               'job_type': 'ARIA_S1_GUNW',
+               'name': 'my_name',
+               'job_parameters': {
+                   'granules': ['my_granule1', 'my_granule2'],
+                   'frame_id': 100,
+               }
+           }
 
 
 def test_deprecated_warning():
@@ -407,6 +407,7 @@ def test_submit_insar_isce_burst_job(get_mock_job):
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
     batch = api.submit_insar_isce_burst_job('g1', 'g2')
     assert batch.jobs[0] == job
+
 
 @responses.activate
 def test_submit_aria_s1_gunw_job(get_mock_job):
