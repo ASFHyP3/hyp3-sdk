@@ -507,8 +507,8 @@ class HyP3:
         """Submit an ARIA S1 GUNW job.
 
         Args:
-            reference: The name of the Sentinel-1 SLC granules to use as reference scenes for InSAR processing
-            secondary: The name of the Sentinel-1 SLC granules to use as secondary scenes for InSAR processing
+            reference: The names of the Sentinel-1 SLC granules to use as reference scenes for InSAR processing
+            secondary: The names of the Sentinel-1 SLC granules to use as secondary scenes for InSAR processing
             frame_id: Subset GUNW products to this frame
             name: A name for the job (optional)
 
@@ -527,8 +527,8 @@ class HyP3:
         """Prepare an ARIA S1 GUNW job.
 
         Args:
-            reference: The name of the Sentinel-1 SLC granules to use as reference scenes for InSAR processing
-            secondary: The name of the Sentinel-1 SLC granules to use as secondary scenes for InSAR processing
+            reference: The names of the Sentinel-1 SLC granules to use as reference scenes for InSAR processing
+            secondary: The names of the Sentinel-1 SLC granules to use as secondary scenes for InSAR processing
             frame_id: Subset GUNW products to this frame
             name: A name for the job
 
