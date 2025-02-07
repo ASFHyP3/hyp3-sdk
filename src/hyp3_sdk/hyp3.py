@@ -501,12 +501,14 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_aria_s1_gunw_job(self, granule1: str, granule2: str, frame_id: int, name: str | None = None) -> Batch:
+    def submit_aria_s1_gunw_job(
+        self, reference: list[str], secondary: list[str], frame_id: int, name: str | None = None
+    ) -> Batch:
         """Submit an ARIA S1 GUNW job.
 
         Args:
-            granule1: The first granule (scene) to use
-            granule2: The second granule (scene) to use
+            reference: The name of the Sentinel-1 SLC granules to use as reference scenes for InSAR processing
+            secondary: The name of the Sentinel-1 SLC granules to use as secondary scenes for InSAR processing
             frame_id: Subset GUNW products to this frame
             name: A name for the job (optional)
 
@@ -519,12 +521,14 @@ class HyP3:
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_aria_s1_gunw_job(cls, granule1: str, granule2: str, frame_id: int, name: str | None = None) -> dict:
+    def prepare_aria_s1_gunw_job(
+        cls, reference: list[str], secondary: list[str], frame_id: int, name: str | None = None
+    ) -> dict:
         """Prepare an ARIA S1 GUNW job.
 
         Args:
-            granule1: The first granule (scene) to use
-            granule2: The second granule (scene) to use
+            reference: The name of the Sentinel-1 SLC granules to use as reference scenes for InSAR processing
+            secondary: The name of the Sentinel-1 SLC granules to use as secondary scenes for InSAR processing
             frame_id: Subset GUNW products to this frame
             name: A name for the job
 
@@ -532,11 +536,11 @@ class HyP3:
             A dictionary containing the prepared ARIA S1 GUNW job
         """
         job_parameters = locals().copy()
-        for key in ['cls', 'granule1', 'granule2', 'frame_id', 'name']:
+        for key in ['cls', 'reference', 'secondary', 'frame_id', 'name']:
             job_parameters.pop(key)
 
         job_dict = {
-            'job_parameters': {'granules': [granule1, granule2], 'frame_id': frame_id, **job_parameters},
+            'job_parameters': {'reference': reference, 'secondary': secondary, 'frame_id': frame_id, **job_parameters},
             'job_type': 'ARIA_S1_GUNW',
         }
         if name is not None:

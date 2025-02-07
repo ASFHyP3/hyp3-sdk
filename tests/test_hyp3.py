@@ -322,20 +322,27 @@ def test_prepare_insar_isce_burst_job():
 
 
 def test_prepare_aria_s1_gunw_job():
-    assert HyP3.prepare_aria_s1_gunw_job(granule1='my_granule1', granule2='my_granule2', frame_id=100) == {
+    assert HyP3.prepare_aria_s1_gunw_job(
+        reference=['ref_granule1', 'ref_granule2'], secondary=['sec_granule1', 'sec_granule2'], frame_id=100
+    ) == {
         'job_type': 'ARIA_S1_GUNW',
         'job_parameters': {
-            'granules': ['my_granule1', 'my_granule2'],
+            'reference': ['ref_granule1', 'ref_granule2'],
+            'secondary': ['sec_granule1', 'sec_granule2'],
             'frame_id': 100,
         },
     }
     assert HyP3.prepare_aria_s1_gunw_job(
-        granule1='my_granule1', granule2='my_granule2', frame_id=100, name='my_name'
+        reference=['ref_granule1', 'ref_granule2'],
+        secondary=['sec_granule1', 'sec_granule2'],
+        frame_id=100,
+        name='my_name',
     ) == {
         'job_type': 'ARIA_S1_GUNW',
         'name': 'my_name',
         'job_parameters': {
-            'granules': ['my_granule1', 'my_granule2'],
+            'reference': ['ref_granule1', 'ref_granule2'],
+            'secondary': ['sec_granule1', 'sec_granule2'],
             'frame_id': 100,
         },
     }
@@ -395,11 +402,13 @@ def test_submit_insar_isce_burst_job(get_mock_hyp3, get_mock_job):
 
 @responses.activate
 def test_submit_aria_s1_gunw_job(get_mock_hyp3, get_mock_job):
-    job = get_mock_job('ARIA_S1_GUNW', job_parameters={'granules': ['g1', 'g2'], 'frame_id': 100})
+    job = get_mock_job(
+        'ARIA_S1_GUNW', job_parameters={'reference': ['g1', 'g2'], 'secondary': ['g1', 'g2'], 'frame_id': 100}
+    )
     api_response = {'jobs': [job.to_dict()]}
     api = get_mock_hyp3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
-    batch = api.submit_aria_s1_gunw_job('g1', 'g2', 100)
+    batch = api.submit_aria_s1_gunw_job(['g1', 'g2'], ['g1', 'g2'], 100)
     assert batch.jobs[0] == job
 
 
