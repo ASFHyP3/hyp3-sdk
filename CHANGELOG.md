@@ -6,11 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [7.0.4]
+## [7.1.0]
 
 ### Added
-* Added `HyP3.submit_aria_s1_gunw_job` and `HyP3.prepare_aria_s1_gunw_job` methods for submitting
-  ARIA S1 GUNW jobs to HyP3.
+* Added `HyP3.submit_aria_s1_gunw_job` and `HyP3.prepare_aria_s1_gunw_job` methods for submitting ARIA S1 GUNW jobs to HyP3.
 
 ## [7.0.3]
 
