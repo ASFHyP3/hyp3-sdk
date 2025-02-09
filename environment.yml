@@ -7,8 +7,6 @@ dependencies:
   - pip
   # For packaging, and testing
   - python-build
-  - ruff
-  - mypy
   - jupyter
   - setuptools>=61
   - setuptools_scm>=6.2
@@ -20,3 +18,5 @@ dependencies:
   - requests
   - tqdm
   - urllib3
+  - pip:
+    - -r requirements-static.txt
