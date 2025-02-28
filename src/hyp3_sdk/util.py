@@ -67,7 +67,7 @@ def get_tqdm_progress_bar():
         import ipywidgets  # noqa: F401
         from tqdm.auto import tqdm
     except ImportError:
-        from tqdm.std import tqdm
+        from tqdm.std import tqdm  # type: ignore[assignment]
     return tqdm
 
 

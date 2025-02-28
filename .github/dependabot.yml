@@ -5,6 +5,12 @@
 
 version: 2
 updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - bumpless
   - package-ecosystem: github-actions
     directory: /
     schedule:
