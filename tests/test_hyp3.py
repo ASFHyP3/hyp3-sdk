@@ -348,6 +348,9 @@ def test_prepare_insar_isce_multi_burst_job():
     with pytest.raises(ValueError, match='Reference and secondary must be the same length'):
         assert HyP3.prepare_insar_isce_multi_burst_job(reference=['g1', 'g2'], secondary=['g3'])
 
+    with pytest.raises(ValueError, match='Must include at least 1 reference scene and 1 secondary scene'):
+        assert HyP3.prepare_insar_isce_multi_burst_job(reference=[], secondary=[])
+
 
 def test_prepare_aria_s1_gunw_job():
     assert HyP3.prepare_aria_s1_gunw_job(
