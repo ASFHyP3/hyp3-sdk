@@ -487,7 +487,7 @@ class HyP3:
             looks: Number of looks to take in range and azimuth
 
         Returns:
-            A dictionary containing the prepared InSAR ISCE burst job
+            A dictionary containing the prepared InSAR ISCE multi burst job
         """
         job_parameters = locals().copy()
         for key in ['cls', 'name']:
