@@ -441,6 +441,69 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
+    def submit_insar_isce_multi_burst_job(
+        self,
+        reference: list[str],
+        secondary: list[str],
+        name: str | None = None,
+        apply_water_mask: bool = False,
+        looks: Literal['20x4', '10x2', '5x1'] = '20x4',
+    ) -> Batch:
+        """Submit an InSAR ISCE multi burst job.
+
+        Args:
+            reference: A list of reference granules (scenes) to use
+            secondary: A list of secondary granules (scenes) to use
+            name: A name for the job
+            apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
+                as invalid for phase unwrapping
+            looks: Number of looks to take in range and azimuth
+
+        Returns:
+            A Batch object containing the InSAR ISCE multi burst job
+        """
+        arguments = locals().copy()
+        arguments.pop('self')
+        job_dict = self.prepare_insar_isce_multi_burst_job(**arguments)
+        return self.submit_prepared_jobs(prepared_jobs=job_dict)
+
+    @classmethod
+    def prepare_insar_isce_multi_burst_job(
+        cls,
+        reference: list[str],
+        secondary: list[str],
+        name: str | None = None,
+        apply_water_mask: bool = False,
+        looks: Literal['20x4', '10x2', '5x1'] = '20x4',
+    ) -> dict:
+        """Prepare an InSAR ISCE multi burst job.
+
+        Args:
+            reference: A list of reference granules (scenes) to use
+            secondary: A list of secondary granules (scenes) to use
+            name: A name for the job
+            apply_water_mask: Sets pixels over coastal waters and large inland waterbodies
+                as invalid for phase unwrapping
+            looks: Number of looks to take in range and azimuth
+
+        Returns:
+            A dictionary containing the prepared InSAR ISCE burst job
+        """
+        job_parameters = locals().copy()
+        for key in ['cls', 'name']:
+            job_parameters.pop(key)
+
+        if len(reference) != len(secondary):
+            raise ValueError('Reference and secondary must be the same length')
+
+        job_dict = {
+            'job_parameters': {**job_parameters},
+            'job_type': 'INSAR_ISCE_MULTI_BURST',
+        }
+        if name is not None:
+            job_dict['name'] = name
+        return job_dict
+
     def submit_insar_isce_burst_job(
         self,
         granule1: str,
