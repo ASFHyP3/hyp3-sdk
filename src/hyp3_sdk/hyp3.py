@@ -489,12 +489,12 @@ class HyP3:
         Returns:
             A dictionary containing the prepared InSAR ISCE multi burst job
         """
+        if len(reference) != len(secondary):
+            raise ValueError('Reference and secondary must be the same length')
+
         job_parameters = locals().copy()
         for key in ['cls', 'name']:
             job_parameters.pop(key)
-
-        if len(reference) != len(secondary):
-            raise ValueError('Reference and secondary must be the same length')
 
         job_dict = {
             'job_parameters': {**job_parameters},
