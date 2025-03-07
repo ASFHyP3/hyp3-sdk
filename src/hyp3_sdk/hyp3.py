@@ -489,12 +489,6 @@ class HyP3:
         Returns:
             A dictionary containing the prepared InSAR ISCE multi burst job
         """
-        if len(reference) < 1 or len(secondary) < 1:
-            raise ValueError('Must include at least 1 reference scene and 1 secondary scene')
-
-        if len(reference) != len(secondary):
-            raise ValueError('Reference and secondary must be the same length')
-
         job_parameters = locals().copy()
         for key in ['cls', 'name']:
             job_parameters.pop(key)
