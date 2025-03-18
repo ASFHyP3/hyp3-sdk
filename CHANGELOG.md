@@ -3,8 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/) 
+and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [7.2.0]
+
+### Added
+* Added `HyP3.submit_insar_isce_multi_burst_job` and `HyP3.prepare_insar_isce_multi_burst_job` methods for submitting InSAR ISCE multi burst jobs to HyP3.
 
 ## [7.1.0]
 
@@ -32,13 +37,13 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [7.0.0]
 
 ### Removed
-* Support for Python 3.9 has been removed. 
+* Support for Python 3.9 has been removed.
 
 ## [6.2.0]
 
 ### Added
 * `Job.priority` attribute
-* Unapproved `hyp3-sdk` users receive an error message when connecting to `HyP3` 
+* Unapproved `hyp3-sdk` users receive an error message when connecting to `HyP3`
 
 ## [6.1.0]
 
@@ -109,7 +114,7 @@ This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0
 
 ## [2.0.0]
 ### Changed
-* Improved error messages when Earthdata user must select Study Area or accept EULA, thanks to @kevinxmorales in #170 
+* Improved error messages when Earthdata user must select Study Area or accept EULA, thanks to @kevinxmorales in #170
 ### Removed
 * The `hyp3_sdk.TESTING` constant has been removed in favor of mocking objects in unit tests.
 
@@ -207,10 +212,10 @@ This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0
   - `hyp3_sdk.HyP3_TEST` is now `hyp3_sdk.TEST_API`
 
 ## [1.2.0](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.3...v1.2.0)
-  
+
 ### Added
 - `Job` class now has a `logs` attribute containing links to job log files
-- Added missing [container methods](https://docs.python.org/3/reference/datamodel.html#emulating-container-types) 
+- Added missing [container methods](https://docs.python.org/3/reference/datamodel.html#emulating-container-types)
   - batches are now subscriptable: `batch[0]`
   - jobs can be searched for in batches:`job in batch`
   - jobs can be deleted from batches: `del batch[0]`
@@ -224,7 +229,7 @@ This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0
 - [#92](https://github.com/ASFHyP3/hyp3-sdk/issues/92) -- `ImportError` being
   raised when showing a progress bar because `ipywidgets` may not always be
   installed when running in a Jupyter kernel
-  
+
 ## [1.1.3](https://github.com/ASFHyP3/hyp3-sdk/compare/v1.1.2...v1.1.3)
 
 ### Added
@@ -254,7 +259,7 @@ This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0
 ### Added
 - `HyP3.find_jobs` now supports filtering by `job_type`
 - `HyP3.find_jobs` now pages through truncated responses to get all requested jobs
-- `hyp3_sdk.exceptions` now includes `ServerError` for exceptions that are a result of 
+- `hyp3_sdk.exceptions` now includes `ServerError` for exceptions that are a result of
   system errors.
 
 ### Changed
@@ -291,7 +296,7 @@ This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0
   - `HyP3.prepare_rtc_job`
   - `HyP3.prepare_insar_job`
 - `HyP3.watch`, `Job.download_files`, and `Batch.download_files` now display progress bars
-    
+
 ### Changed
 - HyP3 `Job` objects provide a better string representation
   ```python
@@ -325,7 +330,7 @@ This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0
 - SDK will attach a `User-Agent` statement like `hyp3_sdk/VERSION` to all API interactions
 
 ### Changed
-- Providing a job list to `Batch.__init__()` is now optional; an empty batch will 
+- Providing a job list to `Batch.__init__()` is now optional; an empty batch will
   be created if the job list is not provided
 - `Batch.__init__()` no longer issues a warning when creating an empty batch
 - `HyP3.find_jobs()` will now issue a warning when a zero jobs were found
@@ -352,7 +357,7 @@ This release accommodates changes to the HyP3 API schema introduced in HyP3 v6.0
 - API responses now return Batch objects if multiple jobs present.
 - Job and Batch objects now have the following member functions to help with common tasks
 - API can now watch Jobs or Batches for completion
-- Jobs are no longer created then submitted, instead submission through the API is how to get Jobs 
+- Jobs are no longer created then submitted, instead submission through the API is how to get Jobs
 - hyp3-sdk has dropped support for python <= 3.7
 
 ## [0.2.2](https://github.com/ASFHyP3/hyp3-sdk/compare/v0.2.1...v0.2.2)
