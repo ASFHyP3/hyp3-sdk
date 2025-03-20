@@ -65,6 +65,7 @@ An instance of the `HyP3` class will be needed to interact with the external HyP
 rtc_job = hyp3.submit_rtc_job('granule_id', 'job_name')
 insar_job = hyp3.submit_insar_job('reference_granule_id', 'secondary_granule_id', 'job_name')
 insar_burst_job = hyp3.submit_insar_isce_burst_job('reference_granule_id', 'secondary_granule_id', 'job_name')
+insar_multi_burst_job = hyp3.submit_insar_isce_multi_burst_job(['ref_id_1', 'ref_id_2'], ['sec_id_1', 'sec_id_2'], 'job_name')
 autorift_job = hyp3.submit_autorift_job('reference_granule_id', 'secondary_granule_id', 'job_name')
 aria_s1_gunw_job = hyp3.submit_aria_s1_gunw_job(['ref_id_1', 'ref_id_2'], ['sec_id_1', 'sec_id_2'], 'frame_id', 'job_name')
 ```
