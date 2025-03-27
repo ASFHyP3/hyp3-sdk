@@ -481,3 +481,30 @@ def test_costs(get_mock_hyp3):
     responses.add(responses.GET, urljoin(api.url, '/costs'), json=api_response)
 
     assert api.costs() == {'foo': 5}
+
+
+@responses.activate
+def test_update_job(get_mock_hyp3, get_mock_job):
+    api_response = get_mock_job(job_id='123abc')
+    api = get_mock_hyp3()
+    responses.add(
+        responses.PATCH,
+        urljoin(api.url, '/jobs/abc123'),
+        match=[responses.matchers.json_params_matcher({})],
+        json=api_response.to_dict()
+    )
+
+    job = get_mock_job(job_id='abc123')
+    assert api.update_job(job) == api_response
+
+    api_response = get_mock_job(job_id='123abc', name='new_name')
+    api = get_mock_hyp3()
+    responses.add(
+        responses.PATCH,
+        urljoin(api.url, '/jobs/abc123'),
+        match=[responses.matchers.json_params_matcher({'name': 'new_name'})],
+        json=api_response.to_dict()
+    )
+
+    job = get_mock_job(job_id='abc123', name='old_name')
+    assert api.update_job(job, name='new_name') == api_response

@@ -643,3 +643,32 @@ class HyP3:
         response = self.session.get(urljoin(self.url, '/costs'))
         _raise_for_hyp3_status(response)
         return response.json()
+
+    def update_job(self, job: Job, **kwargs) -> Job:
+        """
+        Update the name of a previously-submitted job
+        Args:
+            job: The job to update
+            kwargs:
+                name: The new name, or None to remove the name
+
+        Returns:
+            job: The updated job
+        """
+        payload = {key: value for key, value in kwargs.items()}
+        response = self.session.patch(urljoin(self.url, f'/jobs/{job.job_id}'), json=payload)
+        _raise_for_hyp3_status(response)
+        return Job.from_dict(response.json())
+
+    def update_jobs(self, jobs: Batch, **kwargs) -> Batch:
+        """
+        Update the names of a previously-submitted batch of jobs
+        Args:
+            jobs: The Batch of jobs to update
+            kwargs:
+                name: The new name, or None to remove the name
+
+        Returns:
+            jobs: The Batch of updated jobs
+        """
+        return Batch([self.update_job(job, **kwargs) for job in jobs])
