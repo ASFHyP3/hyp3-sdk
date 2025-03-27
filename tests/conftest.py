@@ -38,7 +38,7 @@ def get_mock_job():
         expiration_time=None,
         credit_cost=None,
         priority=None,
-        job_id: str=None,
+        job_id: str | None = None,
     ):
         if job_parameters is None:
             job_parameters = {'param1': 'value1'}
@@ -57,7 +57,6 @@ def get_mock_job():
             'thumbnail_images': thumbnail_images,
             'expiration_time': expiration_time,
         }
-
         keys_to_delete = []
         for k, v in job_dict.items():
             if v is None:

@@ -491,7 +491,7 @@ def test_update_job(get_mock_hyp3, get_mock_job):
         responses.PATCH,
         urljoin(api.url, '/jobs/abc123'),
         match=[responses.matchers.json_params_matcher({})],
-        json=api_response.to_dict()
+        json=api_response.to_dict(),
     )
 
     job = get_mock_job(job_id='abc123')
@@ -503,7 +503,7 @@ def test_update_job(get_mock_hyp3, get_mock_job):
         responses.PATCH,
         urljoin(api.url, '/jobs/abc123'),
         match=[responses.matchers.json_params_matcher({'name': 'new_name'})],
-        json=api_response.to_dict()
+        json=api_response.to_dict(),
     )
 
     job = get_mock_job(job_id='abc123', name='old_name')
