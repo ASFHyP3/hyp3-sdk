@@ -11,6 +11,11 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 * Added `HyP3.update_job` and `HyP3.upadte_jobs` methods for updating the name of previously-submitted jobs.
 
+## [7.2.1]
+
+### Added
+* Added `HyP3.submit_insar_isce_multi_burst_job` to README example
+
 ## [7.2.0]
 
 ### Added
