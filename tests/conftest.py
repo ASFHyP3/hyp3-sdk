@@ -38,12 +38,15 @@ def get_mock_job():
         expiration_time=None,
         credit_cost=None,
         priority=None,
+        job_id: str | None = None,
     ):
         if job_parameters is None:
             job_parameters = {'param1': 'value1'}
+        if job_id is None:
+            job_id = str(uuid4())
         job_dict = {
             'job_type': job_type,
-            'job_id': str(uuid4()),
+            'job_id': job_id,
             'request_time': request_time.isoformat(timespec='seconds'),
             'status_code': status_code,
             'user_id': user_id,
