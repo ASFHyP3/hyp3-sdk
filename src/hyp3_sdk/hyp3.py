@@ -645,7 +645,7 @@ class HyP3:
         return response.json()
 
     def update_jobs(self, jobs: Batch | Job, **kwargs: object) -> Batch | Job:
-        """Update the name of one or more previously-submitted jobs
+        """Update the name of one or more previously-submitted jobs.
 
         Args:
             jobs: The job(s) to update
