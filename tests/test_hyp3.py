@@ -3,10 +3,12 @@ import warnings
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin
 
+import pytest
 import responses
 
 import hyp3_sdk
-from hyp3_sdk import HyP3, Job
+from hyp3_sdk import Batch, HyP3, Job
+from hyp3_sdk.exceptions import HyP3Error
 
 
 @responses.activate
@@ -484,27 +486,55 @@ def test_costs(get_mock_hyp3):
 
 
 @responses.activate
-def test_update_job(get_mock_hyp3, get_mock_job):
-    api_response = get_mock_job(job_id='123abc')
+def test_update_jobs(get_mock_hyp3, get_mock_job):
     api = get_mock_hyp3()
+    job1_api_response = {
+        'job_id': 'job1',
+        'job_type': 'FOO',
+        'request_time': '2020-06-04T18:00:03+00:00',
+        'status_code': 'SUCCEEDED',
+        'user_id': 'foo',
+        'name': 'new_name',
+    }
+    job2_api_response = {
+        'job_id': 'job2',
+        'job_type': 'FOO',
+        'request_time': '2020-06-04T18:00:03+00:00',
+        'status_code': 'SUCCEEDED',
+        'user_id': 'foo',
+        'name': 'new_name',
+    }
     responses.add(
         responses.PATCH,
-        urljoin(api.url, '/jobs/abc123'),
-        match=[responses.matchers.json_params_matcher({})],
-        json=api_response.to_dict(),
-    )
-
-    job = get_mock_job(job_id='abc123')
-    assert api.update_job(job) == api_response
-
-    api_response = get_mock_job(job_id='123abc', name='new_name')
-    api = get_mock_hyp3()
-    responses.add(
-        responses.PATCH,
-        urljoin(api.url, '/jobs/abc123'),
+        urljoin(api.url, '/jobs/job1'),
         match=[responses.matchers.json_params_matcher({'name': 'new_name'})],
-        json=api_response.to_dict(),
+        json=job1_api_response,
+    )
+    responses.add(
+        responses.PATCH,
+        urljoin(api.url, '/jobs/job2'),
+        match=[responses.matchers.json_params_matcher({'name': 'new_name'})],
+        json=job2_api_response,
+    )
+    responses.add(
+        responses.PATCH,
+        urljoin(api.url, '/jobs/job1'),
+        match=[responses.matchers.json_params_matcher({'foo': 'bar'})],
+        json={'detail': 'test error message'},
+        status=400,
     )
 
-    job = get_mock_job(job_id='abc123', name='old_name')
-    assert api.update_job(job, name='new_name') == api_response
+    job1 = get_mock_job(job_id='job1')
+    job2 = get_mock_job(job_id='job2')
+
+    assert api.update_jobs(job1, name='new_name') == Job.from_dict(job1_api_response)
+
+    assert api.update_jobs(Batch([job1, job2]), name='new_name') == Batch(
+        [Job.from_dict(job1_api_response), Job.from_dict(job2_api_response)]
+    )
+
+    with pytest.raises(TypeError):
+        api.update_jobs(1, name='new_name')
+
+    with pytest.raises(HyP3Error, match=r'^<Response \[400\]> test error message$'):
+        api.update_jobs(job1, foo='bar')
