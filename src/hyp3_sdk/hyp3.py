@@ -4,7 +4,7 @@ import warnings
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
-from typing import Literal
+from typing import Literal, cast
 from urllib.parse import urljoin
 from warnings import warn
 
@@ -644,31 +644,23 @@ class HyP3:
         _raise_for_hyp3_status(response)
         return response.json()
 
-    def update_job(self, job: Job, **kwargs) -> Job:
-        """
-        Update the name of a previously-submitted job
+    def update_jobs(self, jobs: Batch | Job, **kwargs: object) -> Batch | Job:
+        """Update the name of one or more previously-submitted jobs.
+
         Args:
-            job: The job to update
+            jobs: The job(s) to update
             kwargs:
                 name: The new name, or None to remove the name
 
         Returns:
-            job: The updated job
+            The updated job(s)
         """
-        payload = {key: value for key, value in kwargs.items()}
-        response = self.session.patch(urljoin(self.url, f'/jobs/{job.job_id}'), json=payload)
+        if isinstance(jobs, Batch):
+            return Batch([cast(Job, self.update_jobs(job, **kwargs)) for job in jobs])
+
+        if not isinstance(jobs, Job):
+            raise TypeError(f"'jobs' has type {type(jobs)}, must be {Batch} or {Job}")
+
+        response = self.session.patch(urljoin(self.url, f'/jobs/{jobs.job_id}'), json=kwargs)
         _raise_for_hyp3_status(response)
         return Job.from_dict(response.json())
-
-    def update_jobs(self, jobs: Batch, **kwargs) -> Batch:
-        """
-        Update the names of a previously-submitted batch of jobs
-        Args:
-            jobs: The Batch of jobs to update
-            kwargs:
-                name: The new name, or None to remove the name
-
-        Returns:
-            jobs: The Batch of updated jobs
-        """
-        return Batch([self.update_job(job, **kwargs) for job in jobs])

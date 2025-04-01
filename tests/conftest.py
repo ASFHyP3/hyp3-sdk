@@ -26,6 +26,7 @@ def get_mock_hyp3():
 @pytest.fixture(autouse=True)
 def get_mock_job():
     def default_job(
+        job_id: str | None = None,
         job_type='JOB_TYPE',
         request_time=datetime.now(),
         status_code='RUNNING',
@@ -38,7 +39,6 @@ def get_mock_job():
         expiration_time=None,
         credit_cost=None,
         priority=None,
-        job_id: str | None = None,
     ):
         if job_parameters is None:
             job_parameters = {'param1': 'value1'}
