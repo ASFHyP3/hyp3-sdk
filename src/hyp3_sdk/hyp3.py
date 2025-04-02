@@ -4,7 +4,7 @@ import warnings
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
-from typing import Literal, cast
+from typing import Literal
 from urllib.parse import urljoin
 from warnings import warn
 
