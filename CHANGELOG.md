@@ -9,7 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [7.3.0]
 
 ### Added
-* Added a new `HyP3.update_jobs` method for updating the name of one or more previously-submitted jobs.
+* Added a new `HyP3.update_jobs` method for updating the name of one or more previously-submitted jobs and an example notebook for using it.
 
 ## [7.2.1]
 

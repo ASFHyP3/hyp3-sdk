@@ -4,7 +4,7 @@ import warnings
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
-from typing import Literal, cast
+from typing import Literal
 from urllib.parse import urljoin
 from warnings import warn
 
@@ -656,7 +656,11 @@ class HyP3:
             The updated job(s)
         """
         if isinstance(jobs, Batch):
-            return Batch([cast(Job, self.update_jobs(job, **kwargs)) for job in jobs])
+            batch = hyp3_sdk.Batch()
+            tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
+            for job in tqdm(jobs):
+                batch += self.update_jobs(job, **kwargs)
+            return batch
 
         if not isinstance(jobs, Job):
             raise TypeError(f"'jobs' has type {type(jobs)}, must be {Batch} or {Job}")
