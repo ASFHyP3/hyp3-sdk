@@ -643,3 +643,28 @@ class HyP3:
         response = self.session.get(urljoin(self.url, '/costs'))
         _raise_for_hyp3_status(response)
         return response.json()
+
+    def update_jobs(self, jobs: Batch | Job, **kwargs: object) -> Batch | Job:
+        """Update the name of one or more previously-submitted jobs.
+
+        Args:
+            jobs: The job(s) to update
+            kwargs:
+                name: The new name, or None to remove the name
+
+        Returns:
+            The updated job(s)
+        """
+        if isinstance(jobs, Batch):
+            batch = hyp3_sdk.Batch()
+            tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
+            for job in tqdm(jobs):
+                batch += self.update_jobs(job, **kwargs)
+            return batch
+
+        if not isinstance(jobs, Job):
+            raise TypeError(f"'jobs' has type {type(jobs)}, must be {Batch} or {Job}")
+
+        response = self.session.patch(urljoin(self.url, f'/jobs/{jobs.job_id}'), json=kwargs)
+        _raise_for_hyp3_status(response)
+        return Job.from_dict(response.json())

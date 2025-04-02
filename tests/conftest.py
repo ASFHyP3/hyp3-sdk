@@ -26,6 +26,7 @@ def get_mock_hyp3():
 @pytest.fixture(autouse=True)
 def get_mock_job():
     def default_job(
+        job_id: str | None = None,
         job_type='JOB_TYPE',
         request_time=datetime.now(),
         status_code='RUNNING',
@@ -41,9 +42,11 @@ def get_mock_job():
     ):
         if job_parameters is None:
             job_parameters = {'param1': 'value1'}
+        if job_id is None:
+            job_id = str(uuid4())
         job_dict = {
             'job_type': job_type,
-            'job_id': str(uuid4()),
+            'job_id': job_id,
             'request_time': request_time.isoformat(timespec='seconds'),
             'status_code': status_code,
             'user_id': user_id,
