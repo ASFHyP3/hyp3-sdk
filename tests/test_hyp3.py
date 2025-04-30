@@ -347,6 +347,22 @@ def test_prepare_insar_isce_multi_burst_job():
     }
 
 
+def test_prepare_opera_rtc_job():
+    assert HyP3.prepare_opera_rtc_job(granule='g1') == {
+        'job_type': 'OPERA_RTC',
+        'job_parameters': {
+            'granules': ['g1'],
+        },
+    }
+    assert HyP3.prepare_opera_rtc_job(granule='g2', name='my_name') == {
+        'job_type': 'OPERA_RTC',
+        'name': 'my_name',
+        'job_parameters': {
+            'granules': ['g2'],
+        },
+    }
+
+
 def test_prepare_aria_s1_gunw_job():
     assert HyP3.prepare_aria_s1_gunw_job(
         reference=['ref_granule1', 'ref_granule2'], secondary=['sec_granule1', 'sec_granule2'], frame_id=100
@@ -445,6 +461,16 @@ def test_submit_aria_s1_gunw_job(get_mock_hyp3, get_mock_job):
     api = get_mock_hyp3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
     batch = api.submit_aria_s1_gunw_job(['g1', 'g2'], ['g1', 'g2'], 100)
+    assert batch.jobs[0] == job
+
+
+@responses.activate
+def test_submit_opera_rtc_job(get_mock_hyp3, get_mock_job):
+    job = get_mock_job('OPERA_RTC', job_parameters={'granules': ['g1']})
+    api_response = {'jobs': [job.to_dict()]}
+    api = get_mock_hyp3()
+    responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
+    batch = api.submit_opera_rtc_job(['g1'])
     assert batch.jobs[0] == job
 
 
