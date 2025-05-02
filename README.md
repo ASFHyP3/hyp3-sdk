@@ -23,8 +23,8 @@ A python wrapper around the HyP3 API
 ## Install
 
 In order to easily manage dependencies, we recommend using dedicated project environments
-via [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) 
-or [Python virtual environments](https://docs.python.org/3/tutorial/venv.html). 
+via [Anaconda/Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
+or [Python virtual environments](https://docs.python.org/3/tutorial/venv.html).
 
 The HyP3 SDK can be installed into a conda environment with
 
@@ -68,6 +68,7 @@ insar_burst_job = hyp3.submit_insar_isce_burst_job('reference_granule_id', 'seco
 insar_multi_burst_job = hyp3.submit_insar_isce_multi_burst_job(['ref_id_1', 'ref_id_2'], ['sec_id_1', 'sec_id_2'], 'job_name')
 autorift_job = hyp3.submit_autorift_job('reference_granule_id', 'secondary_granule_id', 'job_name')
 aria_s1_gunw_job = hyp3.submit_aria_s1_gunw_job(['ref_id_1', 'ref_id_2'], ['sec_id_1', 'sec_id_2'], 'frame_id', 'job_name')
+opera_rtc_s1_job = hyp3.submit_opera_rtc_s1_job('granule_id')
 ```
 Each of these functions will return an instance of the `Job` class that represents a new HyP3 job request.
 
@@ -76,7 +77,7 @@ To find HyP3 jobs that were run previously, you can use the `hyp3.find_jobs()`
 ```python
 batch = hyp3.find_jobs()
 ```
-This will return a `Batch` instance representing all jobs owned by you. You can also pass parameters to 
+This will return a `Batch` instance representing all jobs owned by you. You can also pass parameters to
 query to a specific set of jobs
 
 
