@@ -607,31 +607,31 @@ class HyP3:
             job_dict['name'] = name
         return job_dict
 
-    def submit_opera_rtc_job(self, granule: str, name: str | None = None) -> Batch:
-        """Submit an OPERA RTC job.
+    def submit_opera_rtc_s1_job(self, granule: str, name: str | None = None) -> Batch:
+        """Submit an OPERA RTC S1 job.
 
         Args:
             granule: The name of the S1 burst to use
             name: A name for the job (optional)
 
         Returns:
-            A Batch object containing the OPERA RTC job
+            A Batch object containing the OPERA RTC S1 job
         """
         arguments = locals().copy()
         arguments.pop('self')
-        job_dict = self.prepare_opera_rtc_job(**arguments)
+        job_dict = self.prepare_opera_rtc_s1_job(**arguments)
         return self.submit_prepared_jobs(prepared_jobs=job_dict)
 
     @classmethod
-    def prepare_opera_rtc_job(cls, granule: str, name: str | None = None) -> dict:
-        """Prepare an OPERA RTC job.
+    def prepare_opera_rtc_s1_job(cls, granule: str, name: str | None = None) -> dict:
+        """Prepare an OPERA RTC S1 job.
 
         Args:
             granule: The name of the S1 burst to use
             name: A name for the job
 
         Returns:
-            A dictionary containing the prepared OPERA RTC job
+            A dictionary containing the prepared OPERA RTC S1 job
         """
         job_parameters = locals().copy()
         for key in ['cls', 'name', 'granule']:
@@ -639,7 +639,7 @@ class HyP3:
 
         job_dict = {
             'job_parameters': {'granules': [granule], **job_parameters},
-            'job_type': 'OPERA_RTC',
+            'job_type': 'OPERA_RTC_S1',
         }
         if name is not None:
             job_dict['name'] = name
