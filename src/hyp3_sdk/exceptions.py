@@ -24,12 +24,19 @@ class AuthenticationError(HyP3SDKError):
     """Raise when authentication does not succeed"""
 
 
+class ServiceUnavailableError(HyP3SDKError):
+    """Raise when authentication does not succeed"""
+
+
 def _raise_for_hyp3_status(response: Response):
     try:
         response.raise_for_status()
     except HTTPError:
         if 400 <= response.status_code < 500:
             raise HyP3Error(f'{response} {response.json()["detail"]}')
+        if response.status_code == 503:
+            raise ServiceUnavailableError(f'{response} {response.json()["detail"]}')
+
         raise ServerError
 
 
