@@ -25,7 +25,7 @@ class AuthenticationError(HyP3SDKError):
 
 
 class ServiceUnavailableError(HyP3SDKError):
-    """Raise when authentication does not succeed"""
+    """Raise when the HyP3 API is unavailable"""
 
 
 def _raise_for_hyp3_status(response: Response):
