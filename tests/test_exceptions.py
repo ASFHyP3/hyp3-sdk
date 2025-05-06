@@ -23,6 +23,13 @@ def test_raise_for_hyp3_status():
     response.status_code = 200
     exceptions._raise_for_hyp3_status(response)
 
+    response = Response()
+    response.status_code = 503
+    response._content = b'{ "detail" : "foo" }'
+    with pytest.raises(exceptions.ServiceUnavailableError) as e:
+        exceptions._raise_for_hyp3_status(response)
+    assert 'foo' in str(e)
+
 
 def test_raise_for_search_status():
     response = Response()
