@@ -23,6 +23,8 @@ def test_raise_for_hyp3_status():
     response.status_code = 200
     exceptions._raise_for_hyp3_status(response)
 
+
+def test_service_unavailable_error():
     response = Response()
     response.status_code = 503
     response._content = b'{ "detail" : "foo" }'
