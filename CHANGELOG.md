@@ -9,7 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [7.4.0]
 
 ### Added
-* Added `HyP3.submit_opera_rtc_s1_job` and `HyP3.prepare_opera_rtc_s1_job` methods for submitting OPERA RTC S1 jobs to HyP3.
+* Added `HyP3.submit_opera_rtc_s1_job` and `HyP3.prepare_opera_rtc_s1_job` methods for submitting OPERA RTC-S1 jobs to HyP3.
 * Added `HyP3.ServiceUnavailableError` for handling 503 errors from HyP3 .
 
 ## [7.3.0]

@@ -608,14 +608,14 @@ class HyP3:
         return job_dict
 
     def submit_opera_rtc_s1_job(self, granule: str, name: str | None = None) -> Batch:
-        """Submit an OPERA RTC S1 job.
+        """Submit an OPERA RTC-S1 job.
 
         Args:
             granule: The name of the S1 burst to use
             name: A name for the job (optional)
 
         Returns:
-            A Batch object containing the OPERA RTC S1 job
+            A Batch object containing the OPERA RTC-S1 job
         """
         arguments = locals().copy()
         arguments.pop('self')
@@ -624,14 +624,14 @@ class HyP3:
 
     @classmethod
     def prepare_opera_rtc_s1_job(cls, granule: str, name: str | None = None) -> dict:
-        """Prepare an OPERA RTC S1 job.
+        """Prepare an OPERA RTC-S1 job.
 
         Args:
             granule: The name of the S1 burst to use
             name: A name for the job
 
         Returns:
-            A dictionary containing the prepared OPERA RTC S1 job
+            A dictionary containing the prepared OPERA RTC-S1 job
         """
         job_parameters = locals().copy()
         for key in ['cls', 'name', 'granule']:
