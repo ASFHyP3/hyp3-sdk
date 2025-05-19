@@ -12,7 +12,7 @@ on:
 
 jobs:
   call-pytest-workflow:
-    uses: ASFHyP3/actions/.github/workflows/reusable-pytest.yml@v0.18.1
+    uses: ASFHyP3/actions/.github/workflows/reusable-pytest.yml@v0.19.0
     with:
       local_package_name: hyp3_sdk
       python_versions: >-
