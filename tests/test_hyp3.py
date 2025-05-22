@@ -567,6 +567,10 @@ def test_update_jobs(get_mock_hyp3, get_mock_job):
 
 
 def test_get_endpoint_url(get_mock_hyp3):
+    api = get_mock_hyp3(api_url='https://dummy-api.asf.alaska.edu')
+    assert api._get_endpoint_url('foo') == 'https://dummy-api.asf.alaska.edu/foo'
+    assert api._get_endpoint_url('/foo') == 'https://dummy-api.asf.alaska.edu/foo'
+
     api = get_mock_hyp3(api_url='https://foo.example.com/api')
     assert api._get_endpoint_url('foo') == 'https://foo.example.com/api/foo'
     assert api._get_endpoint_url('/foo') == 'https://foo.example.com/api/foo'
@@ -576,6 +580,9 @@ def test_get_endpoint_url(get_mock_hyp3):
     assert api._get_endpoint_url('foo') == 'https://foo.example.com/api/foo'
     assert api._get_endpoint_url('/foo') == 'https://foo.example.com/api/foo'
     assert api._get_endpoint_url('///foo///') == 'https://foo.example.com/api/foo'
+
+    api = get_mock_hyp3(api_url='https://foo.example.com:8000/api/')
+    assert api._get_endpoint_url('foo') == 'https://foo.example.com:8000/api/foo'
 
 
 def test_update_cookie(get_mock_hyp3):
