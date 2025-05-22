@@ -564,3 +564,28 @@ def test_update_jobs(get_mock_hyp3, get_mock_job):
 
     with pytest.raises(HyP3Error, match=r'^<Response \[400\]> test error message$'):
         api.update_jobs(job1, foo='bar')
+
+
+def test_get_endpoint_url(get_mock_hyp3):
+    api = get_mock_hyp3(api_url='https://foo.example.com/api')
+    assert api._get_endpoint_url('foo') == 'https://foo.example.com/api/foo'
+    assert api._get_endpoint_url('/foo') == 'https://foo.example.com/api/foo'
+    assert api._get_endpoint_url('///foo///') == 'https://foo.example.com/api/foo'
+
+    api = get_mock_hyp3(api_url='https://foo.example.com/api/')
+    assert api._get_endpoint_url('foo') == 'https://foo.example.com/api/foo'
+    assert api._get_endpoint_url('/foo') == 'https://foo.example.com/api/foo'
+    assert api._get_endpoint_url('///foo///') == 'https://foo.example.com/api/foo'
+
+
+def test_update_cookie(get_mock_hyp3):
+    api = get_mock_hyp3()
+    assert api.session.cookies.get('asf-urs', domain='.asf.alaska.edu') == 'test-cookie'
+
+    api = get_mock_hyp3(api_url='https://foo.example.com:8000/api')
+    assert api.session.cookies.get('asf-urs', domain='.asf.alaska.edu') == 'test-cookie'
+    assert api.session.cookies.get('asf-urs', domain='foo.example.com') == 'test-cookie'
+
+    api = get_mock_hyp3(api_url='https://foo.asf.alaska.edu:8000/api')
+    assert api.session.cookies.get('asf-urs', domain='.asf.alaska.edu') == 'test-cookie'
+    assert api.session.cookies.get('asf-urs', domain='foo.asf.alaska.edu') is None

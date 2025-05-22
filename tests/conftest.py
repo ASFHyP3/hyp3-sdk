@@ -14,11 +14,13 @@ from hyp3_sdk.hyp3 import HyP3
 @pytest.fixture(autouse=True)
 def get_mock_hyp3():
     def mock_get_authenticated_session(username, password):
-        return requests.Session()
+        session = requests.Session()
+        session.cookies.set('asf-urs', 'test-cookie', domain='.asf.alaska.edu')
+        return session
 
-    def default_hyp3():
+    def default_hyp3(api_url: str = 'https://dummy-api.asf.alaska.edu'):
         with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
-            return HyP3()
+            return HyP3(api_url=api_url)
 
     return default_hyp3
 
