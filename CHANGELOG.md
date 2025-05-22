@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.5.0]
+
+### Added
+* Added support for specifying a HyP3 API URL with a non-`.asf.alaska.edu` domain name. This is accomplished by updating the domain of the `asf-urs` cookie when creating the `HyP3` object.
+* Added support for specifying a HyP3 API URL that includes a path after the domain name. All API endpoints will be relative to the given path. For example, specifying `https://foo.example.com/api` results in the `/user` endpoint being relative to `/api`, i.e. `https://foo.example.com/api/user`.
+
 ## [7.4.0]
 
 ### Added
