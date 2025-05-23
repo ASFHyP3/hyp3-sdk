@@ -365,7 +365,7 @@ def test_prepare_opera_rtc_s1_job():
 
 def test_prepare_aria_s1_gunw_job():
     assert HyP3.prepare_aria_s1_gunw_job(
-        reference='ref_date', secondary='sec_date', frame_id=100
+        reference_date='ref_date', secondary_date='sec_date', frame_id=100
     ) == {
         'job_type': 'ARIA_S1_GUNW',
         'job_parameters': {
@@ -375,16 +375,16 @@ def test_prepare_aria_s1_gunw_job():
         },
     }
     assert HyP3.prepare_aria_s1_gunw_job(
-        reference='ref_date',
-        secondary='sec_date',
+        reference_date='ref_date',
+        secondary_date='sec_date',
         frame_id=100,
         name='my_name',
     ) == {
         'job_type': 'ARIA_S1_GUNW',
         'name': 'my_name',
         'job_parameters': {
-            'reference': 'ref_date',
-            'secondary': 'sec_date',
+            'reference_date': 'ref_date',
+            'secondary_date': 'sec_date',
             'frame_id': 100,
         },
     }
@@ -455,7 +455,7 @@ def test_submit_insar_isce_multi_burst_job(get_mock_hyp3, get_mock_job):
 @responses.activate
 def test_submit_aria_s1_gunw_job(get_mock_hyp3, get_mock_job):
     job = get_mock_job(
-        'ARIA_S1_GUNW', job_parameters={'reference': ['g1', 'g2'], 'secondary': ['g1', 'g2'], 'frame_id': 100}
+        'ARIA_S1_GUNW', job_parameters={'reference_date': ['g1', 'g2'], 'secondary_date': ['g1', 'g2'], 'frame_id': 100}
     )
     api_response = {'jobs': [job.to_dict()]}
     api = get_mock_hyp3()
