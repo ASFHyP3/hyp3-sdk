@@ -364,9 +364,7 @@ def test_prepare_opera_rtc_s1_job():
 
 
 def test_prepare_aria_s1_gunw_job():
-    assert HyP3.prepare_aria_s1_gunw_job(
-        reference_date='ref_date', secondary_date='sec_date', frame_id=100
-    ) == {
+    assert HyP3.prepare_aria_s1_gunw_job(reference_date='ref_date', secondary_date='sec_date', frame_id=100) == {
         'job_type': 'ARIA_S1_GUNW',
         'job_parameters': {
             'reference_date': 'ref_date',
