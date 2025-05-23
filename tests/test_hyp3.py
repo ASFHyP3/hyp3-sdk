@@ -369,8 +369,8 @@ def test_prepare_aria_s1_gunw_job():
     ) == {
         'job_type': 'ARIA_S1_GUNW',
         'job_parameters': {
-            'reference': 'ref_date',
-            'secondary': 'sec_date',
+            'reference_date': 'ref_date',
+            'secondary_date': 'sec_date',
             'frame_id': 100,
         },
     }
