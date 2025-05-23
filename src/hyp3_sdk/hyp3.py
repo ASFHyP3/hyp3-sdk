@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
 from typing import Literal
-from urllib.parse import urljoin
+from urllib.parse import SplitResult, urlsplit, urlunsplit
 from warnings import warn
 
 import hyp3_sdk
@@ -53,6 +53,16 @@ class HyP3:
         self.session = hyp3_sdk.util.get_authenticated_session(username, password)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
+        hostname = urlsplit(self.url).hostname
+        assert hostname is not None
+        if not hostname.endswith('.asf.alaska.edu'):
+            self.session.cookies.set('asf-urs', self.session.cookies['asf-urs'], domain=hostname)
+
+    def _get_endpoint_url(self, endpoint: str) -> str:
+        parts = urlsplit(self.url)
+        path = '/'.join([parts.path.strip('/'), endpoint.strip('/')])
+        return urlunsplit(SplitResult(scheme=parts.scheme, netloc=parts.netloc, path=path, query='', fragment=''))
+
     def find_jobs(
         self,
         start: datetime | None = None,
@@ -86,7 +96,7 @@ class HyP3:
 
                 params[param_name] = param_value
 
-        response = self.session.get(urljoin(self.url, '/jobs'), params=params)
+        response = self.session.get(self._get_endpoint_url('/jobs'), params=params)
         _raise_for_hyp3_status(response)
         jobs = [Job.from_dict(job) for job in response.json()['jobs']]
 
@@ -107,7 +117,7 @@ class HyP3:
         Returns:
             A Job object
         """
-        response = self.session.get(urljoin(self.url, f'/jobs/{job_id}'))
+        response = self.session.get(self._get_endpoint_url(f'/jobs/{job_id}'))
         _raise_for_hyp3_status(response)
 
         return Job.from_dict(response.json())
@@ -201,7 +211,7 @@ class HyP3:
         else:
             payload = {'jobs': prepared_jobs}
 
-        response = self.session.post(urljoin(self.url, '/jobs'), json=payload)
+        response = self.session.post(self._get_endpoint_url('/jobs'), json=payload)
         _raise_for_hyp3_status(response)
 
         batch = Batch()
@@ -649,7 +659,7 @@ class HyP3:
         """Returns:
         Your user information
         """
-        response = self.session.get(urljoin(self.url, '/user'))
+        response = self.session.get(self._get_endpoint_url('/user'))
         _raise_for_hyp3_status(response)
         return response.json()
 
@@ -678,7 +688,7 @@ class HyP3:
         """Returns:
         Table of job costs
         """
-        response = self.session.get(urljoin(self.url, '/costs'))
+        response = self.session.get(self._get_endpoint_url('/costs'))
         _raise_for_hyp3_status(response)
         return response.json()
 
@@ -703,6 +713,6 @@ class HyP3:
         if not isinstance(jobs, Job):
             raise TypeError(f"'jobs' has type {type(jobs)}, must be {Batch} or {Job}")
 
-        response = self.session.patch(urljoin(self.url, f'/jobs/{jobs.job_id}'), json=kwargs)
+        response = self.session.patch(self._get_endpoint_url(f'/jobs/{jobs.job_id}'), json=kwargs)
         _raise_for_hyp3_status(response)
         return Job.from_dict(response.json())
