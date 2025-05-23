@@ -577,8 +577,8 @@ class HyP3:
         """Submit an ARIA S1 GUNW job.
 
         Args:
-            reference_date: Date of reference scenes for InSAR processing
-            secondary_date: Date of secondary scenes for InSAR processing
+            reference_date: Date of reference scenes for InSAR processing in YYYY-MM-DD format
+            secondary_date: Date of secondary scenes for InSAR processing in YYYY-MM-DD format
             frame_id: Subset GUNW products to this frame
             name: A name for the job (optional)
 
@@ -597,8 +597,8 @@ class HyP3:
         """Prepare an ARIA S1 GUNW job.
 
         Args:
-            reference: Date of reference scenes for InSAR processing
-            secondary: Date of secondary scenes for InSAR processing
+            reference_date: Date of reference scenes for InSAR processing in YYYY-MM-DD format
+            secondary_date: Date of secondary scenes for InSAR processing in YYYY-MM-DD format
             frame_id: Subset GUNW products to this frame
             name: A name for the job
 
