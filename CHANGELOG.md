@@ -8,7 +8,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [7.6.0]
 ### Changed
-* `ARIA-S1-GUNW` jobs now use reference and secondary dates as input instead of a list of granules
+* `ARIA-S1-GUNW` jobs now uses `reference_date` and `secondary_date` as input instead of a list of granules
 
 ## [7.5.0]
 
