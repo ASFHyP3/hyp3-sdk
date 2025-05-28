@@ -67,7 +67,7 @@ insar_job = hyp3.submit_insar_job('reference_granule_id', 'secondary_granule_id'
 insar_burst_job = hyp3.submit_insar_isce_burst_job('reference_granule_id', 'secondary_granule_id', 'job_name')
 insar_multi_burst_job = hyp3.submit_insar_isce_multi_burst_job(['ref_id_1', 'ref_id_2'], ['sec_id_1', 'sec_id_2'], 'job_name')
 autorift_job = hyp3.submit_autorift_job('reference_granule_id', 'secondary_granule_id', 'job_name')
-aria_s1_gunw_job = hyp3.submit_aria_s1_gunw_job(['ref_id_1', 'ref_id_2'], ['sec_id_1', 'sec_id_2'], 'frame_id', 'job_name')
+aria_s1_gunw_job = hyp3.submit_aria_s1_gunw_job('ref_date', 'sec_date', 'frame_id', 'job_name')
 opera_rtc_s1_job = hyp3.submit_opera_rtc_s1_job('granule_id')
 ```
 Each of these functions will return an instance of the `Job` class that represents a new HyP3 job request.
