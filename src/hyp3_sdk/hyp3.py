@@ -30,6 +30,7 @@ class HyP3:
         api_url: str = PROD_API,
         username: str | None = None,
         password: str | None = None,
+        edl_token: str | None = None,
         prompt: bool = False,
     ):
         """If username and password are not provided, attempts to use credentials from a `.netrc` file.
@@ -40,6 +41,7 @@ class HyP3:
                 Both username and password must be provided if either is provided.
             password: Password for authenticating to `urs.earthdata.nasa.gov`.
                 Both username and password must be provided if either is provided.
+            edl_token: Earth Data Login Bearer Token for authenticating to `urs.earthdata.nasa.gov`
             prompt: Prompt for username and/or password interactively when they
                 are not provided as keyword parameters
         """
@@ -50,7 +52,7 @@ class HyP3:
         if password is None and prompt:
             password = getpass('NASA Earthdata Login password: ')
 
-        self.session = hyp3_sdk.util.get_authenticated_session(username, password)
+        self.session = hyp3_sdk.util.get_authenticated_session(username, password, edl_token)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
 
         hostname = urlsplit(self.url).hostname

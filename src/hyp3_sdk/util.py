@@ -71,7 +71,7 @@ def get_tqdm_progress_bar():
     return tqdm
 
 
-def get_authenticated_session(username: str | None, password: str | None) -> requests.Session:
+def get_authenticated_session(username: str | None, password: str | None, edl_token: str | None) -> requests.Session:
     """Log into HyP3 using credentials for `urs.earthdata.nasa.gov` from either the provided
      credentials or a `.netrc` file.
 
@@ -83,7 +83,13 @@ def get_authenticated_session(username: str | None, password: str | None) -> req
     if username is not None and password is not None:
         response = s.get(AUTH_URL, auth=(username, password))
         auth_error_message = (
-            'Was not able to authenticate with credentials provided\n'
+            'Was not able to authenticate with username and password provided\n'
+            'This could be due to invalid credentials or a connection error.'
+        )
+    elif edl_token is not None:
+        response = s.get(AUTH_URL, headers={"Authorization": f'Bearer {edl_token}'})
+        auth_error_message = (
+            'Was not able to authenticate with EDL Bearer Token provided\n'
             'This could be due to invalid credentials or a connection error.'
         )
     else:
@@ -110,7 +116,6 @@ def get_authenticated_session(username: str | None, password: str | None) -> req
         raise AuthenticationError(auth_error_message)
 
     return s
-
 
 def download_file(url: str, filepath: Path | str, chunk_size=None, retries=2, backoff_factor=1) -> Path:
     """Download a file
