@@ -87,7 +87,7 @@ def get_authenticated_session(username: str | None, password: str | None, token:
             'This could be due to invalid credentials or a connection error.'
         )
     elif token is not None:
-        response = s.get(AUTH_URL, headers={"Authorization": f'Bearer {token}'})
+        response = s.get(AUTH_URL, headers={'Authorization': f'Bearer {token}'})
         auth_error_message = (
             'Was not able to authenticate with EDL Bearer Token provided\n'
             'This could be due to invalid credentials or a connection error.'
@@ -116,6 +116,7 @@ def get_authenticated_session(username: str | None, password: str | None, token:
         raise AuthenticationError(auth_error_message)
 
     return s
+
 
 def download_file(url: str, filepath: Path | str, chunk_size=None, retries=2, backoff_factor=1) -> Path:
     """Download a file
