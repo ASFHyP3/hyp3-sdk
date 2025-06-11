@@ -71,7 +71,10 @@ def get_tqdm_progress_bar():
     return tqdm
 
 
-def get_authenticated_session(*, username: str = None, password: str = None, token: str = None) -> requests.Session:
+def get_authenticated_session(
+        username: str | None = None,
+        password: str | None = None,
+        token: str = None) -> requests.Session:
     """Log into HyP3 using credentials for `urs.earthdata.nasa.gov` from either the provided
      credentials or a `.netrc` file.
 
