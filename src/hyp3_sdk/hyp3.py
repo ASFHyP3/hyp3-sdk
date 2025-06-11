@@ -46,7 +46,10 @@ class HyP3:
         """
         self.url = api_url
 
-        if prompt and prompt != 'password' and prompt != 'token':
+        if prompt not in (True, 'password', 'token', None):
+            raise ValueError(f'Unexpected value {prompt} for `prompt`')
+
+        if prompt is True:
             warnings.warn(
                 'Passing `prompt=True` is deprecated. Please use either `prompt="password"` or `prompt="token"`',
                 UserWarning,
