@@ -61,8 +61,11 @@ def test_get_authenticated_session_study_area():
 def test_get_authenticated_session_http_error():
     responses.add(responses.GET, util.AUTH_URL, status=401)
 
-    with pytest.raises(AuthenticationError, match=r'^Was not able to authenticate with credentials provided.*'):
+    with pytest.raises(AuthenticationError, match=r'^Was not able to authenticate with username and password provided.*'):
         util.get_authenticated_session('user', 'pass')
+
+    with pytest.raises(AuthenticationError, match=r'^Was not able to authenticate with EDL Bearer Token provided.*'):
+        util.get_authenticated_session(token='token')
 
     with pytest.raises(
         AuthenticationError, match=r'^Was not able to authenticate with \.netrc file and no credentials provided.*'
