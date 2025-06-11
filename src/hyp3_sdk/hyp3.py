@@ -49,7 +49,8 @@ class HyP3:
         if prompt and prompt != 'password' and prompt != 'token':
             warnings.warn(
                 'Passing `prompt=True` is deprecated. Please use either `prompt="password"` or `prompt="token"`',
-                UserWarning)
+                UserWarning,
+            )
             prompt = 'password'
 
         if prompt == 'password':
