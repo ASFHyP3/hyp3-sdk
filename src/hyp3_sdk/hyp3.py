@@ -31,7 +31,7 @@ class HyP3:
         username: str | None = None,
         password: str | None = None,
         token: str | None = None,
-        prompt: bool = False,
+        prompt: str | None = None,
     ):
         """If username and password are not provided, attempts to use credentials from a `.netrc` file.
 
@@ -41,16 +41,26 @@ class HyP3:
                 Both username and password must be provided if either is provided.
             password: Password for authenticating to `urs.earthdata.nasa.gov`.
                 Both username and password must be provided if either is provided.
-            edl_token: Earth Data Login Bearer Token for authenticating to `urs.earthdata.nasa.gov`
-            prompt: Prompt for username and/or password interactively when they
-                are not provided as keyword parameters
+            token: Earth Data Login Bearer Token for authenticating to `urs.earthdata.nasa.gov`
+            prompt: Either 'password' or 'token' to prompt for EDL user name and password or EDL bearer token, respectively.
         """
         self.url = api_url
 
-        if username is None and prompt:
-            username = input('NASA Earthdata Login username: ')
-        if password is None and prompt:
-            password = getpass('NASA Earthdata Login password: ')
+        if prompt is True:
+            warnings.warn(
+                'Passing `prompt=True` is deprecated. Please use either `prompt="password"` or `prompt="token"`',
+                UserWarning)
+            prompt = 'password'
+
+        if prompt == 'password':
+            if username is None:
+                username = input('NASA Earthdata Login username: ')
+            if password is None:
+                password = getpass('NASA Earthdata Login password: ')
+
+        if prompt == 'token':
+            if token is None:
+                token = getpass('NASA Earthdata Login bearer token: ')
 
         self.session = hyp3_sdk.util.get_authenticated_session(username, password, token)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
