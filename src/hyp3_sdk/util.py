@@ -82,16 +82,14 @@ def get_authenticated_session(
     """
     s = requests.Session()
 
+    if token is not None:
+        s.headers.update({'Authorization': f'Bearer {token}'})
+        return s
+
     if username is not None and password is not None:
         response = s.get(AUTH_URL, auth=(username, password))
         auth_error_message = (
             'Was not able to authenticate with username and password provided\n'
-            'This could be due to invalid credentials or a connection error.'
-        )
-    elif token is not None:
-        response = s.get(AUTH_URL, headers={'Authorization': f'Bearer {token}'})
-        auth_error_message = (
-            'Was not able to authenticate with EDL Bearer Token provided\n'
             'This could be due to invalid credentials or a connection error.'
         )
     else:
