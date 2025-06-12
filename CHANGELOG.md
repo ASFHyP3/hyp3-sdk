@@ -9,7 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [7.6.0]
 
 ### Added
-* Added support for using an [EarthData Login Bearer Token](https://urs.earthdata.nasa.gov/documentation/for_users/user_token) when authenticating the `HyP3` object. 
+* Added support for using an [Earthdata Login Bearer Token](https://urs.earthdata.nasa.gov/documentation/for_users/user_token) when authenticating the `HyP3` object. 
 
 ## [7.5.0]
 
