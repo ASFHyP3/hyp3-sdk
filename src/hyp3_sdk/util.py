@@ -12,7 +12,6 @@ from urllib3.util.retry import Retry
 
 from hyp3_sdk.exceptions import AuthenticationError
 
-
 AUTH_URL = (
     'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g'
     '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
@@ -58,7 +57,7 @@ def chunk(itr: Sequence[Any], n: int = 200) -> Generator[Sequence[Any], None, No
         raise ValueError(error_message)
 
     for i in range(0, len(itr), n):
-        yield itr[i : i + n]
+        yield itr[i: i + n]
 
 
 def get_tqdm_progress_bar():
@@ -72,8 +71,7 @@ def get_tqdm_progress_bar():
 
 
 def get_authenticated_session(
-    username: str | None = None, password: str | None = None, token: str | None = None
-) -> requests.Session:
+        username: str | None = None, password: str | None = None, token: str | None = None) -> requests.Session:
     """Log into HyP3 using credentials for `urs.earthdata.nasa.gov` from either the provided
      credentials or a `.netrc` file.
 
@@ -144,7 +142,8 @@ def download_file(url: str, filepath: Path | str, chunk_size=None, retries=2, ba
         s.raise_for_status()
         tqdm = get_tqdm_progress_bar()
         with tqdm.wrapattr(
-            open(filepath, 'wb'), 'write', miniters=1, desc=filepath.name, total=int(s.headers.get('content-length', 0))
+                open(filepath, 'wb'), 'write', miniters=1, desc=filepath.name,
+                total=int(s.headers.get('content-length', 0))
         ) as f:
             for chunk in s.iter_content(chunk_size=chunk_size):
                 if chunk:
