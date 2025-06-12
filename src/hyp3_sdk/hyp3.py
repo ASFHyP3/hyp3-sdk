@@ -31,7 +31,7 @@ class HyP3:
         username: str | None = None,
         password: str | None = None,
         token: str | None = None,
-        prompt: Literal['password' , 'token'] | bool | None = None,
+        prompt: Literal['password', 'token'] | bool | None = None,
     ):
         """If username and password are not provided, attempts to use credentials from a `.netrc` file.
 
@@ -46,7 +46,7 @@ class HyP3:
         """
         self.url = api_url
 
-        if prompt not in (True, 'password', 'token', None):
+        if prompt not in (True, False, 'password', 'token', None):
             raise ValueError(f'Unexpected value {prompt} for `prompt`')
 
         if prompt is True:
