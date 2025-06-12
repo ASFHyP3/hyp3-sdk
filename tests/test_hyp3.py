@@ -28,9 +28,7 @@ def test_session_headers(get_mock_hyp3):
 def test_session_invalid_prompt():
     responses.add(responses.GET, hyp3_sdk.util.AUTH_URL, status=401)
 
-    with pytest.raises(
-        ValueError, match=r'^Unexpected value*'
-    ):
+    with pytest.raises(ValueError, match=r'^Unexpected value*'):
         HyP3(prompt='prompt')
 
 
