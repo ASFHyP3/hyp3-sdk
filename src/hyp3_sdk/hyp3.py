@@ -41,7 +41,7 @@ class HyP3:
                 Both username and password must be provided if either is provided.
             password: Password for authenticating to `urs.earthdata.nasa.gov`.
                 Both username and password must be provided if either is provided.
-            token: Earth Data Login Bearer Token for authenticating to `urs.earthdata.nasa.gov`
+            token: Earthdata Login Bearer Token for authenticating to `urs.earthdata.nasa.gov`
             prompt: Either 'password' or 'token' to prompt for EDL user name and password or EDL bearer token, respectively.
         """
         self.url = api_url
