@@ -25,6 +25,16 @@ def test_session_headers(get_mock_hyp3):
 
 
 @responses.activate
+def test_session_invalid_prompt():
+    responses.add(responses.GET, hyp3_sdk.util.AUTH_URL, status=401)
+
+    with pytest.raises(
+        ValueError, match=r'^Unexpected value*'
+    ):
+        HyP3(prompt='prompt')
+
+
+@responses.activate
 def test_find_jobs(get_mock_hyp3, get_mock_job):
     api_response_mock = {
         'jobs': [
