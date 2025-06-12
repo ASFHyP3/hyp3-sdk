@@ -62,9 +62,8 @@ class HyP3:
             if password is None:
                 password = getpass('NASA Earthdata Login password: ')
 
-        if prompt == 'token':
-            if token is None:
-                token = getpass('NASA Earthdata Login bearer token: ')
+        if prompt == 'token' and token is None:
+            token = getpass('NASA Earthdata Login bearer token: ')
 
         self.session = hyp3_sdk.util.get_authenticated_session(username, password, token)
         self.session.headers.update({'User-Agent': f'{hyp3_sdk.__name__}/{hyp3_sdk.__version__}'})
