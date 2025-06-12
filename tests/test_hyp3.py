@@ -29,7 +29,7 @@ def test_session_invalid_prompt():
     responses.add(responses.GET, hyp3_sdk.util.AUTH_URL, status=401)
 
     with pytest.raises(ValueError, match=r'^Unexpected value*'):
-        HyP3(prompt='prompt')
+        HyP3(prompt='prompt')  # type: ignore[arg-type]
 
 
 @responses.activate
