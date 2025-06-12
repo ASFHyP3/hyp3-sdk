@@ -31,7 +31,7 @@ class HyP3:
         username: str | None = None,
         password: str | None = None,
         token: str | None = None,
-        prompt: str | None = None,
+        prompt: str | bool | None = None,
     ):
         """If username and password are not provided, attempts to use credentials from a `.netrc` file.
 
