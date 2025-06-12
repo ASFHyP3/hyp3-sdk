@@ -73,6 +73,15 @@ def test_get_authenticated_session_http_error():
 
 
 @responses.activate
+def test_get_authenticated_session_with_token_header():
+    session = util.get_authenticated_session(token='token')
+    assert session.headers['Authorization'] == 'Bearer token'
+
+    session = util.get_authenticated_session(username='user', password='pass', token='token')
+    assert session.headers['Authorization'] == 'Bearer token'
+
+
+@responses.activate
 def test_download_file(tmp_path):
     responses.add(responses.GET, 'https://foo.com/file', body='foobar')
     result_path = util.download_file('https://foo.com/file', tmp_path / 'file')
