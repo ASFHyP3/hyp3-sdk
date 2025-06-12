@@ -8,7 +8,7 @@ import responses
 
 import hyp3_sdk
 from hyp3_sdk import Batch, HyP3, Job
-from hyp3_sdk.exceptions import HyP3Error
+from hyp3_sdk.exceptions import AuthenticationError, HyP3Error
 
 
 @responses.activate
@@ -30,6 +30,14 @@ def test_session_invalid_prompt():
 
     with pytest.raises(ValueError, match=r'^Unexpected value*'):
         HyP3(prompt='prompt')
+
+
+@responses.activate
+def test_session_valid_prompts():
+    responses.add(responses.GET, hyp3_sdk.util.AUTH_URL, status=401)
+
+    with pytest.raises(AuthenticationError, match=r'^Was not able to authenticate with .netrc file*'):
+        HyP3(prompt=False)
 
 
 @responses.activate
