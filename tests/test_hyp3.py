@@ -364,26 +364,26 @@ def test_prepare_opera_rtc_s1_job():
 
 
 def test_prepare_aria_s1_gunw_job():
-    assert HyP3.prepare_aria_s1_gunw_job(reference_date='ref_date', secondary_date='sec_date', frame_id=100) == {
+    assert HyP3.prepare_aria_s1_gunw_job(reference_date='ref_date_1', secondary_date='sec_date_1', frame_id=100) == {
         'job_type': 'ARIA_S1_GUNW',
         'job_parameters': {
-            'reference_date': 'ref_date',
-            'secondary_date': 'sec_date',
+            'reference_date': 'ref_date_1',
+            'secondary_date': 'sec_date_1',
             'frame_id': 100,
         },
     }
     assert HyP3.prepare_aria_s1_gunw_job(
-        reference_date='ref_date',
-        secondary_date='sec_date',
-        frame_id=100,
+        reference_date='ref_date_2',
+        secondary_date='sec_date_2',
+        frame_id=101,
         name='my_name',
     ) == {
         'job_type': 'ARIA_S1_GUNW',
         'name': 'my_name',
         'job_parameters': {
-            'reference_date': 'ref_date',
-            'secondary_date': 'sec_date',
-            'frame_id': 100,
+            'reference_date': 'ref_date_2',
+            'secondary_date': 'sec_date_2',
+            'frame_id': 101,
         },
     }
 
