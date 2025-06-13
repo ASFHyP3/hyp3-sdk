@@ -606,7 +606,7 @@ class HyP3:
             A dictionary containing the prepared ARIA S1 GUNW job
         """
         job_parameters = locals().copy()
-        for key in ['cls', 'reference_date', 'secondary_date', 'frame_id', 'name']:
+        for key in ['cls', 'name']:
             job_parameters.pop(key)
 
         job_dict = {
