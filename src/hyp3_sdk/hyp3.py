@@ -610,12 +610,7 @@ class HyP3:
             job_parameters.pop(key)
 
         job_dict = {
-            'job_parameters': {
-                'reference_date': reference_date,
-                'secondary_date': secondary_date,
-                'frame_id': frame_id,
-                **job_parameters,
-            },
+            'job_parameters': job_parameters,
             'job_type': 'ARIA_S1_GUNW',
         }
         if name is not None:
