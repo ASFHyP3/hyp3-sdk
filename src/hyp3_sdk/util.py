@@ -71,7 +71,9 @@ def get_tqdm_progress_bar():
     return tqdm
 
 
-def get_authenticated_session(username: str | None, password: str | None) -> requests.Session:
+def get_authenticated_session(
+    username: str | None = None, password: str | None = None, token: str | None = None
+) -> requests.Session:
     """Log into HyP3 using credentials for `urs.earthdata.nasa.gov` from either the provided
      credentials or a `.netrc` file.
 
@@ -80,10 +82,14 @@ def get_authenticated_session(username: str | None, password: str | None) -> req
     """
     s = requests.Session()
 
+    if token is not None:
+        s.headers.update({'Authorization': f'Bearer {token}'})
+        return s
+
     if username is not None and password is not None:
         response = s.get(AUTH_URL, auth=(username, password))
         auth_error_message = (
-            'Was not able to authenticate with credentials provided\n'
+            'Was not able to authenticate with username and password provided\n'
             'This could be due to invalid credentials or a connection error.'
         )
     else:
