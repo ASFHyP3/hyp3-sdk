@@ -12,7 +12,6 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Added support for using an [Earthdata Login Bearer Token](https://urs.earthdata.nasa.gov/documentation/for_users/user_token) when authenticating the `HyP3` object. 
 
 ## [7.6.0]
-
 ### Changed
 * `ARIA-S1-GUNW` jobs now uses `reference_date` and `secondary_date` as input instead of a list of granules
 
