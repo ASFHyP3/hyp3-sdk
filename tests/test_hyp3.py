@@ -8,7 +8,7 @@ import responses
 
 import hyp3_sdk
 from hyp3_sdk import Batch, HyP3, Job
-from hyp3_sdk.exceptions import HyP3Error
+from hyp3_sdk.exceptions import AuthenticationError, HyP3Error
 
 
 @responses.activate
@@ -22,6 +22,25 @@ def test_session_headers(get_mock_hyp3):
 
     api.my_info()
     assert responses.calls[1].request.headers['User-Agent'] == f'hyp3_sdk/{hyp3_sdk.__version__}'
+
+
+def test_invalid_prompt():
+    with pytest.raises(ValueError, match=r'^Unexpected value'):
+        HyP3(prompt='prompt')  # type: ignore[arg-type]
+
+
+@responses.activate
+def test_no_prompt():
+    responses.add(responses.GET, hyp3_sdk.util.AUTH_URL, status=401)
+
+    with pytest.raises(AuthenticationError, match=r'^Was not able to authenticate with \.netrc file'):
+        HyP3()
+
+    with pytest.raises(AuthenticationError, match=r'^Was not able to authenticate with \.netrc file'):
+        HyP3(prompt=False)
+
+    with pytest.raises(AuthenticationError, match=r'^Was not able to authenticate with \.netrc file'):
+        HyP3(prompt=None)
 
 
 @responses.activate
