@@ -9,8 +9,8 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [7.7.1]
 
 ### Changed
-* SDK example notebook now references the HyP3 authentication notebook during the authentication section. 
-* Link the HyP3 Documentation website in the HyP3 authentication notebook. 
+* SDK example notebook now references the HyP3 authentication notebook in the authentication section. 
+* The hyp3-docs authentication documentation page is linked in the HyP3 authentication notebook. 
 
 ## [7.7.0]
 
