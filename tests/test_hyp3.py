@@ -608,6 +608,11 @@ def test_update_cookie(get_mock_hyp3):
     assert api.session.cookies.get('asf-urs', domain='.asf.alaska.edu') == 'test-cookie'
     assert api.session.cookies.get('asf-urs', domain='foo.example.com') == 'test-cookie'
 
+    api = get_mock_hyp3(api_url='https://foo.example.com:8000/api', token='test-token')
+    assert api.session.headers['Authorization'] == 'Bearer test-token'
+    assert api.session.cookies.get('asf-urs', domain='.asf.alaska.edu') is None
+    assert api.session.cookies.get('asf-urs', domain='foo.example.com') is None
+
     api = get_mock_hyp3(api_url='https://foo.asf.alaska.edu:8000/api')
     assert api.session.cookies.get('asf-urs', domain='.asf.alaska.edu') == 'test-cookie'
     assert api.session.cookies.get('asf-urs', domain='foo.asf.alaska.edu') is None

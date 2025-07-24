@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.7.2]
+
+### Fixed
+* `HyP3.__init__` no longer attempts to update the domain of the `asf-urs` cookie for non-`.asf.alaska.edu` API URLs when the `token` parameter is given. Fixes https://github.com/ASFHyP3/hyp3-sdk/issues/369
+
 ## [7.7.1]
 
 ### Changed

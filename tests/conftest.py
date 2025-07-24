@@ -14,15 +14,20 @@ from hyp3_sdk.hyp3 import HyP3
 @pytest.fixture(autouse=True)
 def get_mock_hyp3():
     def mock_get_authenticated_session(username, password, token):
-        session = requests.Session()
-        session.cookies.set('asf-urs', 'test-cookie', domain='.asf.alaska.edu')
-        return session
+        s = requests.Session()
 
-    def default_hyp3(api_url: str = 'https://dummy-api.asf.alaska.edu'):
+        if token is not None:
+            s.headers.update({'Authorization': f'Bearer {token}'})
+            return s
+
+        s.cookies.set('asf-urs', 'test-cookie', domain='.asf.alaska.edu')
+        return s
+
+    def mock_hyp3(api_url: str = 'https://dummy-api.asf.alaska.edu', token: str | None = None):
         with patch('hyp3_sdk.util.get_authenticated_session', mock_get_authenticated_session):
-            return HyP3(api_url=api_url)
+            return HyP3(api_url=api_url, token=token)
 
-    return default_hyp3
+    return mock_hyp3
 
 
 @pytest.fixture(autouse=True)

@@ -70,7 +70,7 @@ class HyP3:
 
         hostname = urlsplit(self.url).hostname
         assert hostname is not None
-        if not hostname.endswith('.asf.alaska.edu'):
+        if not hostname.endswith('.asf.alaska.edu') and 'asf-urs' in self.session.cookies:
             self.session.cookies.set('asf-urs', self.session.cookies['asf-urs'], domain=hostname)
 
     def _get_endpoint_url(self, endpoint: str) -> str:
