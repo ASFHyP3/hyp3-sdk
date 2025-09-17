@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.7.3]
+
+### Added
+* Add alias for hyp3+ deployment
+
 ## [7.7.2]
 
 ### Fixed
@@ -14,13 +19,13 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [7.7.1]
 
 ### Changed
-* [SDK example notebook](https://github.com/ASFHyP3/hyp3-sdk/blob/main/docs/sdk_example.ipynb) now references the [HyP3 authentication notebook](https://github.com/ASFHyP3/hyp3-sdk/blob/main/docs/hyp3_authentication.ipynb) in the authentication section. 
-* The [hyp3-docs authentication documentation page](https://hyp3-docs.asf.alaska.edu/using/authentication/) is linked in the [HyP3 authentication notebook](https://github.com/ASFHyP3/hyp3-sdk/blob/main/docs/hyp3_authentication.ipynb). 
+* [SDK example notebook](https://github.com/ASFHyP3/hyp3-sdk/blob/main/docs/sdk_example.ipynb) now references the [HyP3 authentication notebook](https://github.com/ASFHyP3/hyp3-sdk/blob/main/docs/hyp3_authentication.ipynb) in the authentication section.
+* The [hyp3-docs authentication documentation page](https://hyp3-docs.asf.alaska.edu/using/authentication/) is linked in the [HyP3 authentication notebook](https://github.com/ASFHyP3/hyp3-sdk/blob/main/docs/hyp3_authentication.ipynb).
 
 ## [7.7.0]
 
 ### Added
-* Added support for using an [Earthdata Login Bearer Token](https://urs.earthdata.nasa.gov/documentation/for_users/user_token) when authenticating the `HyP3` object. 
+* Added support for using an [Earthdata Login Bearer Token](https://urs.earthdata.nasa.gov/documentation/for_users/user_token) when authenticating the `HyP3` object.
 
 ## [7.6.0]
 ### Changed
