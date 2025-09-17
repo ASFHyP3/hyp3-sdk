@@ -9,7 +9,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [7.7.3]
 
 ### Added
-* Add alias for hyp3+ deployment
+* Add alias for `hyp3-plus` API URL.
 
 ## [7.7.2]
 
