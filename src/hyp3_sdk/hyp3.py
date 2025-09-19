@@ -16,6 +16,8 @@ from hyp3_sdk.jobs import Batch, Job
 
 PROD_API = 'https://hyp3-api.asf.alaska.edu'
 TEST_API = 'https://hyp3-test-api.asf.alaska.edu'
+PLUS_API = 'https://hyp3-plus.asf.alaska.edu'
+PLUS_TEST_API = 'https://hyp3-plus-test.asf.alaska.edu'
 
 
 class HyP3:

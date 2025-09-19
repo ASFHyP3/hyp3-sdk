@@ -16,5 +16,7 @@ __all__ = [
     'Job',
     'PROD_API',
     'TEST_API',
+    'PLUS_API',
+    'PLUS_TEST_API',
     'util',
 ]
