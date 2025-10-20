@@ -58,6 +58,20 @@ An instance of the `HyP3` class will be needed to interact with the external HyP
 >>> job.download_files()
 ```
 
+### Connect to the HyP3 API
+
+Create a connection to the HyP3 API using the `HyP3` class:
+```
+import hyp3_sdk as sdk
+hyp3 = sdk.HyP3()
+```
+
+This connects to the [HyP3 Basic](https://hyp3-docs.asf.alaska.edu/about/hyp3_basic/) deployment by default. To connect to an
+alternate deployment such as [HyP3+](https://hyp3-docs.asf.alaska.edu/about/hyp3_plus/), specify the corresponding `api_url`:
+```
+hyp3_plus = sdk.HyP3(api_url='https://hyp3-plus.asf.alaska.edu')
+```
+
 ### Submitting Jobs
 
 `hyp3` has member functions for submitting new jobs:
