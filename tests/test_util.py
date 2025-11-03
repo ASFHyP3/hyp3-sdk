@@ -40,7 +40,7 @@ def test_get_authenticated_session_eula():
 @responses.activate
 def test_get_authenticated_session_study_area():
     redirect_url = (
-        'https://auth.asf.alaska.edu/login?error=access_denied&error_msg=Please%20update%20your%20profile%20for'
+        'https://cumulus.asf.alaska.edu/login?error=access_denied&error_msg=Please%20update%20your%20profile%20for'
         '%20application%20required%20attributes%20Study%20Area'
     )
     responses.add(responses.GET, util.AUTH_URL, status=302, headers={'Location': redirect_url})
