@@ -9,7 +9,6 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [7.7.5]
 
 ### Changed
-
 * `hyp3_sdk.HyP3()` now authenticates via `cumulus.asf.alaska.edu`, rather than `auth.asf.alaska.edu`.
 
 ## [7.7.4]
