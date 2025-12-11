@@ -547,19 +547,19 @@ def test_update_jobs(get_mock_hyp3, get_mock_job):
     }
     responses.add(
         responses.PATCH,
-        urljoin(api.url, '/jobs/job1'),
+        urljoin(api.url, '/jobs?job_ids=job1&name=new_name'),
         match=[responses.matchers.json_params_matcher({'name': 'new_name'})],
         json=job1_api_response,
     )
     responses.add(
         responses.PATCH,
-        urljoin(api.url, '/jobs/job2'),
+        urljoin(api.url, '/jobs?job_ids=job2&name=new_name'),
         match=[responses.matchers.json_params_matcher({'name': 'new_name'})],
         json=job2_api_response,
     )
     responses.add(
         responses.PATCH,
-        urljoin(api.url, '/jobs/job1'),
+        urljoin(api.url, '/jobs?job_ids=job1&name=new_name'),
         match=[responses.matchers.json_params_matcher({'foo': 'bar'})],
         json={'detail': 'test error message'},
         status=400,
