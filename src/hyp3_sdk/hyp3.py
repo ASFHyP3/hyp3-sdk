@@ -709,6 +709,9 @@ class HyP3:
         _raise_for_hyp3_status(response)
         return response.json()
 
+    # TODO:
+    #  - need to return anything?
+    #  - update tests
     def update_jobs(self, jobs: Batch | Job, **kwargs: object) -> Batch | Job:
         """Update the name of one or more previously-submitted jobs.
 
@@ -720,16 +723,15 @@ class HyP3:
         Returns:
             The updated job(s)
         """
-        if isinstance(jobs, Batch):
-            batch = hyp3_sdk.Batch()
-            tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
-            for job in tqdm(jobs):
-                batch += self.update_jobs(job, **kwargs)
-            return batch
-
-        if not isinstance(jobs, Job):
+        if isinstance(jobs, Job):
+            job_ids = [jobs.job_id]
+        elif isinstance(jobs, Batch):
+            job_ids = [job.job_id for job in jobs]
+        else:
             raise TypeError(f"'jobs' has type {type(jobs)}, must be {Batch} or {Job}")
 
-        response = self.session.patch(self._get_endpoint_url(f'/jobs/{jobs.job_id}'), json=kwargs)
-        _raise_for_hyp3_status(response)
-        return Job.from_dict(response.json())
+        tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
+        for job_ids_chunk in tqdm(hyp3_sdk.util.chunk(job_ids, n=100)):
+            payload = {'job_ids': job_ids_chunk, **kwargs}
+            response = self.session.patch(self._get_endpoint_url('/jobs'), json=payload)
+            _raise_for_hyp3_status(response)
