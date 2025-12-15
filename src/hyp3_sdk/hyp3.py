@@ -1,16 +1,16 @@
 import math
 import time
 import warnings
+from copy import deepcopy
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
 from typing import Literal
 from urllib.parse import SplitResult, urlsplit, urlunsplit
-from warnings import warn
 
 import hyp3_sdk
 import hyp3_sdk.util
-from hyp3_sdk.exceptions import HyP3Error, _raise_for_hyp3_status
+from hyp3_sdk.exceptions import HyP3Error, HyP3SDKError, _raise_for_hyp3_status
 from hyp3_sdk.jobs import Batch, Job
 
 
@@ -693,7 +693,7 @@ class HyP3:
         Returns:
             Your remaining processing credits, or None if you have no processing limit
         """
-        warn(
+        warnings.warn(
             'This method is deprecated and will be removed in a future release.\n'
             'Please use `HyP3.check_credits` instead.',
             DeprecationWarning,
@@ -710,28 +710,40 @@ class HyP3:
         return response.json()
 
     # TODO:
-    #  - need to return anything?
     #  - update tests
-    def update_jobs(self, jobs: Batch | Job, **kwargs: object) -> Batch | Job:
+    def update_jobs(self, jobs: Batch | Job, name: str | None) -> Batch | Job:
         """Update the name of one or more previously-submitted jobs.
 
         Args:
             jobs: The job(s) to update
-            kwargs:
-                name: The new name, or None to remove the name
+            name: The new name, or None to remove the name
 
         Returns:
             The updated job(s)
         """
-        if isinstance(jobs, Job):
-            job_ids = [jobs.job_id]
-        elif isinstance(jobs, Batch):
-            job_ids = [job.job_id for job in jobs]
-        else:
+        if not isinstance(jobs, Job) and not isinstance(jobs, Batch):
             raise TypeError(f"'jobs' has type {type(jobs)}, must be {Batch} or {Job}")
 
+        jobs = deepcopy(jobs)
+
         tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
-        for job_ids_chunk in tqdm(hyp3_sdk.util.chunk(job_ids, n=100)):
-            payload = {'job_ids': job_ids_chunk, **kwargs}
+        batch = jobs if isinstance(jobs, Batch) else Batch([jobs])
+        for jobs_chunk in tqdm(hyp3_sdk.util.chunk(batch, n=100)):
+            job_ids = [job.job_id for job in jobs_chunk]
+            payload = {'job_ids': job_ids, 'name': name}
             response = self.session.patch(self._get_endpoint_url('/jobs'), json=payload)
-            _raise_for_hyp3_status(response)
+            try:
+                _raise_for_hyp3_status(response)
+            except HyP3SDKError as e:
+                warnings.warn(
+                    'Something went wrong while updating your jobs. '
+                    'The local state of your jobs may be out-of-date. '
+                    'Please contact us if you need help resolving this issue: '
+                    'https://hyp3-docs.asf.alaska.edu/contact/',
+                    UserWarning,
+                )
+                raise e
+            for job in jobs_chunk:
+                job.name = name
+
+        return jobs
