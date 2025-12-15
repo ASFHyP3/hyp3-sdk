@@ -735,11 +735,12 @@ class HyP3:
             try:
                 _raise_for_hyp3_status(response)
             except HyP3SDKError as e:
+                # TODO: check formatting in terminal
                 warnings.warn(
                     'Something went wrong while updating your jobs. '
                     'The local state of your jobs may be out-of-date. '
-                    'Please contact us if you need help resolving this issue: '
-                    'https://hyp3-docs.asf.alaska.edu/contact/',
+                    'You can refresh your jobs with the HyP3.refresh method, e.g: '
+                    'jobs = hyp3.refresh(jobs)',
                     UserWarning,
                 )
                 raise e
