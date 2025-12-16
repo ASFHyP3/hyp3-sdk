@@ -10,7 +10,6 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from hyp3_sdk import Batch
 from hyp3_sdk.exceptions import AuthenticationError
 
 
@@ -45,7 +44,7 @@ def extract_zipped_product(zip_file: str | Path, delete: bool = True) -> Path:
     return zip_file.parent / zip_file.stem
 
 
-def chunk(itr: Sequence[Any] | Batch, n: int = 200) -> Generator[Sequence[Any], None, None]:
+def chunk(itr: Sequence[Any], n: int = 200) -> Generator[Sequence[Any], None, None]:
     """Split a sequence into small chunks
 
     Args:
