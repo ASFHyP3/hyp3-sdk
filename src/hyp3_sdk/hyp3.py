@@ -728,14 +728,13 @@ class HyP3:
 
         tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
         batch = jobs if isinstance(jobs, Batch) else Batch([jobs])
-        for jobs_chunk in tqdm(hyp3_sdk.util.chunk(batch, n=100)):
+        for jobs_chunk in tqdm(list(hyp3_sdk.util.chunk(batch, n=100))):
             job_ids = [job.job_id for job in jobs_chunk]
             payload = {'job_ids': job_ids, 'name': name}
             response = self.session.patch(self._get_endpoint_url('/jobs'), json=payload)
             try:
                 _raise_for_hyp3_status(response)
             except HyP3SDKError as e:
-                # TODO: check formatting in terminal
                 warnings.warn(
                     'Something went wrong while updating your jobs. '
                     'The local state of your jobs may be out-of-date. '
