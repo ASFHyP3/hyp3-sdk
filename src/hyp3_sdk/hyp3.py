@@ -709,8 +709,6 @@ class HyP3:
         _raise_for_hyp3_status(response)
         return response.json()
 
-    # TODO:
-    #  - update tests
     def update_jobs(self, jobs: Batch | Job, name: str | None) -> Batch | Job:
         """Update the name of one or more previously-submitted jobs.
 
