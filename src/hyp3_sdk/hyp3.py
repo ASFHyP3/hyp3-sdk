@@ -1,16 +1,16 @@
 import math
 import time
 import warnings
+from copy import deepcopy
 from datetime import datetime, timezone
 from functools import singledispatchmethod
 from getpass import getpass
 from typing import Literal
 from urllib.parse import SplitResult, urlsplit, urlunsplit
-from warnings import warn
 
 import hyp3_sdk
 import hyp3_sdk.util
-from hyp3_sdk.exceptions import HyP3Error, _raise_for_hyp3_status
+from hyp3_sdk.exceptions import HyP3Error, HyP3SDKError, _raise_for_hyp3_status
 from hyp3_sdk.jobs import Batch, Job
 
 
@@ -693,7 +693,7 @@ class HyP3:
         Returns:
             Your remaining processing credits, or None if you have no processing limit
         """
-        warn(
+        warnings.warn(
             'This method is deprecated and will be removed in a future release.\n'
             'Please use `HyP3.check_credits` instead.',
             DeprecationWarning,
@@ -709,27 +709,42 @@ class HyP3:
         _raise_for_hyp3_status(response)
         return response.json()
 
-    def update_jobs(self, jobs: Batch | Job, **kwargs: object) -> Batch | Job:
+    def update_jobs(self, jobs: Batch | Job, name: str | None) -> Batch | Job:
         """Update the name of one or more previously-submitted jobs.
 
         Args:
             jobs: The job(s) to update
-            kwargs:
-                name: The new name, or None to remove the name
+            name: The new name, or None to remove the name
 
         Returns:
             The updated job(s)
         """
-        if isinstance(jobs, Batch):
-            batch = hyp3_sdk.Batch()
-            tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
-            for job in tqdm(jobs):
-                batch += self.update_jobs(job, **kwargs)
-            return batch
-
-        if not isinstance(jobs, Job):
+        if not isinstance(jobs, Job) and not isinstance(jobs, Batch):
             raise TypeError(f"'jobs' has type {type(jobs)}, must be {Batch} or {Job}")
 
-        response = self.session.patch(self._get_endpoint_url(f'/jobs/{jobs.job_id}'), json=kwargs)
-        _raise_for_hyp3_status(response)
-        return Job.from_dict(response.json())
+        jobs = deepcopy(jobs)
+        batch = jobs if isinstance(jobs, Batch) else Batch([jobs])
+        tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
+
+        with tqdm(total=len(batch), desc='Jobs Updated') as progress_bar:
+            for jobs_chunk in list(hyp3_sdk.util.chunk(batch, n=100)):
+                payload = {'job_ids': [job.job_id for job in jobs_chunk], 'name': name}
+                response = self.session.patch(self._get_endpoint_url('/jobs'), json=payload)
+                try:
+                    _raise_for_hyp3_status(response)
+                except HyP3SDKError as e:
+                    warnings.warn(
+                        'Something went wrong while updating your jobs. '
+                        'The local state of your jobs may be out-of-date. '
+                        'You can refresh your jobs with the HyP3.refresh method, e.g: '
+                        'jobs = hyp3.refresh(jobs)',
+                        UserWarning,
+                    )
+                    raise e
+
+                progress_bar.update(len(jobs_chunk))
+
+        for job in batch:
+            job.name = name
+
+        return jobs
