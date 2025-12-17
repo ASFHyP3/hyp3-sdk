@@ -529,56 +529,48 @@ def test_costs(get_mock_hyp3):
 @responses.activate
 def test_update_jobs(get_mock_hyp3, get_mock_job):
     api = get_mock_hyp3()
-    job1_api_response = {
-        'job_id': 'job1',
-        'job_type': 'FOO',
-        'request_time': '2020-06-04T18:00:03+00:00',
-        'status_code': 'SUCCEEDED',
-        'user_id': 'foo',
-        'name': 'new_name',
-    }
-    job2_api_response = {
-        'job_id': 'job2',
-        'job_type': 'FOO',
-        'request_time': '2020-06-04T18:00:03+00:00',
-        'status_code': 'SUCCEEDED',
-        'user_id': 'foo',
-        'name': 'new_name',
-    }
+
     responses.add(
         responses.PATCH,
-        urljoin(api.url, '/jobs/job1'),
-        match=[responses.matchers.json_params_matcher({'name': 'new_name'})],
-        json=job1_api_response,
+        urljoin(api.url, '/jobs'),
+        match=[responses.matchers.json_params_matcher({'job_ids': ['job1'], 'name': 'new'})],
+    )
+    job = get_mock_job(job_id='job1', name='old')
+
+    assert api.update_jobs(job, name='new') == get_mock_job(job_id='job1', name='new')
+    assert job.name == 'old'
+
+    responses.add(
+        responses.PATCH,
+        urljoin(api.url, '/jobs'),
+        match=[responses.matchers.json_params_matcher({'job_ids': [str(i) for i in range(100)], 'name': 'new'})],
     )
     responses.add(
         responses.PATCH,
-        urljoin(api.url, '/jobs/job2'),
-        match=[responses.matchers.json_params_matcher({'name': 'new_name'})],
-        json=job2_api_response,
+        urljoin(api.url, '/jobs'),
+        match=[responses.matchers.json_params_matcher({'job_ids': [str(i) for i in range(100, 200)], 'name': 'new'})],
     )
-    responses.add(
-        responses.PATCH,
-        urljoin(api.url, '/jobs/job1'),
-        match=[responses.matchers.json_params_matcher({'foo': 'bar'})],
-        json={'detail': 'test error message'},
-        status=400,
-    )
+    jobs = Batch([get_mock_job(job_id=str(i), name='old') for i in range(200)])
 
-    job1 = get_mock_job(job_id='job1')
-    job2 = get_mock_job(job_id='job2')
-
-    assert api.update_jobs(job1, name='new_name') == Job.from_dict(job1_api_response)
-
-    assert api.update_jobs(Batch([job1, job2]), name='new_name') == Batch(
-        [Job.from_dict(job1_api_response), Job.from_dict(job2_api_response)]
-    )
+    assert api.update_jobs(jobs, name='new') == Batch([get_mock_job(job_id=str(i), name='new') for i in range(200)])
+    assert {job.name for job in jobs} == {'old'}
 
     with pytest.raises(TypeError):
-        api.update_jobs(1, name='new_name')
+        api.update_jobs(1, name='new')
 
-    with pytest.raises(HyP3Error, match=r'^<Response \[400\]> test error message$'):
-        api.update_jobs(job1, foo='bar')
+    responses.add(
+        responses.PATCH,
+        urljoin(api.url, '/jobs'),
+        match=[responses.matchers.json_params_matcher({'job_ids': ['bad-job'], 'name': 'new'})],
+        json={'detail': 'job does not exist'},
+        status=404,
+    )
+    bad_job = get_mock_job(job_id='bad-job', name='old')
+
+    with pytest.raises(HyP3Error, match=r'^<Response \[404\]> job does not exist$'):
+        api.update_jobs(bad_job, name='new')
+
+    assert bad_job.name == 'old'
 
 
 def test_get_endpoint_url(get_mock_hyp3):

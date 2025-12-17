@@ -725,12 +725,11 @@ class HyP3:
             raise TypeError(f"'jobs' has type {type(jobs)}, must be {Batch} or {Job}")
 
         jobs = deepcopy(jobs)
+        batch = jobs if isinstance(jobs, Batch) else Batch([jobs])
 
         tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
-        batch = jobs if isinstance(jobs, Batch) else Batch([jobs])
         for jobs_chunk in tqdm(list(hyp3_sdk.util.chunk(batch, n=100))):
-            job_ids = [job.job_id for job in jobs_chunk]
-            payload = {'job_ids': job_ids, 'name': name}
+            payload = {'job_ids': [job.job_id for job in jobs_chunk], 'name': name}
             response = self.session.patch(self._get_endpoint_url('/jobs'), json=payload)
             try:
                 _raise_for_hyp3_status(response)
@@ -743,7 +742,8 @@ class HyP3:
                     UserWarning,
                 )
                 raise e
-            for job in jobs_chunk:
-                job.name = name
+
+        for job in batch:
+            job.name = name
 
         return jobs
