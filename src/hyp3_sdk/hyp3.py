@@ -726,7 +726,7 @@ class HyP3:
         batch = jobs if isinstance(jobs, Batch) else Batch([jobs])
         tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
 
-        with tqdm(total=len(batch), desc="Jobs Updated") as pbar:
+        with tqdm(total=len(batch), desc='Jobs Updated') as pbar:
             for jobs_chunk in list(hyp3_sdk.util.chunk(batch, n=100)):
                 payload = {'job_ids': [job.job_id for job in jobs_chunk], 'name': name}
                 response = self.session.patch(self._get_endpoint_url('/jobs'), json=payload)
