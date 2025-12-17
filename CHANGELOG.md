@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.7.6]
+
+### Changed
+* The implementation of `HyP3.update_jobs` has been refactored to use the new `PATCH /jobs` endpoint that was added with [HyP3 v10.12.0](https://github.com/ASFHyP3/hyp3/releases/tag/v10.12.0), resulting in a significant performance improvement when renaming large batches of jobs.
+* `HyP3.update_jobs` now requires the `name` parameter and no longer accepts arbitrary keyword arguments.
+
+> [!WARNING]
+> If one of your jobs fails to update for any reason, `HyP3.update_jobs` will raise an exception and all of the jobs that were updated before the failure will have the new name, while all of the remaining jobs will be left with the old name. Additionally, because `HyP3.update_jobs` returns a new copy of your updated jobs rather than updating them in-place, you will need to manually refresh your local copy of the jobs if you want to see which jobs were successfully updated. You can refresh your jobs with the `HyP3.refresh` method, e.g:
+> ```python
+> >>> jobs = hyp3.refresh(jobs)
+> ```
+
+### Fixed
+* `Batch` is now a subclass of `collections.abc.Sequence`, which allows `hyp3_sdk.util.chunk` to accept a `Batch` object without triggering warnings from static type checkers such as `mypy`.
+
 ## [7.7.5]
 
 ### Changed

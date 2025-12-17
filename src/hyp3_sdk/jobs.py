@@ -1,4 +1,5 @@
 from collections import Counter
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 from typing import Union
@@ -150,7 +151,7 @@ class Job:
         return downloaded_files
 
 
-class Batch:
+class Batch(Sequence):
     def __init__(self, jobs: list[Job] | None = None):
         if jobs is None:
             jobs = []
@@ -179,7 +180,7 @@ class Batch:
     def __len__(self):
         return len(self.jobs)
 
-    def __contains__(self, job: Job):
+    def __contains__(self, job: object):
         return job in self.jobs
 
     def __eq__(self, other: object) -> bool:
