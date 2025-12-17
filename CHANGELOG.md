@@ -13,9 +13,9 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
   > [!WARNING]
   > If one of your jobs fails to update for any reason, all of the jobs in the `Batch` that were updated before the failure will have the new name, while all of the remaining jobs will be left with the old name. Additionally, because `HyP3.update_jobs` returns a new copy of your updated jobs rather than updating them in-place, your local copy of the jobs will be out-of-date compared with HyP3's record of your jobs. You can refresh your jobs with the `HyP3.refresh` method, e.g:
-   > ```python
-   > >>> jobs = hyp3.refresh(jobs)
-   > ```
+  > ```python
+  > >>> jobs = hyp3.refresh(jobs)
+  > ```
 
 * `HyP3.update_jobs` now requires the `name` parameter and no longer accepts arbitrary keyword arguments.
 
