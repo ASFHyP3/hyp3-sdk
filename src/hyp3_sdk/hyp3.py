@@ -724,22 +724,25 @@ class HyP3:
 
         jobs = deepcopy(jobs)
         batch = jobs if isinstance(jobs, Batch) else Batch([jobs])
-
         tqdm = hyp3_sdk.util.get_tqdm_progress_bar()
-        for jobs_chunk in tqdm(list(hyp3_sdk.util.chunk(batch, n=100))):
-            payload = {'job_ids': [job.job_id for job in jobs_chunk], 'name': name}
-            response = self.session.patch(self._get_endpoint_url('/jobs'), json=payload)
-            try:
-                _raise_for_hyp3_status(response)
-            except HyP3SDKError as e:
-                warnings.warn(
-                    'Something went wrong while updating your jobs. '
-                    'The local state of your jobs may be out-of-date. '
-                    'You can refresh your jobs with the HyP3.refresh method, e.g: '
-                    'jobs = hyp3.refresh(jobs)',
-                    UserWarning,
-                )
-                raise e
+
+        with tqdm(total=len(batch), desc="Jobs Updated") as pbar:
+            for jobs_chunk in list(hyp3_sdk.util.chunk(batch, n=100)):
+                payload = {'job_ids': [job.job_id for job in jobs_chunk], 'name': name}
+                response = self.session.patch(self._get_endpoint_url('/jobs'), json=payload)
+                try:
+                    _raise_for_hyp3_status(response)
+                except HyP3SDKError as e:
+                    warnings.warn(
+                        'Something went wrong while updating your jobs. '
+                        'The local state of your jobs may be out-of-date. '
+                        'You can refresh your jobs with the HyP3.refresh method, e.g: '
+                        'jobs = hyp3.refresh(jobs)',
+                        UserWarning,
+                    )
+                    raise e
+
+                pbar.update(len(jobs_chunk))
 
         for job in batch:
             job.name = name
