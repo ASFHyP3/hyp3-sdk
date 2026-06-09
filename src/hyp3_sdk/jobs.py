@@ -1,3 +1,4 @@
+import warnings
 from collections import Counter
 from collections.abc import Sequence
 from datetime import datetime
@@ -15,7 +16,7 @@ from hyp3_sdk.util import download_file, get_tqdm_progress_bar
 # TODO: actually looks like a good candidate for a dataclass (python 3.7+)
 #       https://docs.python.org/3/library/dataclasses.html
 class Job:
-    _attributes_for_resubmit = {'name', 'job_parameters', 'job_type'}
+    _attributes_for_resubmit = {'name', 'bucket', 'bucket_prefix', 'job_parameters', 'job_type'}
 
     def __init__(
         self,
@@ -25,6 +26,8 @@ class Job:
         status_code: str,
         user_id: str,
         name: str | None = None,
+        bucket: str | None = None,
+        bucket_prefix: str | None = None,
         job_parameters: dict | None = None,
         files: list | None = None,
         logs: list | None = None,
@@ -41,6 +44,8 @@ class Job:
         self.status_code = status_code
         self.user_id = user_id
         self.name = name
+        self.bucket = bucket
+        self.bucket_prefix = bucket_prefix
         self.job_parameters = job_parameters
         self.files = files
         self.logs = logs
@@ -70,6 +75,8 @@ class Job:
             status_code=input_dict['status_code'],
             user_id=input_dict['user_id'],
             name=input_dict.get('name'),
+            bucket=input_dict.get('bucket'),
+            bucket_prefix=input_dict.get('bucket_prefix'),
             job_parameters=input_dict.get('job_parameters'),
             files=input_dict.get('files'),
             logs=input_dict.get('logs'),
@@ -85,6 +92,13 @@ class Job:
         job_dict = {}
         if for_resubmit:
             keys_to_process = Job._attributes_for_resubmit
+            if self.bucket_prefix is not None and self.bucket_prefix != self.job_id:
+                warnings.warn(
+                    'Custom bucket prefix detected! Bucket prefix may have been expanded; '
+                    'if you used an expansion for your bucket prefix (e.g., `"{name}"` or `"{job_id}"`), '
+                    'you may need to reset your bucket_prefix before submitting!',
+                    UserWarning,
+                )
         else:
             keys_to_process = set(vars(self).keys())
 
