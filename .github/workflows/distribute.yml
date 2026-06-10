@@ -6,13 +6,10 @@ on:
       - v*
 
 jobs:
-  call-version-info-workflow:
-    uses: ASFHyP3/actions/.github/workflows/reusable-version-info.yml@v0.21.1
-    with:
-      python_version: "3.10"
-
   distribute:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         shell: bash -l {0}
