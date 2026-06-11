@@ -8,6 +8,7 @@ on:
 jobs:
   update-docs:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Bump SDK version in HyP3 docs
         uses: benc-uk/workflow-dispatch@v1.3
