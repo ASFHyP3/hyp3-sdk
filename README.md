@@ -12,13 +12,16 @@ A python wrapper around the HyP3 API
 
 ```python
 >>> from hyp3_sdk import HyP3
->>> hyp3 = HyP3(username='MyUsername', password='MyPassword')
+>>> hyp3 = HyP3(prompt='password')
 
 >>> granule = 'S1A_IW_SLC__1SSV_20150621T120220_20150621T120232_006471_008934_72D8'
 >>> job = hyp3.submit_rtc_job(granule=granule, name='MyNewJob')
 >>> job = hyp3.watch(job)
 >>> job.download_files()
 ```
+
+> [!IMPORTANT]
+> To access most HyP3 functions, you must authenticate using [Earthdata Login (EDL)](https://urs.earthdata.nasa.gov/) credentials. For more information, see our [authentication guide](docs/hyp3_authentication.ipynb).
 
 ## Install
 
