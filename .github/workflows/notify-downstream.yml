@@ -8,9 +8,10 @@ on:
 jobs:
   update-docs:
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Bump SDK version in HyP3 docs
-        uses: benc-uk/workflow-dispatch@v1.2
+        uses: benc-uk/workflow-dispatch@v1.3
         with:
           workflow: update_sdk_version.yml
           token: ${{ secrets.TOOLS_BOT_PAK }}

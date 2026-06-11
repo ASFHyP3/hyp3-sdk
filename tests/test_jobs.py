@@ -1,4 +1,4 @@
-from copy import copy
+from copy import copy, deepcopy
 from datetime import datetime, timedelta
 
 import pytest
@@ -23,6 +23,8 @@ SUCCEEDED_JOB = {
     },
     'job_type': 'PAIR_PROCESS',
     'name': 'test_success',
+    'bucket': 'hyp3-content-bucket',
+    'bucket_prefix': 'd1c05104-b455-4f35-a95a-84155d63f855',
     'request_time': '2020-09-22T23:55:10+00:00',
     'status_code': 'SUCCEEDED',
     'thumbnail_images': ['https://PAIR_PROCESS_thumb.png'],
@@ -42,6 +44,8 @@ FAILED_JOB = {
     },
     'job_type': 'PAIR_PROCESS',
     'name': 'test_failure',
+    'bucket': 'hyp3-content-bucket',
+    'bucket_prefix': 'd1c05104-b455-4f35-a95a-84155d63f855',
     'request_time': '2020-09-22T23:55:10+00:00',
     'status_code': 'FAILED',
     'user_id': 'asf_hyp3',
@@ -63,6 +67,12 @@ def test_job_attributes():
     for key in unprovided_attributes:
         assert job.__getattribute__(key) is None
 
+    no_bucket_job_dict = deepcopy(SUCCEEDED_JOB)
+    del no_bucket_job_dict['bucket'], no_bucket_job_dict['bucket_prefix']
+    job = Job.from_dict(no_bucket_job_dict)
+    assert job.bucket is None
+    assert job.bucket_prefix is None
+
 
 def test_job_dict_transforms():
     job = Job.from_dict(SUCCEEDED_JOB)
@@ -76,6 +86,22 @@ def test_job_dict_transforms():
 
     retry = job.to_dict(for_resubmit=True)
     assert retry.keys() == Job._attributes_for_resubmit
+
+    custom_bucket_job_dict = deepcopy(SUCCEEDED_JOB)
+    custom_bucket_job_dict['bucket'] = 'some-bucket'
+    job = Job.from_dict(custom_bucket_job_dict)
+    assert job.to_dict() == custom_bucket_job_dict
+
+    retry = job.to_dict(for_resubmit=True)
+    assert retry.keys() == Job._attributes_for_resubmit
+
+    custom_bucket_job_dict['bucket_prefix'] = 'some-prefix'
+    job = Job.from_dict(custom_bucket_job_dict)
+    assert job.to_dict() == custom_bucket_job_dict
+
+    with pytest.warns(UserWarning):
+        retry = job.to_dict(for_resubmit=True)
+        assert retry.keys() == Job._attributes_for_resubmit
 
 
 def test_job_complete_succeeded_failed_running():
