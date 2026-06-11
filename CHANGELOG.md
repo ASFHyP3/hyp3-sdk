@@ -8,6 +8,9 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [7.7.7]
 
+### Added
+* The HyP3 SDK is now tested on Python 3.13 and 3.14.
+
 ### Changed
 * `Job` class instances now have `job.bucket` and `job.bucket_prefix` parameters, and they are preserved in the job dictionary returned with the `job.to_dict()` method. 
   * `job.bucket` and `job.bucket_prefix` can be either a `str` or `None` for backwards compatibility.
