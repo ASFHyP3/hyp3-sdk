@@ -130,6 +130,8 @@ def test_job_dict_transforms():
     job = Job.from_dict(custom_bucket_job_dict)
     assert job.to_dict() == custom_bucket_job_dict
 
+    retry = job.to_dict(for_resubmit=True)
+    assert retry.keys() == Job._attributes_for_resubmit
 
 def test_job_complete_succeeded_failed_running():
     job = Job.from_dict(SUCCEEDED_JOB)
