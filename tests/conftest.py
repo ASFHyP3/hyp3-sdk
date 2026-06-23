@@ -36,7 +36,7 @@ def get_mock_job():
         *,
         job_type: str='JOB_TYPE',
         job_id: str | None = None,
-        request_time: datetime=datetime.now(),
+        request_time: str | datetime=datetime.now(),
         status_code: str='RUNNING',
         user_id: str='user',
         name: str | None = 'name',
@@ -60,7 +60,8 @@ def get_mock_job():
         if job_dict['job_id'] is None:
             job_dict['job_id'] = str(uuid4())
 
-        job_dict['request_time'] = request_time.isoformat(timespec='seconds')
+        if isinstance(request_time, datetime):
+            job_dict['request_time'] = request_time.isoformat(timespec='seconds')
 
         return Job.from_dict(job_dict)
 
