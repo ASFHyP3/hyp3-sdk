@@ -133,6 +133,15 @@ def test_job_dict_transforms():
     retry = job.to_dict(for_resubmit=True)
     assert retry.keys() == Job._attributes_for_resubmit
 
+    custom_bucket_job_dict['bucket_prefix'] = 'my_project/d1c05104-b455-4f35-a95a-84155d63f855'
+    job = Job.from_dict(custom_bucket_job_dict)
+    assert job.to_dict() == custom_bucket_job_dict
+
+    retry = job.to_dict(for_resubmit=True)
+    assert retry.keys() == Job._attributes_for_resubmit
+    assert retry['bucket_prefix'] == '{name}/{job_id}'
+
+
 def test_job_complete_succeeded_failed_running():
     job = Job.from_dict(SUCCEEDED_JOB)
     assert job.complete()
