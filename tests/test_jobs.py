@@ -6,7 +6,7 @@ import responses
 from dateutil import tz
 
 from hyp3_sdk.exceptions import HyP3SDKError
-from hyp3_sdk.jobs import Batch, Job
+from hyp3_sdk.jobs import Batch, Job, _reverse_prefix_expansion
 
 
 SUCCEEDED_JOB = {
@@ -22,7 +22,7 @@ SUCCEEDED_JOB = {
         ]
     },
     'job_type': 'PAIR_PROCESS',
-    'name': 'test_success',
+    'name': 'my_project',
     'bucket': 'hyp3-content-bucket',
     'bucket_prefix': 'd1c05104-b455-4f35-a95a-84155d63f855',
     'request_time': '2020-09-22T23:55:10+00:00',
@@ -52,6 +52,34 @@ FAILED_JOB = {
     'credit_cost': 1,
     'priority': 9999,
 }
+
+
+@pytest.mark.parametrize(
+    'prefix,name,job_id,expected',
+    [
+        ('custom-prefix', None, None, 'custom-prefix'),
+        ('custom/prefix/path', None, None, 'custom/prefix/path'),
+        ('user-custom-prefix', 'my_project', 'd1c05104-b455-4f35-a95a-84155d63f855', 'user-custom-prefix'),
+        ('d1c05104-b455-4f35-a95a-84155d63f855', None, 'd1c05104-b455-4f35-a95a-84155d63f855', '{job_id}'),
+        ('my_project', 'my_project', None, '{name}'),
+        ('my_project/d1c05104-b455-4f35-a95a-84155d63f855', 'my_project', 'd1c05104-b455-4f35-a95a-84155d63f855', '{name}/{job_id}'),
+        ('d1c05104-b455-4f35-a95a-84155d63f855/my_project', 'my_project', 'd1c05104-b455-4f35-a95a-84155d63f855', '{job_id}/{name}'),
+        ('prefix/my_project/suffix', 'my_project', None, 'prefix/{name}/suffix'),
+        ('prefix/d1c05104-b455-4f35-a95a-84155d63f855/suffix', None, 'd1c05104-b455-4f35-a95a-84155d63f855', 'prefix/{job_id}/suffix'),
+        ('prefix/my_project/d1c05104-b455-4f35-a95a-84155d63f855/suffix', 'my_project', 'd1c05104-b455-4f35-a95a-84155d63f855', 'prefix/{name}/{job_id}/suffix'),
+        # Edge case: name equals job_id (unusual but possible)
+        ('d1c05104-b455-4f35-a95a-84155d63f855', 'd1c05104-b455-4f35-a95a-84155d63f855', 'd1c05104-b455-4f35-a95a-84155d63f855', '{job_id}'),
+        # Edge case: multiple occurrences of the same value
+        ('my_project/my_project', 'my_project', None, '{name}/{name}'),
+        ('d1c05104-b455-4f35-a95a-84155d63f855/d1c05104-b455-4f35-a95a-84155d63f855', None, 'd1c05104-b455-4f35-a95a-84155d63f855', '{job_id}/{job_id}'),
+        # Edge case: empty strings
+        ('', None, None, ''),
+        ('my_project', 'my_project', '', '{name}'),
+        ('d1c05104-b455-4f35-a95a-84155d63f855', '', 'd1c05104-b455-4f35-a95a-84155d63f855', '{job_id}'),
+    ]
+)
+def test_reverse_prefix_expansion(prefix, name, job_id, expected):
+    assert _reverse_prefix_expansion(prefix, name, job_id) == expected
 
 
 def test_job_attributes():

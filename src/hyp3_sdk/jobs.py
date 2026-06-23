@@ -13,10 +13,10 @@ from hyp3_sdk.util import download_file, get_tqdm_progress_bar
 
 
 def _reverse_prefix_expansion(prefix: str, name: str | None, job_id: str | None) -> str:
-    if name is not None:
-        prefix = prefix.replace(name, '{name}')
-    if job_id is not None:
+    if job_id:
         prefix = prefix.replace(job_id, '{job_id}')
+    if name:
+        prefix = prefix.replace(name, '{name}')
     return prefix
 
 
