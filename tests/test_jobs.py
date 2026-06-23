@@ -80,6 +80,7 @@ FAILED_JOB = {
 )  # fmt: skip
 def test_reverse_prefix_expansion(prefix, name, job_id, expected):
     assert _reverse_prefix_expansion(prefix, name, job_id) == expected
+    assert expected.format(job_id=job_id, name=name) == prefix
 
 
 def test_job_attributes():
