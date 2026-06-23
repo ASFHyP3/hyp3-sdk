@@ -13,6 +13,20 @@ from hyp3_sdk.util import download_file, get_tqdm_progress_bar
 
 
 def _reverse_prefix_expansion(prefix: str, name: str | None, job_id: str | None) -> str:
+    """Reverse the parameter expansion of `bucket_prefix` done by the HyP3 API for resubmission.
+
+    When submitting jobs to HyP3, any `'{name}'` and/or `'{job_id}'` sub-strings in `job.bucket_prefix` are replaced by
+    `job.name` and `job.job_id`, respectively. This happens immediately in the API, so job doesn't preserve the
+    unescaped string and when re-submitting, we need to reverse this expansion or, for example, job files could end up
+    under the old job's prefix.
+    Args:
+        prefix: An expanded bucket prefix.
+        name: The job name.
+        job_id: The job ID.
+
+    Returns:
+        An un-expanded bucket prefix.
+    """
     if job_id:
         prefix = prefix.replace(job_id, '{job_id}')
     if name:
