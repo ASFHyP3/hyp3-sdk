@@ -45,7 +45,7 @@ FAILED_JOB = {
     'job_type': 'PAIR_PROCESS',
     'name': 'test_failure',
     'bucket': 'hyp3-content-bucket',
-    'bucket_prefix': 'd1c05104-b455-4f35-a95a-84155d63f855',
+    'bucket_prefix': '281b2087-9e7d-4d17-a9b3-aebeb2ad23c6',
     'request_time': '2020-09-22T23:55:10+00:00',
     'status_code': 'FAILED',
     'user_id': 'asf_hyp3',
@@ -80,12 +80,14 @@ def test_job_dict_transforms():
 
     retry = job.to_dict(for_resubmit=True)
     assert retry.keys() == Job._attributes_for_resubmit
+    assert retry['bucket_prefix'] == '{job_id}'
 
     job = Job.from_dict(FAILED_JOB)
     assert job.to_dict() == FAILED_JOB
 
     retry = job.to_dict(for_resubmit=True)
     assert retry.keys() == Job._attributes_for_resubmit
+    assert retry['bucket_prefix'] == '{job_id}'
 
     custom_bucket_job_dict = deepcopy(SUCCEEDED_JOB)
     custom_bucket_job_dict['bucket'] = 'some-bucket'
@@ -98,10 +100,6 @@ def test_job_dict_transforms():
     custom_bucket_job_dict['bucket_prefix'] = 'some-prefix'
     job = Job.from_dict(custom_bucket_job_dict)
     assert job.to_dict() == custom_bucket_job_dict
-
-    with pytest.warns(UserWarning):
-        retry = job.to_dict(for_resubmit=True)
-        assert retry.keys() == Job._attributes_for_resubmit
 
 
 def test_job_complete_succeeded_failed_running():

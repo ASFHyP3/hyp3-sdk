@@ -1,4 +1,3 @@
-import warnings
 from collections import Counter
 from collections.abc import Sequence
 from datetime import datetime
@@ -13,8 +12,14 @@ from hyp3_sdk.exceptions import HyP3SDKError
 from hyp3_sdk.util import download_file, get_tqdm_progress_bar
 
 
-# TODO: actually looks like a good candidate for a dataclass (python 3.7+)
-#       https://docs.python.org/3/library/dataclasses.html
+def _reverse_prefix_expansion(prefix: str, name: str | None, job_id: str | None) -> str:
+    if name is not None:
+        prefix = prefix.replace(name, '{name}')
+    if job_id is not None:
+        prefix = prefix.replace(job_id, '{job_id}')
+    return prefix
+
+
 class Job:
     _attributes_for_resubmit = {'name', 'bucket', 'bucket_prefix', 'job_parameters', 'job_type'}
 
@@ -92,13 +97,6 @@ class Job:
         job_dict = {}
         if for_resubmit:
             keys_to_process = Job._attributes_for_resubmit
-            if self.bucket_prefix is not None and self.bucket_prefix != self.job_id:
-                warnings.warn(
-                    'Custom bucket prefix detected! Bucket prefix may have been expanded; '
-                    'if you used an expansion for your bucket prefix (e.g., `"{name}"` or `"{job_id}"`), '
-                    'you may need to reset your bucket_prefix before submitting!',
-                    UserWarning,
-                )
         else:
             keys_to_process = set(vars(self).keys())
 
@@ -109,6 +107,9 @@ class Job:
                     job_dict[key] = value.isoformat(timespec='seconds')
                 else:
                     job_dict[key] = value
+
+        if for_resubmit and job_dict.get('bucket_prefix'):
+            job_dict['bucket_prefix'] = _reverse_prefix_expansion(job_dict['bucket_prefix'], self.name, self.job_id)
 
         return job_dict
 
