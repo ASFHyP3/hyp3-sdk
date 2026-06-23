@@ -34,11 +34,11 @@ def get_mock_hyp3():
 def get_mock_job():
     def default_job(
         *,
-        job_type: str='JOB_TYPE',
+        job_type: str = 'JOB_TYPE',
         job_id: str | None = None,
-        request_time: str | datetime=datetime.now(),
-        status_code: str='RUNNING',
-        user_id: str='user',
+        request_time: str | datetime = datetime.now(),
+        status_code: str = 'RUNNING',
+        user_id: str = 'user',
         name: str | None = 'name',
         bucket: str | None = None,
         bucket_prefix: str | None = None,

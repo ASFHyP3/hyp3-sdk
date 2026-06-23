@@ -461,7 +461,9 @@ def test_submit_insar_isce_burst_job(get_mock_hyp3, get_mock_job):
 
 @responses.activate
 def test_submit_insar_isce_multi_burst_job(get_mock_hyp3, get_mock_job):
-    job = get_mock_job(job_type='INSAR_ISCE_MULTI_BURST', job_parameters={'reference': ['g1', 'g2'], 'secondary': ['g3', 'g4']})
+    job = get_mock_job(
+        job_type='INSAR_ISCE_MULTI_BURST', job_parameters={'reference': ['g1', 'g2'], 'secondary': ['g3', 'g4']}
+    )
     api_response = {'jobs': [job.to_dict()]}
     api = get_mock_hyp3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)
@@ -471,7 +473,9 @@ def test_submit_insar_isce_multi_burst_job(get_mock_hyp3, get_mock_job):
 
 @responses.activate
 def test_submit_aria_s1_gunw_job(get_mock_hyp3, get_mock_job):
-    job = get_mock_job(job_type='ARIA_S1_GUNW', job_parameters={'reference_date': 'd1', 'secondary_date': 'd2', 'frame_id': 100})
+    job = get_mock_job(
+        job_type='ARIA_S1_GUNW', job_parameters={'reference_date': 'd1', 'secondary_date': 'd2', 'frame_id': 100}
+    )
     api_response = {'jobs': [job.to_dict()]}
     api = get_mock_hyp3()
     responses.add(responses.POST, urljoin(api.url, '/jobs'), json=api_response)

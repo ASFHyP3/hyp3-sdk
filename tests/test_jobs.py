@@ -77,7 +77,7 @@ FAILED_JOB = {
         ('my_project', 'my_project', '', '{name}'),
         ('d1c05104-b455-4f35-a95a-84155d63f855', '', 'd1c05104-b455-4f35-a95a-84155d63f855', '{job_id}'),
     ]
-)
+)  # fmt: skip
 def test_reverse_prefix_expansion(prefix, name, job_id, expected):
     assert _reverse_prefix_expansion(prefix, name, job_id) == expected
 
