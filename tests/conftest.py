@@ -33,44 +33,35 @@ def get_mock_hyp3():
 @pytest.fixture(autouse=True)
 def get_mock_job():
     def default_job(
+        *,
+        job_type: str = 'JOB_TYPE',
         job_id: str | None = None,
-        job_type='JOB_TYPE',
-        request_time=datetime.now(),
-        status_code='RUNNING',
-        user_id='user',
-        name='name',
-        job_parameters=None,
-        files=None,
-        browse_images=None,
-        thumbnail_images=None,
-        expiration_time=None,
-        credit_cost=None,
-        priority=None,
+        request_time: str | datetime = datetime.now(),
+        status_code: str = 'RUNNING',
+        user_id: str = 'user',
+        name: str | None = 'name',
+        bucket: str | None = None,
+        bucket_prefix: str | None = None,
+        job_parameters: dict | None = None,
+        files: list | None = None,
+        logs: list | None = None,
+        browse_images: list | None = None,
+        thumbnail_images: list | None = None,
+        expiration_time: datetime | None = None,
+        processing_times: list[float] | None = None,
+        credit_cost: float | None = None,
+        priority: int | None = None,
     ):
-        if job_parameters is None:
-            job_parameters = {'param1': 'value1'}
-        if job_id is None:
-            job_id = str(uuid4())
-        job_dict = {
-            'job_type': job_type,
-            'job_id': job_id,
-            'request_time': request_time.isoformat(timespec='seconds'),
-            'status_code': status_code,
-            'user_id': user_id,
-            'name': name,
-            'job_parameters': job_parameters,
-            'files': files,
-            'browse_images': browse_images,
-            'thumbnail_images': thumbnail_images,
-            'expiration_time': expiration_time,
-        }
-        keys_to_delete = []
-        for k, v in job_dict.items():
-            if v is None:
-                keys_to_delete.append(k)
+        job_dict = locals()
 
-        for key in keys_to_delete:
-            del job_dict[key]
+        if job_dict['job_parameters'] is None:
+            job_dict['job_parameters'] = {'param1': 'value1'}
+
+        if job_dict['job_id'] is None:
+            job_dict['job_id'] = str(uuid4())
+
+        if isinstance(request_time, datetime):
+            job_dict['request_time'] = request_time.isoformat(timespec='seconds')
 
         return Job.from_dict(job_dict)
 

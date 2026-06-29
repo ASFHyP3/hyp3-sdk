@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.7.8]
+
+### Fixed
+* `job.bucket_prefix`'s that originally included an expansion (`{name}` and/or `{job_id}`) will be un-expanded when calling `job.to_dict(for_resubmit=True)`, and an expansion warning is no longer emitted.
+
 ## [7.7.7]
 
 ### Added
