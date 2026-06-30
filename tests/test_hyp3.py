@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 
 import pytest
 import responses
+from responses import matchers
 
 import hyp3_sdk
 from hyp3_sdk import Batch, HyP3, Job
@@ -84,8 +85,15 @@ def test_find_jobs_paging(get_mock_hyp3, get_mock_job):
     }
     api_response_mock_2 = {'jobs': [get_mock_job(name='job3').to_dict()]}
 
-    responses.add(responses.GET, urljoin(api.url, '/jobs'), json=api_response_mock_1, match_querystring=True)
-    responses.add(responses.GET, urljoin(api.url, '/jobs?next=foobar'), json=api_response_mock_2)
+    responses.add(
+        responses.GET, urljoin(api.url, '/jobs'), json=api_response_mock_1, match=[matchers.query_param_matcher({})]
+    )
+    responses.add(
+        responses.GET,
+        urljoin(api.url, '/jobs'),
+        json=api_response_mock_2,
+        match=[matchers.query_param_matcher({'next': 'foobar'})],
+    )
 
     batch = api.find_jobs()
     assert len(batch) == 3
@@ -97,13 +105,18 @@ def test_find_jobs_paging(get_mock_hyp3, get_mock_job):
 def test_find_jobs_user_id(get_mock_hyp3, get_mock_job):
     api = get_mock_hyp3()
 
-    responses.add(responses.GET, urljoin(api.url, '/jobs?user_id=foo'), json={'jobs': []}, match_querystring=True)
+    responses.add(
+        responses.GET,
+        urljoin(api.url, '/jobs'),
+        json={'jobs': []},
+        match=[matchers.query_param_matcher({'user_id': 'foo'})],
+    )
 
     responses.add(
         responses.GET,
-        urljoin(api.url, '/jobs?user_id=bar'),
+        urljoin(api.url, '/jobs'),
         json={'jobs': [get_mock_job(name='job1').to_dict()]},
-        match_querystring=True,
+        match=[matchers.query_param_matcher({'user_id': 'bar'})],
     )
 
     batch = api.find_jobs(user_id='foo')
@@ -119,9 +132,9 @@ def test_find_jobs_start(get_mock_hyp3):
 
     responses.add(
         responses.GET,
-        urljoin(api.url, '/jobs?start=2021-01-01T00%3A00%3A00%2B00%3A00'),
+        urljoin(api.url, '/jobs'),
         json={'jobs': []},
-        match_querystring=True,
+        match=[matchers.query_param_matcher({'start': '2021-01-01T00:00:00+00:00'})],
     )
 
     batch = api.find_jobs(start=datetime(2021, 1, 1))
@@ -137,9 +150,9 @@ def test_find_jobs_end(get_mock_hyp3):
 
     responses.add(
         responses.GET,
-        urljoin(api.url, '/jobs?end=2021-01-02T00%3A00%3A00%2B00%3A00'),
+        urljoin(api.url, '/jobs'),
         json={'jobs': []},
-        match_querystring=True,
+        match=[matchers.query_param_matcher({'end': '2021-01-02T00:00:00+00:00'})],
     )
 
     batch = api.find_jobs(end=datetime(2021, 1, 2))
@@ -154,13 +167,19 @@ def test_find_jobs_status_code(get_mock_hyp3):
     api = get_mock_hyp3()
 
     responses.add(
-        responses.GET, urljoin(api.url, '/jobs?status_code=RUNNING'), json={'jobs': []}, match_querystring=True
+        responses.GET,
+        urljoin(api.url, '/jobs'),
+        json={'jobs': []},
+        match=[matchers.query_param_matcher({'status_code': 'RUNNING'})],
     )
     batch = api.find_jobs(status_code='RUNNING')
     assert len(batch) == 0
 
     responses.add(
-        responses.GET, urljoin(api.url, '/jobs?status_code=FAILED'), json={'jobs': []}, match_querystring=True
+        responses.GET,
+        urljoin(api.url, '/jobs'),
+        json={'jobs': []},
+        match=[matchers.query_param_matcher({'status_code': 'FAILED'})],
     )
     batch = api.find_jobs(status_code='FAILED')
     assert len(batch) == 0

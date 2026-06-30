@@ -10,6 +10,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 * `job.bucket_prefix`'s that originally included an expansion (`{name}` and/or `{job_id}`) will be un-expanded when calling `job.to_dict(for_resubmit=True)`, and an expansion warning is no longer emitted.
+* Deprecated `match_querystring` usage in `test/test_hyp3.py` in favor of `matchers.query_param_matcher()`.
 
 ## [7.7.7]
 
