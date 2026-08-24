@@ -143,6 +143,12 @@ def test_find_jobs_start(get_mock_hyp3):
     batch = api.find_jobs(start=datetime(2021, 1, 1, tzinfo=timezone.utc))
     assert len(batch) == 0
 
+    batch = api.find_jobs(start='2021-01-01')
+    assert len(batch) == 0
+
+    batch = api.find_jobs(start='2021-01-01T00:00:00+00:00')
+    assert len(batch) == 0
+
 
 @responses.activate
 def test_find_jobs_end(get_mock_hyp3):
@@ -159,6 +165,12 @@ def test_find_jobs_end(get_mock_hyp3):
     assert len(batch) == 0
 
     batch = api.find_jobs(end=datetime(2021, 1, 2, tzinfo=timezone.utc))
+    assert len(batch) == 0
+
+    batch = api.find_jobs(end='2021-01-02')
+    assert len(batch) == 0
+
+    batch = api.find_jobs(end='2021-01-02T00:00:00+00:00')
     assert len(batch) == 0
 
 
