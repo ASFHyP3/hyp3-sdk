@@ -2,7 +2,7 @@ import math
 import time
 import warnings
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime
 from functools import singledispatchmethod
 from getpass import getpass
 from typing import Literal
@@ -82,8 +82,8 @@ class HyP3:
 
     def find_jobs(
         self,
-        start: datetime | None = None,
-        end: datetime | None = None,
+        start: datetime | str | None = None,
+        end: datetime | str | None = None,
         status_code: str | None = None,
         name: str | None = None,
         job_type: str | None = None,
@@ -102,16 +102,17 @@ class HyP3:
         Returns:
             A Batch object containing the found jobs
         """
-        params = {}
-        for param_name in ('start', 'end', 'status_code', 'name', 'job_type', 'user_id'):
-            param_value = locals().get(param_name)
-            if param_value is not None:
-                if isinstance(param_value, datetime):
-                    if param_value.tzinfo is None:
-                        param_value = param_value.replace(tzinfo=timezone.utc)
-                    param_value = param_value.isoformat(timespec='seconds')
 
-                params[param_name] = param_value
+        params = {
+            'start': None if start is None else hyp3_sdk.util._get_normalized_datetime_str(start),
+            'end': None if end is None else hyp3_sdk.util._get_normalized_datetime_str(end),
+            'status_code': status_code,
+            'name': name,
+            'job_type': job_type,
+            'user_id': user_id,
+        }
+        # Filter out None values
+        params = {k: v for k, v in params.items() if v is not None}
 
         response = self.session.get(self._get_endpoint_url('/jobs'), params=params)
         _raise_for_hyp3_status(response)

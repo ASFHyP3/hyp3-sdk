@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [PEP 440](https://www.python.org/dev/peps/pep-0440/)
 and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.7.8]
+
+### Added
+* `HyP3.find_jobs` now allows passing partial datetime strings to the `start` and `end` parameters, matching the behavior when passing datetime objects.
+
+### Fixed
+* * Any `job.bucket_prefix` that originally included an expansion (`{name}` and/or `{job_id}`) will be un-expanded when calling `job.to_dict(for_resubmit=True)`, and an expansion warning is no longer emitted.
+* Deprecated `match_querystring` usage in `test/test_hyp3.py` in favor of `matchers.query_param_matcher()`.
+
 ## [7.7.7]
 
 ### Added
@@ -14,7 +23,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 * `Job` class instances now have `job.bucket` and `job.bucket_prefix` parameters, and they are preserved in the job dictionary returned with the `job.to_dict()` method. 
   * `job.bucket` and `job.bucket_prefix` can be either a `str` or `None` for backwards compatibility.
-  * `job.to_dict(for_resubmit=True)` will emit a user warning about bucket prefixes that have likely been expanded and my need to be reset for resubmission.  
+  * `job.to_dict(for_resubmit=True)` will emit a user warning about bucket prefixes that have likely been expanded and may need to be reset for resubmission.  
 * `Job.from_dict()` class methods now sets the `job.bucket` and `job.bucket_prefix` parameters. 
 
 ## [7.7.6]

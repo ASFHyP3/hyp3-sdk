@@ -2,11 +2,13 @@
 
 import urllib.parse
 from collections.abc import Generator, Sequence
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from zipfile import ZipFile
 
 import requests
+from dateutil.parser import parse as parse_date
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -19,6 +21,16 @@ AUTH_URL = (
 )
 
 PROFILE_URL = 'https://urs.earthdata.nasa.gov/profile'
+
+
+def _get_normalized_datetime_str(dt: datetime | str) -> str:
+    if isinstance(dt, str):
+        dt = parse_date(dt)
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    return dt.isoformat(timespec='seconds')
 
 
 def extract_zipped_product(zip_file: str | Path, delete: bool = True) -> Path:
